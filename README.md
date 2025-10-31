@@ -137,22 +137,10 @@ In your root folder (`bcs-marzipan/`), you can then run:
 
 ```bash
 npm install
-npm run start
+npm run dev
 ```
 
 💥 Both backend and frontend start in parallel!
-
----
-
-### ✅ If you get CORS issues
-
-Add this to your NestJS main file (`main.ts`):
-
-```ts
-app.enableCors({
-  origin: 'http://localhost:3000',
-});
-```
 
 ---
 
