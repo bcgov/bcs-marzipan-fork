@@ -59,6 +59,18 @@ npm install
 ✅ This installs NestJS / TypeORM / other backend packages.
 
 ---
+### 🔹 On root level:
+
+Go back up one level, then:
+
+```bash
+cd ..
+npm install
+```
+
+✅ This installs common Node module packages for the whole project.
+
+---
 
 ## 🚀 PHASE 3 — Run the apps locally
 
