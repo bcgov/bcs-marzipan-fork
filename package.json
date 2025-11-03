@@ -1,7 +1,12 @@
 {
   "name": "corporate-calendar",
+  "workspaces": [
+    "calendar-ui",
+    "calendar-service"
+  ],
   "scripts": {
-    "dev": "concurrently \"npm --prefix calendar-ui start\" \"npm --prefix calendar-service start\""
+    "start": "concurrently \"npm --prefix calendar-ui start\" \"npm --prefix calendar-service start\"",
+    "install-all": "npm install --workspaces"
   },
   "dependencies": {
     "@fluentui/react-experiments": "^8.14.207",
