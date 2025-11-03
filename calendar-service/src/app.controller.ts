@@ -41,4 +41,15 @@ export class AppController {
   createDraft(@Body() body: any) {
     return this.appService.createDraftEntry(body);
   }
+    // add health/readiness endpoints used by OpenShift probes
+  @Get("health")
+  health() {
+    return { status: "ok", uptime: process.uptime() };
+  }
+
+  @Get("ready")
+  readiness() {
+    // optionally check DB connectivity here
+    return { ready: true };
+  }
 }
