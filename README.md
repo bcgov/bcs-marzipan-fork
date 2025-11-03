@@ -34,41 +34,13 @@ If you don’t have it installed:
 
 ## 📦 PHASE 2 — Install dependencies
 
-We’ll install dependencies **separately** in each folder.
-
-### 🔹 For the UI:
-
-```bash
-cd calendar-ui
-npm install
-```
-
-✅ This installs React, Fluent UI, and other frontend dependencies.
-
----
-
-### 🔹 For the backend service:
-
-Go back up one level, then:
-
-```bash
-cd ../calendar-service
-npm install
-```
-
-✅ This installs NestJS / TypeORM / other backend packages.
-
----
 ### 🔹 On root level:
 
-Go back up one level, then:
-
 ```bash
-cd ..
 npm install
 ```
 
-✅ This installs common Node module packages for the whole project.
+✅ This installs all Node module packages for the whole project.
 
 ---
 
