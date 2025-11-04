@@ -6,7 +6,8 @@
   ],
   "scripts": {
     "start": "concurrently \"npm --prefix calendar-ui start\" \"npm --prefix calendar-service start\"",
-    "install-all": "npm install --workspaces"
+    "install-all": "npm install --workspaces",
+    "build": "npm run build --workspaces"
   },
   "dependencies": {
     "@fluentui/react-experiments": "^8.14.207",
