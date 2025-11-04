@@ -4,6 +4,7 @@ import { PaginationFooter } from "../components/PaginationFooter";
 import { EventTable } from "../components/EventTable";
 
 import * as React from "react";
+import { ColumnFiltersState } from "@tanstack/react-table";
 
 const dummyPitches: PitchEntry[] = [
   {
@@ -40,11 +41,15 @@ const dummyPitches: PitchEntry[] = [
 
 
 export default function PitchSubmissionsPage() {
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+
   return (
     <FluentProvider theme={webLightTheme}>
       <div style={{ padding: "1.5rem" }}>
         <Title1>Pitch submissions</Title1>
-        <EventTable/>
+        <EventTable
+          filters={columnFilters}
+        />
         <PaginationFooter />
       </div>
     </FluentProvider>

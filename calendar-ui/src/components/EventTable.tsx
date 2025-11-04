@@ -17,9 +17,12 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
   SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { set } from "zod";
 
 // Dummy data interface
 type EventRow = {
@@ -80,10 +83,21 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
   Deleted: "danger",
 };
 
-export const EventTable = () => {
+interface EventTableProps {
+  filters: ColumnFiltersState,
+}
+
+
+export const EventTable: React.FC<EventTableProps> = ({filters}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  //for when column filters change. May not end up using this... 
+  useEffect(() => {
+    setColumnFilters(filters);
+ },[filters]);
 
   const columns = useMemo<ColumnDef<EventRow>[]>(
     () => [
@@ -103,6 +117,7 @@ export const EventTable = () => {
         cell: info => info.getValue(),
       },
       {
+        id: "category",
         accessorKey: "category",
         header: "Category",
         cell: info => info.getValue(),
@@ -135,7 +150,8 @@ export const EventTable = () => {
     columns,
     state: {
       sorting,
-      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
+      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      columnFilters,
     },
     onSortingChange: setSorting,
     onPaginationChange: updater => {
@@ -149,8 +165,11 @@ export const EventTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), // needed for client-side filtering
+    onColumnFiltersChange: setColumnFilters,
     manualPagination: false,
     manualSorting: false,
+    enableColumnFilters: true,
   });
 
   return (

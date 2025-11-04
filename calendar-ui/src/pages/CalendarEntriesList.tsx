@@ -2,8 +2,19 @@ import { EventTable } from "../components/EventTable";
 import { CalendarFilters } from "../components/CalendarFilters";
 import { Input, Button } from "@fluentui/react-components"; 
 import { Add24Regular } from "@fluentui/react-icons";
+import { ColumnFiltersState } from "@tanstack/react-table";
+import { useEffect, useState } from "react";
 
 export const CalendarEntriesList = () => {
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+
+  const handleFilterUpdate = (filters: ColumnFiltersState) => {
+    setColumnFilters(filters);
+  };
+
+  useEffect(() => {
+ },[columnFilters]);
+
   return (
     <div>
       {/* Main Content Area */}
@@ -42,8 +53,14 @@ export const CalendarEntriesList = () => {
 
         {/* Content */}
         <div style={{ padding: "24px", overflowY: "auto", backgroundColor: "#fafafa", flex: 1 }}>
-          <CalendarFilters />
-          <EventTable />
+          <CalendarFilters 
+            filters={columnFilters}
+            onFiltersChanged={handleFilterUpdate}
+          />
+          <EventTable 
+            filters={columnFilters}
+            
+          />
         </div>
       </div>
     </div>
