@@ -128,16 +128,19 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
         id: "category",
         accessorKey: "category",
         header: "Category",
+        enableGlobalFilter: false,
         cell: info => info.getValue(),
       },
       {
         accessorKey: "type",
         header: "Type",
+        enableGlobalFilter: false,
         cell: info => info.getValue(),
       },
       {
         accessorKey: "status",
         header: "Status",
+        enableGlobalFilter: false,
         cell: info => (
           <Badge appearance="tint" color={statusColor[info.getValue() as keyof typeof statusColor]} shape="rounded">
             {info.getValue()}
@@ -147,6 +150,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
       {
         accessorKey: "confirmed",
         header: "Confirmed",
+        enableGlobalFilter: false,
         cell: info => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
       },
     ],
