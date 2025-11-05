@@ -17,6 +17,10 @@ interface FilterProps {
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChanged}) => {
+  const filterData = {
+    category: {id: 'category', value: ''},
+    title: {id: 'title', value: ''}
+  }
   const categoryFilters = ["Event", "Release", "Issue"];
   const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
 
@@ -24,7 +28,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     setCategoryFilter(data.optionText);
   };
 
-  const applyFilters = () => {
+  const applyFilters = () => { // todo: need to rethink this so we can filter on multiple values
     if(categoryFilter){
       filters = [{id: "category", value: categoryFilter}];
     } else { 
@@ -39,7 +43,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     <Button>My Activities</Button>
     <Button>Shared With Me</Button>
     <Button>Watchlist</Button>
-    <Input placeholder="Search events..."/>
+    <Input placeholder="Search by event title..."/>
 
     <Combobox placeholder="Type filter..."
       onOptionSelect={handleCategoryChange}
