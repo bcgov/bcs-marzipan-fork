@@ -8,7 +8,7 @@ import {
   OptionOnSelectData,
 } from "@fluentui/react-components";
 import { ColumnFiltersState } from "@tanstack/react-table";
-import React, { useEffect } from "react";
+import React from "react";
 import { set } from "zod";
 
 interface FilterProps {
@@ -16,21 +16,19 @@ interface FilterProps {
   onFiltersChanged: any
 }
 
-
 export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChanged}) => {
-  const filterTypes = ["Event", "Release", "Issue"];
-  const [filterType, setFilterType] = React.useState<string>(); // this may end up being <string[]>
+  const categoryFilters = ["Event", "Release", "Issue"];
+  const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
 
   const handleCategoryChange = (_: SelectionEvents, data: OptionOnSelectData) => {
-    setFilterType(data.optionText);
+    setCategoryFilter(data.optionText);
   };
 
   const applyFilters = () => {
-    // this is placeholder. Of course we will need something more sophisticated as filtering becomes more sophisticated
-    if(filterType){
-      filters = [{id: "category", value: filterType}];
+    if(categoryFilter){
+      filters = [{id: "category", value: categoryFilter}];
     } else { 
-      filters = [];
+      filters = [{id: "category", value: ''}];
     }
     onFiltersChanged(filters);
   };
@@ -41,13 +39,13 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     <Button>My Activities</Button>
     <Button>Shared With Me</Button>
     <Button>Watchlist</Button>
-    <Input placeholder="Search events..." title="Search by ID, Keywords, City" />
+    <Input placeholder="Search events..."/>
 
     <Combobox placeholder="Type filter..."
       onOptionSelect={handleCategoryChange}
     >
       <Option text=''/>
-      {filterTypes.map((option) => (
+      {categoryFilters.map((option) => (
           <Option key={option} >
             {option}
           </Option>

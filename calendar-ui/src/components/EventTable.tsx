@@ -85,19 +85,27 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
 
 interface EventTableProps {
   filters: ColumnFiltersState,
+  globalFilterString: string,
 }
 
 
-export const EventTable: React.FC<EventTableProps> = ({filters}) => {
+export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterString}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
   const navigate = useNavigate()
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  //for when column filters change. May not end up using this... 
+  const [globalFilter, setGlobalFilter] = useState('');
+
+  // for when column filters change. May not end up using this... 
   useEffect(() => {
     setColumnFilters(filters);
  },[filters]);
+
+// this might be redundant. Alex should give this some more thought.
+ useEffect(() => {
+  setGlobalFilter(globalFilterString); 
+ },[globalFilterString, globalFilter])
 
   const columns = useMemo<ColumnDef<EventRow>[]>(
     () => [
@@ -151,6 +159,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters}) => {
     state: {
       sorting,
       pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      globalFilter,
       columnFilters,
     },
     onSortingChange: setSorting,
@@ -167,6 +176,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters}) => {
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(), // needed for client-side filtering
     onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     manualPagination: false,
     manualSorting: false,
     enableColumnFilters: true,
@@ -222,5 +232,6 @@ export const EventTable: React.FC<EventTableProps> = ({filters}) => {
     </div>
   );
 };
+
 // This component renders a table of events with columns for date, ID, title, category, type, status, and confirmation status.
 // It uses Fluent UI components for styling and TanStack Table for data management.

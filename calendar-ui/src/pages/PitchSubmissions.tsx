@@ -42,6 +42,7 @@ const dummyPitches: PitchEntry[] = [
 
 export default function PitchSubmissionsPage() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = React.useState<string>('');
 
   return (
     <FluentProvider theme={webLightTheme}>
@@ -49,6 +50,7 @@ export default function PitchSubmissionsPage() {
         <Title1>Pitch submissions</Title1>
         <EventTable
           filters={columnFilters}
+          globalFilterString={globalFilter}
         />
         <PaginationFooter />
       </div>
