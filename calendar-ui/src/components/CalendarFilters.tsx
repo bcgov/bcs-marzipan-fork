@@ -23,18 +23,28 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
   }
   const categoryFilters = ["Event", "Release", "Issue"];
   const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
+  const [titleFilter, setTitleFilter] = React.useState<string>(); // this may end up being <string[]>
 
   const handleCategoryChange = (_: SelectionEvents, data: OptionOnSelectData) => {
     setCategoryFilter(data.optionText);
   };
 
   const applyFilters = () => { // todo: need to rethink this so we can filter on multiple values
-    if(categoryFilter){
-      filters = [{id: "category", value: categoryFilter}];
-    } else { 
-      filters = [{id: "category", value: ''}];
+    if (categoryFilter) {
+      filterData.category = { id: "category", value: categoryFilter };
+    } else {
+      filterData.category = { id: "category", value: '' };
     }
-    onFiltersChanged(filters);
+    if (titleFilter) {
+      filterData.title = { id: "title", value: titleFilter };
+    } else {
+      filterData.title = { id: "title", value: '' };
+    }
+
+    const filterArr: ColumnFiltersState = [ filterData.category, filterData.title]
+    console.log(filterArr);
+
+    onFiltersChanged(filterArr);
   };
 
   return(
@@ -43,7 +53,9 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     <Button>My Activities</Button>
     <Button>Shared With Me</Button>
     <Button>Watchlist</Button>
-    <Input placeholder="Search by event title..."/>
+      <Input placeholder="Search by event title..."
+        onChange={(_, data) => { setTitleFilter(data.value) }}
+    />
 
     <Combobox placeholder="Type filter..."
       onOptionSelect={handleCategoryChange}
