@@ -57,7 +57,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
         onChange={(_, data) => { setTitleFilter(data.value) }}
     />
 
-    <Combobox placeholder="Type filter..."
+    <Combobox placeholder="Category filter..."
       onOptionSelect={handleCategoryChange}
     >
       <Option text=''/>
