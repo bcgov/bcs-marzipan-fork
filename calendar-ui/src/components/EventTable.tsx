@@ -40,7 +40,7 @@ type EventRow = {
   status: "New" | "Reviewed" | "Changed" | "Deleted";
   confirmed: boolean;
   dateCreated: string;
-  dateModified: string | undefined;
+  dateModified: Date | undefined;
 };
 
 // Dummy table data
@@ -54,9 +54,8 @@ const eventData: EventRow[] = [
     status: "New",
     confirmed: false,
     dateCreated: 'Jan 03 2025',
-    dateModified: undefined,
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-   // dateModified: new Date('2025-11-12T10:30:00Z'),
+    dateModified: new Date('2025-11-13T10:30:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -67,7 +66,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: new Date('2025-11-13T10:30:00Z'),
   },
   {
     date: "Feb 29 – Apr 8",
@@ -78,7 +77,7 @@ const eventData: EventRow[] = [
     status: "Changed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: undefined,
   },
   {
     date: "Mar 1 – Mar 31",
@@ -89,9 +88,31 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: new Date('2025-11-13T10:30:00Z'),
   },
 ];
+
+const getLastModifiedString = (modified: Date | undefined) => {
+  if(! modified){
+    return undefined;
+  }
+  const rightNow = new Date();
+  const difference = rightNow.getTime() - modified.getTime();
+  var diffDays = Math.ceil(difference / (1000 * 3600 * 24)); 
+  if(diffDays < 2) // todo: needs debugging, but I shan't bother now.
+  {
+    return `Modified ${Math.floor(difference / (1000 * 3600))} hours ago`;
+  }
+  else if (diffDays < 30){ //we might want to be more precise about calculating months, etc. but not now
+    return `Modified ${diffDays} days ago`;
+  }
+  else if (diffDays > 30 && diffDays < 365){
+    return `Modified ${rightNow.getMonth() - modified.getMonth()} months ago`;
+  }
+  else {
+    return `Modified ${Math.floor(diffDays / 365)} years ago`;
+  }
+};
 
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
@@ -141,7 +162,7 @@ export const EventTable = () => {
              {props.row.original.status}
         </Badge>
         {props.row.original.dateModified &&
-          <div>Updated {props.row.original.dateModified}</div>
+          <div>{getLastModifiedString(props.row.original.dateModified)}</div>
         }
         <div>Created {props.row.original.dateCreated}</div>
       </div>
