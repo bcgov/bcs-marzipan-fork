@@ -131,6 +131,16 @@ const getLastModifiedString = (modified: Date | undefined) => {
   }
 };
 
+const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
+  const a = rowA.original.dateModified;
+  const b = rowB.original.dateModified;
+  if (a && !b) return 1;
+  else if (!a && b) return -1;
+  else if (a && b) return b.getTime() - a.getTime();
+  return 0;
+};
+
+
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
   New: "success",
