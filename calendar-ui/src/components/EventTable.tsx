@@ -55,7 +55,7 @@ const eventData: EventRow[] = [
     confirmed: false,
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-    dateModified: new Date('2025-11-13T10:30:00Z'),
+    dateModified: new Date('2025-11-1T15:00:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -66,7 +66,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: new Date('2025-11-13T10:30:00Z'),
+    dateModified: new Date('2025-11-13T03:30:00Z'),
   },
   {
     date: "Feb 29 – Apr 8",
@@ -137,9 +137,11 @@ export const EventTable = () => {
     }),
     columnHelper.accessor('id', {
       cell: info => info.getValue(),
+      sortingFn: 'alphanumeric'
     }),
      columnHelper.accessor('title', {
       cell: info => info.getValue(),
+      sortingFn: 'alphanumeric'
     }),
      columnHelper.accessor('category', {
       cell: info => info.getValue(),
@@ -167,6 +169,23 @@ export const EventTable = () => {
         <div>Created {props.row.original.dateCreated}</div>
       </div>
     ),
+    sortingFn: (rowA, rowB, columnId) => {
+       const a = rowA.original.dateModified;
+      const b = rowB.original.dateModified;
+      // If rowA has dateModified but rowB doesn't, rowA comes first
+      if (a && !b) {
+        return -1;
+      }
+      // If rowB has dateModified but rowA doesn't, rowB comes first
+      else if (!a && b) {
+        return 1;
+      }
+      else if (a && b){
+        return a.getTime() - b.getTime();
+      }
+      // If neither has dateModified, keep their respective orders (treat as equal)
+      return 0;
+    },
   }),
      columnHelper.accessor('confirmed', {
        cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
@@ -177,7 +196,12 @@ export const EventTable = () => {
     data: eventData,
     columns,
     state: {
-      sorting,
+      sorting: [
+      {
+        id: 'status',
+        desc: true,
+      },
+    ],
       pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
     },
     onSortingChange: setSorting,
