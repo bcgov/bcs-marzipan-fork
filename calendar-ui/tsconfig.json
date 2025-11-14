@@ -12,7 +12,10 @@
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "paths": {
+      "react": [ "./node_modules/@types/react" ]  // clears errors around icons (ts:2786)
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules"]

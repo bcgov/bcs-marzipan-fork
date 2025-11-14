@@ -39,6 +39,9 @@ import {
   PreviewLink20Regular,
   bundleIcon,
   PersonCircle32Regular,
+  Calendar16Regular,
+  Calendar20Regular,
+  Calendar20Filled,
 } from "@fluentui/react-icons";
 
 const useStyles = makeStyles({
@@ -68,6 +71,7 @@ const useStyles = makeStyles({
 
 const Person = bundleIcon(Person20Filled, Person20Regular);
 const Dashboard = bundleIcon(Board20Filled, Board20Regular);
+const Calendar = bundleIcon(Calendar20Filled, Calendar20Regular)
 const Announcements = bundleIcon(MegaphoneLoud20Filled, MegaphoneLoud20Regular);
 const EmployeeSpotlight = bundleIcon(
   PersonLightbulb20Filled,
@@ -100,6 +104,8 @@ export const Sidebar = () => {
   const pathToValue: Record<string, string> = {
     "/dashboard": "1",
     "/": "2",
+    "/drafts": "3",
+    "/pitch": "4",
     // Add more mappings as needed
   };
 
@@ -131,7 +137,7 @@ export const Sidebar = () => {
           <NavItem icon={<Dashboard />} as="a" href="/dashboard" value="1">
             Dashboard
           </NavItem>
-          <NavItem icon={<Announcements />} as="a" href="/" value="2">
+          <NavItem icon={<Calendar />} as="a" href="/" value="2">
             Calendar
           </NavItem>
           <NavItem

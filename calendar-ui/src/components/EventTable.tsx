@@ -1,3 +1,4 @@
+
 import {
   Table,
   TableBody,
@@ -7,6 +8,7 @@ import {
   TableHeaderCell,
   Badge,
   Button,
+  makeStyles,
 } from "@fluentui/react-components";
 import { CheckmarkCircle24Regular } from "@fluentui/react-icons";
 import {
@@ -19,10 +21,17 @@ import {
   SortingState,
   getFilteredRowModel,
   ColumnFiltersState,
+  createColumnHelper,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { set } from "zod";
+
+const useStyles = makeStyles ({
+  statusBadge: {
+    paddingTop: "8px",
+  }
+});
 
 // Dummy data interface
 type EventRow = {
@@ -33,6 +42,8 @@ type EventRow = {
   type: string;
   status: "New" | "Reviewed" | "Changed" | "Deleted";
   confirmed: boolean;
+  dateCreated: string;
+  dateModified: string | undefined;
 };
 
 // Dummy table data
@@ -45,6 +56,10 @@ const eventData: EventRow[] = [
     type: "News Release",
     status: "New",
     confirmed: false,
+    dateCreated: 'Jan 03 2025',
+    dateModified: undefined,
+    //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
+   // dateModified: new Date('2025-11-12T10:30:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -54,6 +69,8 @@ const eventData: EventRow[] = [
     type: "Issue",
     status: "Reviewed",
     confirmed: true,
+    dateCreated: 'Jan 03 2025',
+    dateModified: '2 hours ago',
   },
   {
     date: "Feb 29 – Apr 8",
@@ -63,6 +80,8 @@ const eventData: EventRow[] = [
     type: "News Release",
     status: "Changed",
     confirmed: true,
+    dateCreated: 'Jan 03 2025',
+    dateModified: '2 hours ago',
   },
   {
     date: "Mar 1 – Mar 31",
@@ -72,6 +91,8 @@ const eventData: EventRow[] = [
     type: "Awareness Date",
     status: "Reviewed",
     confirmed: true,
+    dateCreated: 'Jan 03 2025',
+    dateModified: '2 hours ago',
   },
 ];
 
@@ -156,7 +177,53 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
     ],
     []
   );
+  const navigate = useNavigate();
+  const styles = useStyles();
+  const columnHelper = createColumnHelper<EventRow>();
 
+  const columns = [
+    columnHelper.accessor('date', {
+      header: 'Date',
+      cell: info => info.getValue(),
+    }),
+    columnHelper.accessor('id', {
+      cell: info => info.getValue(),
+    }),
+     columnHelper.accessor('title', {
+      cell: info => info.getValue(),
+    }),
+     columnHelper.accessor('category', {
+      cell: info => info.getValue(),
+    }),
+     columnHelper.accessor('type', {
+      cell: info => info.getValue(),
+    }),
+
+    columnHelper.display({
+    id: 'status', // Unique ID for this display column
+    header: () => 'Status',
+    cell: props => (
+      <div className={styles.statusBadge}>
+        <Badge 
+          appearance="filled" 
+          color={statusColor[props.row.original.status as keyof typeof statusColor]} 
+          shape="circular"
+          size="large"
+          >
+             {props.row.original.status}
+        </Badge>
+        {props.row.original.dateModified &&
+          <div>Updated {props.row.original.dateModified}</div>
+        }
+        <div>Created {props.row.original.dateCreated}</div>
+      </div>
+    ),
+  }),
+     columnHelper.accessor('confirmed', {
+       cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
+    }),
+  ];
+ 
   const table = useReactTable({
     data: eventData,
     columns,
