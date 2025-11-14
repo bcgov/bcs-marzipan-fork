@@ -20,6 +20,7 @@ import {
   getPaginationRowModel,
   SortingState,
   createColumnHelper,
+  SortingFn,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -55,7 +56,7 @@ const eventData: EventRow[] = [
     confirmed: false,
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-    dateModified: new Date('2025-11-1T15:00:00Z'),
+    dateModified: new Date('2025-11-13T15:00:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -122,6 +123,26 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
   Deleted: "danger",
 };
 
+const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => 
+  {
+    console.log('sorting...');
+       const a = rowA.original.dateModified;
+      const b = rowB.original.dateModified;
+      // If rowA has dateModified but rowB doesn't, rowA comes first
+      if (a && !b) {
+        return -1;
+      }
+      // If rowB has dateModified but rowA doesn't, rowB comes first
+      else if (!a && b) {
+        return 1;
+      }
+      else if (a && b){
+        return a.getTime() - b.getTime();
+      }
+      // If neither has dateModified, keep their respective orders
+      return 0;
+    };
+
 export const EventTable = () => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -137,11 +158,11 @@ export const EventTable = () => {
     }),
     columnHelper.accessor('id', {
       cell: info => info.getValue(),
-      sortingFn: 'alphanumeric'
+
     }),
      columnHelper.accessor('title', {
       cell: info => info.getValue(),
-      sortingFn: 'alphanumeric'
+
     }),
      columnHelper.accessor('category', {
       cell: info => info.getValue(),
@@ -150,42 +171,30 @@ export const EventTable = () => {
       cell: info => info.getValue(),
     }),
 
-    columnHelper.display({
-    id: 'status', // Unique ID for this display column
-    header: () => 'Status',
-    cell: props => (
+    columnHelper.accessor('status', {
+    //id: 'status', // Unique ID for this display column
+    header: 'Status',
+    sortUndefined: -1,
+    sortDescFirst: false,
+    sortingFn: sortStatusFn,
+    
+    cell: ({ row }) => (
       <div className={styles.statusBadge}>
         <Badge 
           appearance="filled" 
-          color={statusColor[props.row.original.status as keyof typeof statusColor]} 
+          color={statusColor[row.original.status as keyof typeof statusColor]} 
           shape="circular"
           size="large"
           >
-             {props.row.original.status}
+             {row.original.status}
         </Badge>
-        {props.row.original.dateModified &&
-          <div>{getLastModifiedString(props.row.original.dateModified)}</div>
+        {row.original.dateModified &&
+          <div>{getLastModifiedString(row.original.dateModified)}</div>
         }
-        <div>Created {props.row.original.dateCreated}</div>
+        <div>Created {row.original.dateCreated}</div>
       </div>
     ),
-    sortingFn: (rowA, rowB, columnId) => {
-       const a = rowA.original.dateModified;
-      const b = rowB.original.dateModified;
-      // If rowA has dateModified but rowB doesn't, rowA comes first
-      if (a && !b) {
-        return -1;
-      }
-      // If rowB has dateModified but rowA doesn't, rowB comes first
-      else if (!a && b) {
-        return 1;
-      }
-      else if (a && b){
-        return a.getTime() - b.getTime();
-      }
-      // If neither has dateModified, keep their respective orders (treat as equal)
-      return 0;
-    },
+   
   }),
      columnHelper.accessor('confirmed', {
        cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
@@ -196,12 +205,7 @@ export const EventTable = () => {
     data: eventData,
     columns,
     state: {
-      sorting: [
-      {
-        id: 'status',
-        desc: true,
-      },
-    ],
+     sorting,
       pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
     },
     onSortingChange: setSorting,
