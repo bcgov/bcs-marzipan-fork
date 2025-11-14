@@ -12,8 +12,8 @@ export interface CalendarEntry {
   issue?: string;
   ministry?: string;
 
-  created_on?: string;  // ISO timestamp
-  updated_on?: string;  // ISO timestamp
+  created_on?: string; // ISO timestamp
+  updated_on?: string; // ISO timestamp
   created_by?: string;
   updated_by?: string;
 

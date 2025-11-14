@@ -5,7 +5,8 @@
     "calendar-service"
   ],
   "scripts": {
-    "start": "concurrently \"npm --prefix calendar-ui start\" \"npm --prefix calendar-service start\"",
+    "start": "concurrently \"npm --prefix calendar-ui run dev\" \"npm --prefix calendar-service run start:dev\"",
+    "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
     "install-all": "npm install --workspaces",
     "build": "npm run build --workspaces",
     "lint": "eslint \"calendar-service/**/*.ts\" \"calendar-ui/**/*.{ts,tsx}\" --fix",
