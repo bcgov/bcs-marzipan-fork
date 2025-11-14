@@ -44,6 +44,7 @@ type EventRow = {
   dateModified: Date | undefined;
 };
 
+
 // Dummy table data
 const eventData: EventRow[] = [
   {
@@ -123,35 +124,29 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
   Deleted: "danger",
 };
 
-const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => 
-  {
-    console.log('sorting...');
-       const a = rowA.original.dateModified;
-      const b = rowB.original.dateModified;
-      // If rowA has dateModified but rowB doesn't, rowA comes first
-      if (a && !b) {
-        return -1;
-      }
-      // If rowB has dateModified but rowA doesn't, rowB comes first
-      else if (!a && b) {
-        return 1;
-      }
-      else if (a && b){
-        return a.getTime() - b.getTime();
-      }
-      // If neither has dateModified, keep their respective orders
-      return 0;
-    };
+const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
+  // First, sort by status string (ascending)
+  const statusCompare = rowA.original.status.localeCompare(rowB.original.status);
+  if (statusCompare !== 0) return statusCompare;
+
+  // Tiebreaker: Use dateModified logic as above
+  const a = rowA.original.dateModified;
+  const b = rowB.original.dateModified;
+  if (a && !b) return 1;
+  else if (!a && b) return -1;
+  else if (a && b) return b.getTime() - a.getTime();
+  return 0;
+};
 
 export const EventTable = () => {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  const [sorting, setSorting] = useState<SortingState>([{id: "status", desc: true}]);
   const [pageIndex, setPageIndex] = useState(0);
   const navigate = useNavigate();
   const styles = useStyles();
-
   const columnHelper = createColumnHelper<EventRow>();
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     columnHelper.accessor('date', {
       header: 'Date',
       cell: info => info.getValue(),
@@ -199,14 +194,15 @@ export const EventTable = () => {
      columnHelper.accessor('confirmed', {
        cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
     }),
-  ];
+  ],
+  [columnHelper, styles.statusBadge]);
  
   const table = useReactTable({
     data: eventData,
     columns,
     state: {
-     sorting,
-      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
+    sorting,
+    pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
     },
     onSortingChange: setSorting,
     onPaginationChange: updater => {
