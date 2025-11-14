@@ -128,56 +128,6 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
   setGlobalFilter(globalFilterString); 
  },[globalFilterString, globalFilter])
 
-  const columns = useMemo<ColumnDef<EventRow>[]>(
-    () => [
-      {
-        accessorKey: "date",
-        header: "Date",
-        cell: info => info.getValue(),
-      },
-      {
-        accessorKey: "id",
-        header: "Activity ID",
-        cell: info => info.getValue(),
-      },
-      {
-        accessorKey: "title",
-        header: "Title",
-        cell: info => info.getValue(),
-      },
-      {
-        id: "category",
-        accessorKey: "category",
-        header: "Category",
-        enableGlobalFilter: false,
-        cell: info => info.getValue(),
-      },
-      {
-        accessorKey: "type",
-        header: "Type",
-        enableGlobalFilter: false,
-        cell: info => info.getValue(),
-      },
-      {
-        accessorKey: "status",
-        header: "Status",
-        enableGlobalFilter: false,
-        cell: info => (
-          <Badge appearance="tint" color={statusColor[info.getValue() as keyof typeof statusColor]} shape="rounded">
-            {info.getValue()}
-          </Badge>
-        ),
-      },
-      {
-        accessorKey: "confirmed",
-        header: "Confirmed",
-        enableGlobalFilter: false,
-        cell: info => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
-      },
-    ],
-    []
-  );
-  const navigate = useNavigate();
   const styles = useStyles();
   const columnHelper = createColumnHelper<EventRow>();
 
