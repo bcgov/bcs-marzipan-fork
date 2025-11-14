@@ -19,11 +19,14 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
   SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
   createColumnHelper,
   SortingFn,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { set } from "zod";
 
 const useStyles = makeStyles ({
   statusBadge: {
@@ -136,19 +139,30 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
   Deleted: "danger",
 };
 
-const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
-  const a = rowA.original.dateModified;
-  const b = rowB.original.dateModified;
-  if (a && !b) return 1;
-  else if (!a && b) return -1;
-  else if (a && b) return a.getTime() - b.getTime();
-  return 0;
-};
+interface EventTableProps {
+  filters: ColumnFiltersState,
+  globalFilterString: string,
+}
 
-export const EventTable = () => {
-  const [sorting, setSorting] = useState<SortingState>([{id: "status", desc: true}]);
+
+export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterString}) => {
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+
+  // for when column filters change. May not end up using this... 
+  useEffect(() => {
+    setColumnFilters(filters);
+ },[filters]);
+
+// this might be redundant. Alex should give this some more thought.
+ useEffect(() => {
+  setGlobalFilter(globalFilterString); 
+ },[globalFilterString, globalFilter])
+
   const styles = useStyles();
   const columnHelper = createColumnHelper<EventRow>();
 
@@ -206,8 +220,10 @@ export const EventTable = () => {
     data: eventData,
     columns,
     state: {
-    sorting,
-    pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
+      sorting,
+      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      globalFilter,
+      columnFilters,
     },
     onSortingChange: setSorting,
     onPaginationChange: updater => {
@@ -221,8 +237,12 @@ export const EventTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), // needed for client-side filtering
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     manualPagination: false,
     manualSorting: false,
+    enableColumnFilters: true,
   });
 
   return (
@@ -275,5 +295,6 @@ export const EventTable = () => {
     </div>
   );
 };
+
 // This component renders a table of events with columns for date, ID, title, category, type, status, and confirmation status.
 // It uses Fluent UI components for styling and TanStack Table for data management.
