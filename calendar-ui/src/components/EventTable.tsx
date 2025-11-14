@@ -67,7 +67,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: new Date('2025-11-13T03:30:00Z'),
+    dateModified: new Date('2025-11-14T03:30:00Z'),
   },
   {
     date: "Feb 29 – Apr 8",
@@ -89,7 +89,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: new Date('2025-11-13T10:30:00Z'),
+    dateModified: new Date('2025-09-10T10:30:00Z'),
   },
 ];
 
@@ -99,8 +99,8 @@ const getLastModifiedString = (modified: Date | undefined) => {
   }
   const rightNow = new Date();
   const difference = rightNow.getTime() - modified.getTime();
-  var diffDays = Math.ceil(difference / (1000 * 3600 * 24)); 
-  if(diffDays < 2) // todo: needs debugging, but I shan't bother now.
+  var diffDays = Math.floor(difference / (1000 * 3600 * 24)); 
+  if(diffDays < 1) // todo: needs debugging, but I shan't bother now.
   {
     return `Modified ${Math.floor(difference / (1000 * 3600))} hours ago`;
   }
@@ -174,7 +174,7 @@ export const EventTable = () => {
     columnHelper.accessor('status', {
     //id: 'status', // Unique ID for this display column
     header: 'Status',
-    sortUndefined: -1,
+    sortUndefined: 'last',
     sortDescFirst: false,
     sortingFn: sortStatusFn,
     
