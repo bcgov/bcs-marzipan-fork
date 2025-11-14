@@ -1,7 +1,9 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import prettier from 'eslint-config-prettier';
+// @ts-check
+
+import eslint from '@eslint/js';
+import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
+import tseslint from 'typescript-eslint';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
@@ -10,6 +12,7 @@ export default [
   // Global ignores
   {
     ignores: [
+      'eslint.config.mjs',
       '**/node_modules/**',
       '**/dist/**',
       '**/build/**',
@@ -19,38 +22,36 @@ export default [
     ],
   },
 
-  // Base config for all TypeScript files
-  js.configs.recommended,
-  ...tseslint.configs.recommended,
-  {
-    files: ['**/*.ts', '**/*.tsx'],
-    languageOptions: {
-      ecmaVersion: 2022,
-      sourceType: 'module',
-    },
-    rules: {
-      // Shared TypeScript rules
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_' },
-      ],
-      '@typescript-eslint/no-explicit-any': 'warn',
-    },
-  },
+  // Base recommended configs
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
 
-  // Calendar Service (NestJS) specific config
+  // Calendar Service (NestJS) specific config - adopting Nest.js defaults
   {
     files: ['calendar-service/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
+        ...globals.jest,
+      },
+      sourceType: 'commonjs',
+      parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
       },
     },
     rules: {
-      // NestJS-specific rules
+      // Nest.js default rules
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unsafe-argument': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
-      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 
@@ -62,7 +63,10 @@ export default [
         ...globals.browser,
         ...globals.es2021,
       },
+      sourceType: 'module',
       parserOptions: {
+        projectService: true,
+        tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: {
           jsx: true,
         },
@@ -88,9 +92,16 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // TypeScript rules for React files
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
     },
   },
 
   // Prettier integration (must be last to override formatting rules)
-  prettier,
+  // eslint-plugin-prettier/recommended includes both prettier plugin and disables conflicting rules
+  eslintPluginPrettierRecommended,
 ];
