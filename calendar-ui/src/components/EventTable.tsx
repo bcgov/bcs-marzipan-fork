@@ -57,7 +57,7 @@ const eventData: EventRow[] = [
     confirmed: false,
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-    dateModified: new Date('2025-11-13T15:00:00Z'),
+    dateModified: new Date('2025-11-14T19:34:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -103,7 +103,19 @@ const getLastModifiedString = (modified: Date | undefined) => {
   var diffDays = Math.floor(difference / (1000 * 3600 * 24)); 
   if(diffDays < 1) // todo: needs debugging, but I shan't bother now.
   {
-    return `Modified ${Math.floor(difference / (1000 * 3600))} hours ago`;
+    const hoursAgo = difference / (1000 * 3600);
+    if(hoursAgo < 1)
+    {
+      if(Math.floor(difference / (1000 * 60)) < 2){
+        return 'Modified just now';
+      }
+      else{
+        return  `Modified ${Math.floor(difference / (1000 * 60))} minutes ago`;
+      }
+    }
+    else{
+      return `Modified ${Math.floor(difference / (1000 * 3600))} hours ago`;
+    }
   }
   else if (diffDays < 30){ //we might want to be more precise about calculating months, etc. but not now
     return `Modified ${diffDays} days ago`;
@@ -125,16 +137,11 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
 };
 
 const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
-  // First, sort by status string (ascending)
-  const statusCompare = rowA.original.status.localeCompare(rowB.original.status);
-  if (statusCompare !== 0) return statusCompare;
-
-  // Tiebreaker: Use dateModified logic as above
   const a = rowA.original.dateModified;
   const b = rowB.original.dateModified;
   if (a && !b) return 1;
   else if (!a && b) return -1;
-  else if (a && b) return b.getTime() - a.getTime();
+  else if (a && b) return a.getTime() - b.getTime();
   return 0;
 };
 
@@ -169,8 +176,6 @@ export const EventTable = () => {
     columnHelper.accessor('status', {
     //id: 'status', // Unique ID for this display column
     header: 'Status',
-    sortUndefined: 'last',
-    sortDescFirst: false,
     sortingFn: sortStatusFn,
     
     cell: ({ row }) => (
