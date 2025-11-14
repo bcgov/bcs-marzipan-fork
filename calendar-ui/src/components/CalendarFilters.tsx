@@ -6,6 +6,12 @@ import {
   Combobox,
   SelectionEvents,
   OptionOnSelectData,
+  Tab,
+  TabList,
+  TabListProps,
+  SelectTabData,
+  SelectTabEvent,
+  TabValue,
 } from "@fluentui/react-components";
 import { ColumnFiltersState } from "@tanstack/react-table";
 import React from "react";
@@ -17,16 +23,20 @@ interface FilterProps {
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChanged}) => {
-  const filterData = {
-    category: {id: 'category', value: ''},
-    title: {id: 'title', value: ''}
-  }
+  
   const categoryFilters = ["Event", "Release", "Issue"];
   const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
   const [titleFilter, setTitleFilter] = React.useState<string>(); // this may end up being <string[]>
+  const [tabFilterValue, setTabFilterValue] = React.useState<string>('all');
 
   const handleCategoryChange = (_: SelectionEvents, data: OptionOnSelectData) => {
     setCategoryFilter(data.optionText);
+  };
+
+  const filterData = {
+    category: {id: 'category', value: ''},
+    title: {id: 'title', value: ''},
+    tabListFilter: {id: 'tabListFilter', value: tabFilterValue }
   };
 
   const applyFilters = () => { // todo: need to rethink this so we can filter on multiple values
@@ -40,21 +50,31 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     } else {
       filterData.title = { id: "title", value: '' };
     }
-
+    
+    filterData.tabListFilter = {id: 'tabListFilter', value: '' }
     const filterArr: ColumnFiltersState = [ filterData.category, filterData.title]
-    console.log(filterArr);
 
     onFiltersChanged(filterArr);
   };
+  const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
+    setTabFilterValue(data.value as string);
+  };
 
   return(
-  <div style={{ display: "flex", flexWrap: "wrap", gap: tokens.spacingHorizontalM, alignItems: "center", marginBottom: tokens.spacingVerticalL }}>
-    <Button>All</Button>
-    <Button>My Activities</Button>
-    <Button>Shared With Me</Button>
-    <Button>Watchlist</Button>
-      <Input placeholder="Search by event title..."
-        onChange={(_, data) => { setTitleFilter(data.value) }}
+  <div>
+    <TabList
+      selectedValue= {tabFilterValue}
+      onTabSelect={onTabSelect}
+    >
+      <Tab value="all">All</Tab>
+      <Tab value="mine">My entries</Tab>
+      <Tab value="recent">Recent</Tab>
+      <Tab value="ministry">HLTH</Tab> {/* I assume this becomes user's ministry, whatever it is */}
+      <Tab value="shared">Shared</Tab>
+    </TabList>
+
+    <Input placeholder="Search by event title..."
+      onChange={(_, data) => { setTitleFilter(data.value) }}
     />
 
     <Combobox placeholder="Category filter..."
@@ -72,6 +92,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     <Button appearance="outline"
       onClick={applyFilters}
     >Filter</Button>
+
   </div>
   )
 };

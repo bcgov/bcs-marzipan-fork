@@ -45,6 +45,8 @@ type EventRow = {
   confirmed: boolean;
   dateCreated: string;
   dateModified: Date | undefined;
+  mine: boolean;
+  sharedWithMe: boolean;
 };
 
 
@@ -61,6 +63,8 @@ const eventData: EventRow[] = [
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
     dateModified: new Date('2025-11-14T19:34:00Z'),
+    mine: false,
+    sharedWithMe: false,
   },
   {
     date: "Feb 4 – Mar 27",
@@ -72,6 +76,8 @@ const eventData: EventRow[] = [
     confirmed: true,
     dateCreated: 'Jan 03 2025',
     dateModified: new Date('2025-11-14T03:30:00Z'),
+    mine: false,
+    sharedWithMe: false,
   },
   {
     date: "Feb 29 – Apr 8",
@@ -83,6 +89,8 @@ const eventData: EventRow[] = [
     confirmed: true,
     dateCreated: 'Jan 03 2025',
     dateModified: undefined,
+    mine: false,
+    sharedWithMe: false,
   },
   {
     date: "Mar 1 – Mar 31",
@@ -94,6 +102,8 @@ const eventData: EventRow[] = [
     confirmed: true,
     dateCreated: 'Jan 03 2025',
     dateModified: new Date('2025-09-10T10:30:00Z'),
+    mine: false,
+    sharedWithMe: false,
   },
 ];
 
