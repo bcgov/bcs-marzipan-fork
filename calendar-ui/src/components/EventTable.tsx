@@ -22,6 +22,7 @@ import {
   getFilteredRowModel,
   ColumnFiltersState,
   createColumnHelper,
+  SortingFn,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -43,8 +44,9 @@ type EventRow = {
   status: "New" | "Reviewed" | "Changed" | "Deleted";
   confirmed: boolean;
   dateCreated: string;
-  dateModified: string | undefined;
+  dateModified: Date | undefined;
 };
+
 
 // Dummy table data
 const eventData: EventRow[] = [
@@ -57,9 +59,8 @@ const eventData: EventRow[] = [
     status: "New",
     confirmed: false,
     dateCreated: 'Jan 03 2025',
-    dateModified: undefined,
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-   // dateModified: new Date('2025-11-12T10:30:00Z'),
+    dateModified: new Date('2025-11-14T19:34:00Z'),
   },
   {
     date: "Feb 4 – Mar 27",
@@ -70,7 +71,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: new Date('2025-11-14T03:30:00Z'),
   },
   {
     date: "Feb 29 – Apr 8",
@@ -81,7 +82,7 @@ const eventData: EventRow[] = [
     status: "Changed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: undefined,
   },
   {
     date: "Mar 1 – Mar 31",
@@ -92,9 +93,43 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: '2 hours ago',
+    dateModified: new Date('2025-09-10T10:30:00Z'),
   },
 ];
+
+const getLastModifiedString = (modified: Date | undefined) => {
+  if(! modified){
+    return undefined;
+  }
+  const rightNow = new Date();
+  const difference = rightNow.getTime() - modified.getTime();
+  var diffDays = Math.floor(difference / (1000 * 3600 * 24)); 
+  if(diffDays < 1) // todo: needs debugging, but I shan't bother now.
+  {
+    const hoursAgo = difference / (1000 * 3600);
+    if(hoursAgo < 1)
+    {
+      if(Math.floor(difference / (1000 * 60)) < 2){
+        return 'Modified just now';
+      }
+      else{
+        return  `Modified ${Math.floor(difference / (1000 * 60))} minutes ago`;
+      }
+    }
+    else{
+      return `Modified ${Math.floor(difference / (1000 * 3600))} hours ago`;
+    }
+  }
+  else if (diffDays < 30){ //we might want to be more precise about calculating months, etc. but not now
+    return `Modified ${diffDays} days ago`;
+  }
+  else if (diffDays > 30 && diffDays < 365){
+    return `Modified ${rightNow.getMonth() - modified.getMonth()} months ago`;
+  }
+  else {
+    return `Modified ${Math.floor(diffDays / 365)} years ago`;
+  }
+};
 
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
@@ -131,16 +166,19 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
   const styles = useStyles();
   const columnHelper = createColumnHelper<EventRow>();
 
-  const columns = [
+  const columns = useMemo(
+    () => [
     columnHelper.accessor('date', {
       header: 'Date',
       cell: info => info.getValue(),
     }),
     columnHelper.accessor('id', {
       cell: info => info.getValue(),
+
     }),
      columnHelper.accessor('title', {
       cell: info => info.getValue(),
+
     }),
      columnHelper.accessor('category', {
       cell: info => info.getValue(),
@@ -149,30 +187,34 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
       cell: info => info.getValue(),
     }),
 
-    columnHelper.display({
-    id: 'status', // Unique ID for this display column
-    header: () => 'Status',
-    cell: props => (
+    columnHelper.accessor('status', {
+    //id: 'status', // Unique ID for this display column
+    header: 'Status',
+    sortingFn: sortStatusFn,
+    
+    cell: ({ row }) => (
       <div className={styles.statusBadge}>
         <Badge 
           appearance="filled" 
-          color={statusColor[props.row.original.status as keyof typeof statusColor]} 
+          color={statusColor[row.original.status as keyof typeof statusColor]} 
           shape="circular"
           size="large"
           >
-             {props.row.original.status}
+             {row.original.status}
         </Badge>
-        {props.row.original.dateModified &&
-          <div>Updated {props.row.original.dateModified}</div>
+        {row.original.dateModified &&
+          <div>{getLastModifiedString(row.original.dateModified)}</div>
         }
-        <div>Created {props.row.original.dateCreated}</div>
+        <div>Created {row.original.dateCreated}</div>
       </div>
     ),
+   
   }),
      columnHelper.accessor('confirmed', {
        cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
     }),
-  ];
+  ],
+  [columnHelper, styles.statusBadge]);
  
   const table = useReactTable({
     data: eventData,
