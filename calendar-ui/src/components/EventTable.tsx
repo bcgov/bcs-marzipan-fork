@@ -19,10 +19,13 @@ import {
   getSortedRowModel,
   getPaginationRowModel,
   SortingState,
+  getFilteredRowModel,
+  ColumnFiltersState,
   createColumnHelper,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { set } from "zod";
 
 const useStyles = makeStyles ({
   statusBadge: {
@@ -101,12 +104,81 @@ const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = 
   Deleted: "danger",
 };
 
-export const EventTable = () => {
+interface EventTableProps {
+  filters: ColumnFiltersState,
+  globalFilterString: string,
+}
+
+
+export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterString}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
+  const navigate = useNavigate()
+
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
+
+  // for when column filters change. May not end up using this... 
+  useEffect(() => {
+    setColumnFilters(filters);
+ },[filters]);
+
+// this might be redundant. Alex should give this some more thought.
+ useEffect(() => {
+  setGlobalFilter(globalFilterString); 
+ },[globalFilterString, globalFilter])
+
+  const columns = useMemo<ColumnDef<EventRow>[]>(
+    () => [
+      {
+        accessorKey: "date",
+        header: "Date",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "id",
+        header: "Activity ID",
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "title",
+        header: "Title",
+        cell: info => info.getValue(),
+      },
+      {
+        id: "category",
+        accessorKey: "category",
+        header: "Category",
+        enableGlobalFilter: false,
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "type",
+        header: "Type",
+        enableGlobalFilter: false,
+        cell: info => info.getValue(),
+      },
+      {
+        accessorKey: "status",
+        header: "Status",
+        enableGlobalFilter: false,
+        cell: info => (
+          <Badge appearance="tint" color={statusColor[info.getValue() as keyof typeof statusColor]} shape="rounded">
+            {info.getValue()}
+          </Badge>
+        ),
+      },
+      {
+        accessorKey: "confirmed",
+        header: "Confirmed",
+        enableGlobalFilter: false,
+        cell: info => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
+      },
+    ],
+    []
+  );
   const navigate = useNavigate();
   const styles = useStyles();
-
   const columnHelper = createColumnHelper<EventRow>();
 
   const columns = [
@@ -157,7 +229,9 @@ export const EventTable = () => {
     columns,
     state: {
       sorting,
-      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for demo
+      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      globalFilter,
+      columnFilters,
     },
     onSortingChange: setSorting,
     onPaginationChange: updater => {
@@ -171,8 +245,12 @@ export const EventTable = () => {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(), // needed for client-side filtering
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
     manualPagination: false,
     manualSorting: false,
+    enableColumnFilters: true,
   });
 
   return (
@@ -225,5 +303,6 @@ export const EventTable = () => {
     </div>
   );
 };
+
 // This component renders a table of events with columns for date, ID, title, category, type, status, and confirmation status.
 // It uses Fluent UI components for styling and TanStack Table for data management.

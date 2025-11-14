@@ -2,8 +2,23 @@ import { EventTable } from "../components/EventTable";
 import { CalendarFilters } from "../components/CalendarFilters";
 import { Input, Button } from "@fluentui/react-components"; 
 import { Add24Regular } from "@fluentui/react-icons";
+import { ColumnFiltersState } from "@tanstack/react-table";
+import { useState } from "react";
 
 export const CalendarEntriesList = () => {
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [globalFilter, setGlobalFilter] = useState<string>('');
+
+  // for filters set through the CalendarFilters component
+  const handleFilterUpdate = (filters: ColumnFiltersState) => {
+    setColumnFilters(filters);
+  };
+
+  //for keyword filters set in this component
+  const handleKeywordInput = (keyword: string) => {
+    setGlobalFilter(keyword);
+  };
+
   return (
     <div>
       {/* Main Content Area */}
@@ -23,6 +38,7 @@ export const CalendarEntriesList = () => {
                 <Input
                   placeholder="Enter keyword, activity ID, or location"
                   style={{ width: "320px" }}
+                  onChange={(_, data) => {handleKeywordInput(data.value)}} 
                 />
               </div>
         
@@ -42,8 +58,14 @@ export const CalendarEntriesList = () => {
 
         {/* Content */}
         <div style={{ padding: "24px", overflowY: "auto", backgroundColor: "#fafafa", flex: 1 }}>
-          <CalendarFilters />
-          <EventTable />
+          <CalendarFilters 
+            filters={columnFilters}
+            onFiltersChanged={handleFilterUpdate}
+          />
+          <EventTable 
+            filters={columnFilters}
+            globalFilterString={globalFilter}
+          />
         </div>
       </div>
     </div>
