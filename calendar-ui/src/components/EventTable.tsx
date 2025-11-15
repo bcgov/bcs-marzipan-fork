@@ -23,6 +23,7 @@ import {
   ColumnFiltersState,
   createColumnHelper,
   SortingFn,
+  FilterFn,
 } from "@tanstack/react-table";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -47,6 +48,7 @@ type EventRow = {
   dateModified: Date | undefined;
   mine: boolean;
   sharedWithMe: boolean;
+  ministry: string;
 };
 
 
@@ -63,8 +65,9 @@ const eventData: EventRow[] = [
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
     dateModified: new Date('2025-11-14T19:34:00Z'),
-    mine: false,
+    mine: true,
     sharedWithMe: false,
+    ministry: 'hlth',
   },
   {
     date: "Feb 4 – Mar 27",
@@ -77,7 +80,8 @@ const eventData: EventRow[] = [
     dateCreated: 'Jan 03 2025',
     dateModified: new Date('2025-11-14T03:30:00Z'),
     mine: false,
-    sharedWithMe: false,
+    sharedWithMe: true,
+    ministry: 'hlth',
   },
   {
     date: "Feb 29 – Apr 8",
@@ -91,6 +95,7 @@ const eventData: EventRow[] = [
     dateModified: undefined,
     mine: false,
     sharedWithMe: false,
+    ministry: 'citz',
   },
   {
     date: "Mar 1 – Mar 31",
@@ -104,6 +109,7 @@ const eventData: EventRow[] = [
     dateModified: new Date('2025-09-10T10:30:00Z'),
     mine: false,
     sharedWithMe: false,
+    ministry: 'hlth',
   },
 ];
 
@@ -150,7 +156,18 @@ const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
   return 0;
 };
 
-
+const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) => {
+  // Check if the filterValue exists in firstName, lastName, or email
+  const lowerCaseFilter = String(filterValue).toLowerCase();
+  console.log(filterValue);
+  console.log(JSON.stringify(row.original));
+  return (
+    filterValue === 'all' ||
+    (lowerCaseFilter === 'mine' && row.original.mine) ||
+    (lowerCaseFilter === 'shared' && row.original.sharedWithMe) ||
+    String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
+  );
+};
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
   New: "success",
@@ -233,6 +250,25 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
      columnHelper.accessor('confirmed', {
        cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
     }),
+
+    // TODO: make all these a 'tabListFilter' column with all the values, and custom filter to victory. 
+    columnHelper.accessor('mine', {
+      enableHiding: true,
+      cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
+      filterFn: multiColumnTabFilterFn
+    }),
+    columnHelper.accessor('sharedWithMe', {
+      enableHiding: true,
+      cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
+      filterFn: multiColumnTabFilterFn
+    }),
+    columnHelper.accessor('ministry', {
+      enableHiding: true,
+      cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
+      filterFn: multiColumnTabFilterFn
+    }),
+    
+
   ],
   [columnHelper, styles.statusBadge]);
  
@@ -244,6 +280,14 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
       pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
       globalFilter,
       columnFilters,
+      columnVisibility: {
+        sharedWithMe: false,
+        mine: false,
+        ministry: false,
+      }
+    },
+    filterFns: {
+      multiColumn: multiColumnTabFilterFn  // "mine", "Shared with me", and other tab options
     },
     onSortingChange: setSorting,
     onPaginationChange: updater => {
@@ -259,6 +303,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(), // needed for client-side filtering
     onColumnFiltersChange: setColumnFilters,
+   
     onGlobalFilterChange: setGlobalFilter,
     manualPagination: false,
     manualSorting: false,

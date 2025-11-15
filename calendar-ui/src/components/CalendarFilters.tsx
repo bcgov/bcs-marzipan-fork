@@ -50,14 +50,14 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     } else {
       filterData.title = { id: "title", value: '' };
     }
-    
-    filterData.tabListFilter = {id: 'tabListFilter', value: '' }
-    const filterArr: ColumnFiltersState = [ filterData.category, filterData.title]
+    filterData.tabListFilter = {id: 'mine', value: tabFilterValue }
+    const filterArr: ColumnFiltersState = [ filterData.category, filterData.title, filterData.tabListFilter]
 
     onFiltersChanged(filterArr);
   };
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
     setTabFilterValue(data.value as string);
+    applyFilters();
   };
 
   return(
