@@ -164,7 +164,7 @@ const getDaysDifference = (date1: Date, date2: Date): number => {
   const diffInDays = diffInMs / oneDayInMs;
 
   // Round the result to the nearest whole day
-  return Math.floor(diffInDays);
+  return Math.floor(diffInDays);  // "round" and "ciel" are also options. I think floor makes most sense.
 };
 
 const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) => {

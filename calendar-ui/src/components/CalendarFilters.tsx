@@ -69,7 +69,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
       <Tab value="all">All</Tab>
       <Tab value="mine">My entries</Tab>
       <Tab value="recent">Recent</Tab>
-      <Tab value="ministry">HLTH</Tab> {/* I assume this becomes user's ministry, whatever it is */}
+      <Tab value="ministry" disabled>HLTH</Tab> {/* I assume this becomes user's ministry, whatever it is */}
       <Tab value="shared">Shared</Tab>
     </TabList>
 
