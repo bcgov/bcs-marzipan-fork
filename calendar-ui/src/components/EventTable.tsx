@@ -1,4 +1,3 @@
-
 import {
   Table,
   TableBody,
@@ -10,9 +9,9 @@ import {
   Button,
   makeStyles,
 } from "@fluentui/react-components";
+
 import { CheckmarkCircle24Regular } from "@fluentui/react-icons";
 import {
-  ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
@@ -25,6 +24,7 @@ import {
   SortingFn,
   FilterFn,
 } from "@tanstack/react-table";
+
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { set } from "zod";
@@ -50,7 +50,6 @@ type EventRow = {
   sharedWithMe: boolean;
   ministry: string;
 };
-
 
 // Dummy table data
 const eventData: EventRow[] = [
@@ -120,7 +119,7 @@ const getLastModifiedString = (modified: Date | undefined) => {
   const rightNow = new Date();
   const difference = rightNow.getTime() - modified.getTime();
   var diffDays = Math.floor(difference / (1000 * 3600 * 24)); 
-  if(diffDays < 1) // todo: needs debugging, but I shan't bother now.
+  if(diffDays < 1) 
   {
     const hoursAgo = difference / (1000 * 3600);
     if(hoursAgo < 1)
@@ -159,8 +158,7 @@ const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
 const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) => {
   // Check if the filterValue exists in firstName, lastName, or email
   const lowerCaseFilter = String(filterValue).toLowerCase();
-  console.log(filterValue);
-  console.log(JSON.stringify(row.original));
+
   return (
     filterValue === 'all' ||
     (lowerCaseFilter === 'mine' && row.original.mine) ||
@@ -168,6 +166,7 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) 
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
   );
 };
+
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
   New: "success",
@@ -181,7 +180,6 @@ interface EventTableProps {
   globalFilterString: string,
 }
 
-
 export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterString}) => {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pageIndex, setPageIndex] = useState(0);
@@ -190,7 +188,6 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState('');
 
-  // for when column filters change. May not end up using this... 
   useEffect(() => {
     setColumnFilters(filters);
  },[filters]);

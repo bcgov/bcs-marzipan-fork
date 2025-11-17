@@ -8,10 +8,8 @@ import {
   OptionOnSelectData,
   Tab,
   TabList,
-  TabListProps,
   SelectTabData,
   SelectTabEvent,
-  TabValue,
 } from "@fluentui/react-components";
 import { ColumnFiltersState } from "@tanstack/react-table";
 import React from "react";
@@ -25,8 +23,8 @@ interface FilterProps {
 export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChanged}) => {
   
   const categoryFilters = ["Event", "Release", "Issue"];
-  const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
-  const [titleFilter, setTitleFilter] = React.useState<string>(); // this may end up being <string[]>
+  const [categoryFilter, setCategoryFilter] = React.useState<string>();
+  const [titleFilter, setTitleFilter] = React.useState<string>();
   const [tabFilterValue, setTabFilterValue] = React.useState<string>('all');
 
   const handleCategoryChange = (_: SelectionEvents, data: OptionOnSelectData) => {
@@ -39,25 +37,27 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     tabListFilter: {id: 'tabListFilter', value: tabFilterValue }
   };
 
-  const applyFilters = () => { // todo: need to rethink this so we can filter on multiple values
+    const applyFilters = (tabValue?: string) => {
+    const currentTabValue = tabValue || tabFilterValue; // Use passed value if provided, else fall back to state
     if (categoryFilter) {
       filterData.category = { id: "category", value: categoryFilter };
     } else {
-      filterData.category = { id: "category", value: '' };
+      filterData.category = { id: "category", value: "" };
     }
     if (titleFilter) {
       filterData.title = { id: "title", value: titleFilter };
     } else {
-      filterData.title = { id: "title", value: '' };
+      filterData.title = { id: "title", value: "" };
     }
-    filterData.tabListFilter = {id: 'mine', value: tabFilterValue }
-    const filterArr: ColumnFiltersState = [ filterData.category, filterData.title, filterData.tabListFilter]
-
+    filterData.tabListFilter = { id: "mine", value: currentTabValue };
+    const filterArr: ColumnFiltersState = [filterData.category, filterData.title, filterData.tabListFilter];
     onFiltersChanged(filterArr);
   };
+  
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
-    setTabFilterValue(data.value as string);
-    applyFilters();
+    const newValue = data.value as string;
+    setTabFilterValue(newValue);
+    applyFilters(newValue); // Pass the new value directly to avoid stale state
   };
 
   return(
@@ -90,7 +90,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({filters, onFiltersChange
     {/* <DatePicker placeholder="From date" />
     <DatePicker placeholder="To date" /> */}
     <Button appearance="outline"
-      onClick={applyFilters}
+      onClick={(tabFilterValue) => applyFilters}
     >Filter</Button>
 
   </div>
