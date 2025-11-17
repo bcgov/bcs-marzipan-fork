@@ -63,7 +63,7 @@ const eventData: EventRow[] = [
     confirmed: false,
     dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
-    dateModified: new Date('2025-11-14T19:34:00Z'),
+    dateModified: new Date('2025-11-17T01:34:00Z'),
     mine: true,
     sharedWithMe: false,
     ministry: 'hlth',
@@ -77,7 +77,7 @@ const eventData: EventRow[] = [
     status: "Reviewed",
     confirmed: true,
     dateCreated: 'Jan 03 2025',
-    dateModified: new Date('2025-11-14T03:30:00Z'),
+    dateModified: new Date('2025-11-16T03:30:00Z'),
     mine: false,
     sharedWithMe: true,
     ministry: 'hlth',
@@ -118,7 +118,7 @@ const getLastModifiedString = (modified: Date | undefined) => {
   }
   const rightNow = new Date();
   const difference = rightNow.getTime() - modified.getTime();
-  var diffDays = Math.floor(difference / (1000 * 3600 * 24)); 
+  const diffDays = getDaysDifference(modified, rightNow);
   if(diffDays < 1) 
   {
     const hoursAgo = difference / (1000 * 3600);
@@ -155,15 +155,31 @@ const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
   return 0;
 };
 
+const getDaysDifference = (date1: Date, date2: Date): number => {
+  // Calculate the difference in milliseconds
+  const diffInMs = Math.abs(date1.getTime() - date2.getTime());
+
+  // Convert milliseconds to days
+  const oneDayInMs = 1000 * 60 * 60 * 24;
+  const diffInDays = diffInMs / oneDayInMs;
+
+  // Round the result to the nearest whole day
+  return Math.floor(diffInDays);
+};
+
 const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) => {
   // Check if the filterValue exists in firstName, lastName, or email
   const lowerCaseFilter = String(filterValue).toLowerCase();
-
+  if(lowerCaseFilter === 'recent' && row.original.dateModified)
+  {
+    const rightNow = new Date();
+    return (getDaysDifference(rightNow, row.original.dateModified) < 2)
+  }
   return (
     filterValue === 'all' ||
     (lowerCaseFilter === 'mine' && row.original.mine) ||
     (lowerCaseFilter === 'shared' && row.original.sharedWithMe) ||
-    String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
+    String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)  
   );
 };
 
