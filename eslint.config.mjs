@@ -36,7 +36,7 @@ export default [
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        project: ['./calendar-service/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
@@ -65,7 +65,7 @@ export default [
       },
       sourceType: 'module',
       parserOptions: {
-        projectService: true,
+        project: ['./calendar-ui/tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
         ecmaFeatures: {
           jsx: true,
@@ -98,6 +98,7 @@ export default [
         'warn',
         { argsIgnorePattern: '^_' },
       ],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 

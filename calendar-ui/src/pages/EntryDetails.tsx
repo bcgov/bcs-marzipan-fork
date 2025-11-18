@@ -1,20 +1,20 @@
-import React, { useState } from "react";
-import { TabList, Tab } from "@fluentui/react-components";
-import { useLocation } from "react-router-dom";
+import React, { useState } from 'react';
+import { TabList, Tab } from '@fluentui/react-components';
+import { useLocation } from 'react-router-dom';
 
 export const EntryDetails = () => {
   const location = useLocation();
   const formData = location.state || {
-    title: "",
-    description: "",
+    title: '',
+    description: '',
     tags: [],
     // ...other fields...
   };
 
-  const [selectedTab, setSelectedTab] = useState("overview");
+  const [selectedTab, setSelectedTab] = useState('overview');
 
   return (
-    <div style={{ padding: "48px max(10%, 48px)" }}>
+    <div style={{ padding: '48px max(10%, 48px)' }}>
       <h2>Entry Details</h2>
       <TabList
         selectedValue={selectedTab}
@@ -27,35 +27,35 @@ export const EntryDetails = () => {
         {/* Add more tabs as needed */}
       </TabList>
 
-      {selectedTab === "overview" && (
-        <section style={{ marginBottom: "24px" }}>
+      {selectedTab === 'overview' && (
+        <section style={{ marginBottom: '24px' }}>
           <h3>Title</h3>
           <textarea
             value={formData.title}
             readOnly
-            style={{ width: "100%", minHeight: "40px", resize: "none" }}
+            style={{ width: '100%', minHeight: '40px', resize: 'none' }}
           />
         </section>
       )}
 
-      {selectedTab === "description" && (
-        <section style={{ marginBottom: "24px" }}>
+      {selectedTab === 'description' && (
+        <section style={{ marginBottom: '24px' }}>
           <h3>Description</h3>
           <textarea
             value={formData.description}
             readOnly
-            style={{ width: "100%", minHeight: "80px", resize: "none" }}
+            style={{ width: '100%', minHeight: '80px', resize: 'none' }}
           />
         </section>
       )}
 
-      {selectedTab === "tags" && (
-        <section style={{ marginBottom: "24px" }}>
+      {selectedTab === 'tags' && (
+        <section style={{ marginBottom: '24px' }}>
           <h3>Tags</h3>
           <textarea
-            value={formData.tags.join(", ")}
+            value={formData.tags.join(', ')}
             readOnly
-            style={{ width: "100%", minHeight: "40px", resize: "none" }}
+            style={{ width: '100%', minHeight: '40px', resize: 'none' }}
           />
         </section>
       )}
