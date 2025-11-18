@@ -9,6 +9,7 @@
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
     "install-all": "npm install --workspaces",
     "build": "npm run build --workspaces",
+    "format": "prettier --write \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
     "lint": "eslint \"calendar-service/**/*.ts\" \"calendar-ui/**/*.{ts,tsx}\" --fix",
     "lint:service": "eslint \"calendar-service/**/*.ts\" --fix",
     "lint:ui": "eslint \"calendar-ui/**/*.{ts,tsx}\" --fix"

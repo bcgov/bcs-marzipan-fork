@@ -1,5 +1,5 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
-import { CalendarEntry } from "./models/CalendarEntry";
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { CalendarEntry } from './models/CalendarEntry';
 
 @Injectable()
 export class AppService {
@@ -31,7 +31,8 @@ export class AppService {
   }
 
   delete(id: string): void {
-    if (!this.entries.delete(id)) throw new NotFoundException(`Entry ${id} not found`);
+    if (!this.entries.delete(id))
+      throw new NotFoundException(`Entry ${id} not found`);
   }
 
   // Lightweight stubs to match client usage

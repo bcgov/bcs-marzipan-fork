@@ -27,8 +27,8 @@ npm -v
 
 If you don’t have it installed:
 
-* Download from [https://nodejs.org/](https://nodejs.org/)
-* Use **Node 18+** (LTS) — ideal for React + NestJS projects.
+- Download from [https://nodejs.org/](https://nodejs.org/)
+- Use **Node 18+** (LTS) — ideal for React + NestJS projects.
 
 ---
 
