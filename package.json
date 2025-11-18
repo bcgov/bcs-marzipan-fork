@@ -9,8 +9,11 @@
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
     "install-all": "npm install --workspaces",
     "build": "npm run build --workspaces",
+    "prepare": "husky",
     "format": "prettier --write \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
+    "format:check": "prettier --check \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
     "lint": "eslint \"calendar-service/**/*.ts\" \"calendar-ui/**/*.{ts,tsx}\" --fix",
+    "lint:check": "eslint \"calendar-service/**/*.ts\" \"calendar-ui/**/*.{ts,tsx}\"",
     "lint:service": "eslint \"calendar-service/**/*.ts\" --fix",
     "lint:ui": "eslint \"calendar-ui/**/*.{ts,tsx}\" --fix"
   },
@@ -25,6 +28,7 @@
     "eslint-plugin-react-hooks": "^5.1.0",
     "eslint-plugin-react-refresh": "^0.4.16",
     "globals": "^16.0.0",
+    "husky": "^9.1.7",
     "prettier": "^3.3.3",
     "typescript-eslint": "^8.20.0"
   }
