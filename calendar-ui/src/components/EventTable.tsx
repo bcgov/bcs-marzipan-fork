@@ -8,11 +8,16 @@ import {
   Badge,
   Button,
   makeStyles,
+<<<<<<< HEAD
   MenuButton,
 } from "@fluentui/react-components";
 import { UnseenEditSignal } from "@fluentui/react-experiments";
 
 import { CheckmarkCircle24Regular } from "@fluentui/react-icons";
+=======
+} from '@fluentui/react-components';
+import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
+>>>>>>> 015dc0f (ran lint and format)
 import {
   flexRender,
   getCoreRowModel,
@@ -24,6 +29,7 @@ import {
   ColumnFiltersState,
   createColumnHelper,
   SortingFn,
+<<<<<<< HEAD
   FilterFn,
 } from "@tanstack/react-table";
 
@@ -34,6 +40,16 @@ import { set } from "zod";
 const useStyles = makeStyles({
   statusBadge: {
     paddingTop: "8px",
+=======
+} from '@tanstack/react-table';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { set } from 'zod';
+
+const useStyles = makeStyles({
+  statusBadge: {
+    paddingTop: '8px',
+>>>>>>> 015dc0f (ran lint and format)
   },
 });
 
@@ -44,7 +60,7 @@ type EventRow = {
   title: string;
   category: string;
   type: string;
-  status: "New" | "Reviewed" | "Changed" | "Deleted";
+  status: 'New' | 'Reviewed' | 'Changed' | 'Deleted';
   confirmed: boolean;
   dateCreated: string;
   dateModified: Date | undefined;
@@ -56,12 +72,12 @@ type EventRow = {
 // Dummy table data
 const eventData: EventRow[] = [
   {
-    date: "Jan 21 – Mar 29",
-    id: "PSFS-113714",
-    title: "$6M to increase Indigenous learners...",
-    category: "Release",
-    type: "News Release",
-    status: "New",
+    date: 'Jan 21 – Mar 29',
+    id: 'PSFS-113714',
+    title: '$6M to increase Indigenous learners...',
+    category: 'Release',
+    type: 'News Release',
+    status: 'New',
     confirmed: false,
     dateCreated: "Jan 03 2025",
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
@@ -71,12 +87,12 @@ const eventData: EventRow[] = [
     ministry: "hlth",
   },
   {
-    date: "Feb 4 – Mar 27",
-    id: "TACS-116305",
-    title: "Royal BC Museum Phase 2 Conversations",
-    category: "Issue",
-    type: "Issue",
-    status: "Reviewed",
+    date: 'Feb 4 – Mar 27',
+    id: 'TACS-116305',
+    title: 'Royal BC Museum Phase 2 Conversations',
+    category: 'Issue',
+    type: 'Issue',
+    status: 'Reviewed',
     confirmed: true,
     dateCreated: "Jan 03 2025",
     dateModified: new Date('2025-11-16T03:30:00Z'),
@@ -86,12 +102,12 @@ const eventData: EventRow[] = [
     ministry: "hlth",
   },
   {
-    date: "Feb 29 – Apr 8",
-    id: "MOTI-112502",
-    title: "Pattullo Bridge Project milestone",
-    category: "Release",
-    type: "News Release",
-    status: "Changed",
+    date: 'Feb 29 – Apr 8',
+    id: 'MOTI-112502',
+    title: 'Pattullo Bridge Project milestone',
+    category: 'Release',
+    type: 'News Release',
+    status: 'Changed',
     confirmed: true,
     dateCreated: "Jan 03 2025",
     dateModified: new Date("2025-11-16T03:30:00Z"),
@@ -100,12 +116,12 @@ const eventData: EventRow[] = [
     ministry: "citz",
   },
   {
-    date: "Mar 1 – Mar 31",
-    id: "HLTH-116081",
-    title: "Pharmacy Appreciation Month",
-    category: "Event",
-    type: "Awareness Date",
-    status: "Reviewed",
+    date: 'Mar 1 – Mar 31',
+    id: 'HLTH-116081',
+    title: 'Pharmacy Appreciation Month',
+    category: 'Event',
+    type: 'Awareness Date',
+    status: 'Reviewed',
     confirmed: true,
     dateCreated: "Jan 03 2025",
     dateModified: new Date("2025-09-10T10:30:00Z"),
@@ -121,12 +137,22 @@ const getLastModifiedString = (modified: Date | undefined) => {
   }
   const rightNow = new Date();
   const difference = rightNow.getTime() - modified.getTime();
+<<<<<<< HEAD
   const diffDays = getDaysDifference(modified, rightNow);
   if (diffDays < 1) {
     const hoursAgo = difference / (1000 * 3600);
     if (hoursAgo < 1) {
       if (Math.floor(difference / (1000 * 60)) < 2) {
         return "Modified just now";
+=======
+  const diffDays = Math.floor(difference / (1000 * 3600 * 24));
+  if (diffDays < 1) {
+    // todo: needs debugging, but I shan't bother now.
+    const hoursAgo = difference / (1000 * 3600);
+    if (hoursAgo < 1) {
+      if (Math.floor(difference / (1000 * 60)) < 2) {
+        return 'Modified just now';
+>>>>>>> 015dc0f (ran lint and format)
       } else {
         return `Modified ${Math.floor(difference / (1000 * 60))} minutes ago`;
       }
@@ -152,6 +178,7 @@ const sortStatusFn: SortingFn<EventRow> = (rowA, rowB) => {
   return 0;
 };
 
+<<<<<<< HEAD
 const getDaysDifference = (date1: Date, date2: Date): number => {
   // Calculate the difference in milliseconds
   const diffInMs = Math.abs(date1.getTime() - date2.getTime());
@@ -163,6 +190,16 @@ const getDaysDifference = (date1: Date, date2: Date): number => {
   // Round the result to the nearest whole day
   return Math.floor(diffInDays); // "round" and "ciel" are also options. I think floor makes most sense.
 };
+=======
+// Status colors map
+const statusColor: Record<string, 'brand' | 'danger' | 'warning' | 'success'> =
+  {
+    New: 'success',
+    Reviewed: 'brand',
+    Changed: 'warning',
+    Deleted: 'danger',
+  };
+>>>>>>> 015dc0f (ran lint and format)
 
 const multiColumnTabFilterFn: FilterFn<EventRow> = (
   row,
@@ -230,6 +267,10 @@ export const EventTable: React.FC<EventTableProps> = ({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [globalFilter, setGlobalFilter] = useState("");
 
+<<<<<<< HEAD
+=======
+  // for when column filters change. May not end up using this...
+>>>>>>> 015dc0f (ran lint and format)
   useEffect(() => {
     setColumnFilters(filters);
   }, [filters]);
@@ -244,6 +285,7 @@ export const EventTable: React.FC<EventTableProps> = ({
 
   const columns = useMemo(
     () => [
+<<<<<<< HEAD
       columnHelper.accessor("date", {
         header: "Date",
         cell: (info) => info.getValue(),
@@ -268,6 +310,29 @@ export const EventTable: React.FC<EventTableProps> = ({
         filterFn: arrayIncludesStatusFilterFn,
         sortingFn: sortStatusFn,
         sortUndefined: -1,
+=======
+      columnHelper.accessor('date', {
+        header: 'Date',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('id', {
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('title', {
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('category', {
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('type', {
+        cell: (info) => info.getValue(),
+      }),
+
+      columnHelper.accessor('status', {
+        //id: 'status', // Unique ID for this display column
+        header: 'Status',
+        sortingFn: sortStatusFn,
+>>>>>>> 015dc0f (ran lint and format)
 
         cell: ({ row }) => (
           <div className={styles.statusBadge}>
@@ -288,6 +353,7 @@ export const EventTable: React.FC<EventTableProps> = ({
           </div>
         ),
       }),
+<<<<<<< HEAD
       columnHelper.accessor("confirmed", {
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
       }),
@@ -308,6 +374,11 @@ export const EventTable: React.FC<EventTableProps> = ({
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
         filterFn: multiColumnTabFilterFn,
       }),
+=======
+      columnHelper.accessor('confirmed', {
+        cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
+      }),
+>>>>>>> 015dc0f (ran lint and format)
     ],
     [columnHelper, styles.statusBadge]
   );
@@ -331,7 +402,11 @@ export const EventTable: React.FC<EventTableProps> = ({
     },
     onSortingChange: setSorting,
     onPaginationChange: (updater) => {
+<<<<<<< HEAD
       if (typeof updater === "function") {
+=======
+      if (typeof updater === 'function') {
+>>>>>>> 015dc0f (ran lint and format)
         const newState = updater({ pageIndex, pageSize: 2 });
         setPageIndex(newState.pageIndex);
       } else {
@@ -351,7 +426,7 @@ export const EventTable: React.FC<EventTableProps> = ({
   });
 
   return (
-    <div style={{ padding: "24px", background: "#fff", borderRadius: 8 }}>
+    <div style={{ padding: '24px', background: '#fff', borderRadius: 8 }}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -365,15 +440,24 @@ export const EventTable: React.FC<EventTableProps> = ({
                       : undefined
                   }
                   style={{
+<<<<<<< HEAD
                     cursor: header.column.getCanSort() ? "pointer" : undefined,
+=======
+                    cursor: header.column.getCanSort() ? 'pointer' : undefined,
+>>>>>>> 015dc0f (ran lint and format)
                   }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext()
                   )}
+<<<<<<< HEAD
                   {header.column.getIsSorted() === "asc" && " ▲"}
                   {header.column.getIsSorted() === "desc" && " ▼"}
+=======
+                  {header.column.getIsSorted() === 'asc' && ' ▲'}
+                  {header.column.getIsSorted() === 'desc' && ' ▼'}
+>>>>>>> 015dc0f (ran lint and format)
                 </TableHeaderCell>
               ))}
             </TableRow>
@@ -383,8 +467,8 @@ export const EventTable: React.FC<EventTableProps> = ({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/details", { state: row.original })}
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate('/details', { state: row.original })}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
@@ -396,7 +480,11 @@ export const EventTable: React.FC<EventTableProps> = ({
         </TableBody>
       </Table>
       <div
+<<<<<<< HEAD
         style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center" }}
+=======
+        style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}
+>>>>>>> 015dc0f (ran lint and format)
       >
         <Button
           onClick={() => table.previousPage()}
@@ -405,7 +493,11 @@ export const EventTable: React.FC<EventTableProps> = ({
           Previous
         </Button>
         <span>
+<<<<<<< HEAD
           Page {table.getState().pagination.pageIndex + 1} of{" "}
+=======
+          Page {table.getState().pagination.pageIndex + 1} of{' '}
+>>>>>>> 015dc0f (ran lint and format)
           {table.getPageCount()}
         </span>
         <Button

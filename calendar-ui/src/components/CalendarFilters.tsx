@@ -1,4 +1,5 @@
 import {
+<<<<<<< HEAD
   Input,
   Tab,
   TabList,
@@ -18,6 +19,19 @@ import { FilterAddRegular, FilterRegular } from "@fluentui/react-icons";
 import { ColumnFiltersState } from "@tanstack/react-table";
 import React, { useEffect } from "react";
 import { set } from "zod";
+=======
+  Button,
+  Input,
+  tokens,
+  Option,
+  Combobox,
+  SelectionEvents,
+  OptionOnSelectData,
+} from '@fluentui/react-components';
+import { ColumnFiltersState } from '@tanstack/react-table';
+import React from 'react';
+import { set } from 'zod';
+>>>>>>> 015dc0f (ran lint and format)
 
 interface FilterProps {
   filters: ColumnFiltersState;
@@ -28,6 +42,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   filters,
   onFiltersChanged,
 }) => {
+<<<<<<< HEAD
   const [titleFilter, setTitleFilter] = React.useState<string>();
   const [tabFilterValue, setTabFilterValue] = React.useState<string>("all");
 
@@ -76,9 +91,34 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       id: "status",
       value: checkedStatusValues.status || [],
     };
-    if (titleFilter) {
-      filterData.title = { id: "title", value: titleFilter };
+=======
+  const filterData = {
+    category: { id: 'category', value: '' },
+    title: { id: 'title', value: '' },
+  };
+  const categoryFilters = ['Event', 'Release', 'Issue'];
+  const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
+  const [titleFilter, setTitleFilter] = React.useState<string>(); // this may end up being <string[]>
+
+  const handleCategoryChange = (
+    _: SelectionEvents,
+    data: OptionOnSelectData
+  ) => {
+    setCategoryFilter(data.optionText);
+  };
+
+  const applyFilters = () => {
+    // todo: need to rethink this so we can filter on multiple values
+    if (categoryFilter) {
+      filterData.category = { id: 'category', value: categoryFilter };
     } else {
+      filterData.category = { id: 'category', value: '' };
+    }
+>>>>>>> 015dc0f (ran lint and format)
+    if (titleFilter) {
+      filterData.title = { id: 'title', value: titleFilter };
+    } else {
+<<<<<<< HEAD
       filterData.title = { id: "title", value: "" };
     }
     filterData.tabListFilter = { id: "mine", value: currentTabValue };
@@ -88,10 +128,21 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       filterData.title,
       filterData.tabListFilter,
     ];
+=======
+      filterData.title = { id: 'title', value: '' };
+    }
+
+    const filterArr: ColumnFiltersState = [
+      filterData.category,
+      filterData.title,
+    ];
+    console.log(filterArr);
+>>>>>>> 015dc0f (ran lint and format)
 
     onFiltersChanged(filterArr);
   };
 
+<<<<<<< HEAD
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
     const newValue = data.value as string;
     setTabFilterValue(newValue);
@@ -285,12 +336,46 @@ export const CalendarFilters: React.FC<FilterProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
+=======
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: tokens.spacingHorizontalM,
+        alignItems: 'center',
+        marginBottom: tokens.spacingVerticalL,
+      }}
+    >
+      <Button>All</Button>
+      <Button>My Activities</Button>
+      <Button>Shared With Me</Button>
+      <Button>Watchlist</Button>
+>>>>>>> 015dc0f (ran lint and format)
       <Input
         placeholder="Search by event title..."
         onChange={(_, data) => {
           setTitleFilter(data.value);
         }}
       />
+<<<<<<< HEAD
+=======
+
+      <Combobox
+        placeholder="Category filter..."
+        onOptionSelect={handleCategoryChange}
+      >
+        <Option text="" />
+        {categoryFilters.map((option) => (
+          <Option key={option}>{option}</Option>
+        ))}
+      </Combobox>
+      {/* <DatePicker placeholder="From date" />
+    <DatePicker placeholder="To date" /> */}
+      <Button appearance="outline" onClick={applyFilters}>
+        Filter
+      </Button>
+>>>>>>> 015dc0f (ran lint and format)
     </div>
   );
 };
