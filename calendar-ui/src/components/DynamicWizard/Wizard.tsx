@@ -44,11 +44,18 @@ const Wizard: React.FC<WizardProps> = ({
       } else {
         await onSubmit(values);
       }
-    } catch (err: any) {
+    } catch (err) {
       const fieldErrors: Record<string, string> = {};
-      if (err.errors) {
-        err.errors.forEach((e: any) => {
-          fieldErrors[e.path[0]] = e.message;
+      // Zod validation errors have a specific structure
+      if (err && typeof err === 'object' && 'errors' in err) {
+        const zodError = err as {
+          errors: Array<{ path: (string | number)[]; message: string }>;
+        };
+        zodError.errors.forEach((e) => {
+          const fieldName = e.path[0];
+          if (typeof fieldName === 'string') {
+            fieldErrors[fieldName] = e.message;
+          }
         });
       }
       setErrors({ [stepSchema.key]: fieldErrors });

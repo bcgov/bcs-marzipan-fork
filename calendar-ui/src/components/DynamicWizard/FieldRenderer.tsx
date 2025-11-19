@@ -49,13 +49,13 @@ export const FieldRenderer: React.FC<Props> = ({
       {step.fields.map((f) => {
         const colClass = f.colSpan === 6 ? styles.cell6 : styles.cell12;
         const error = errors[f.name];
-        const validationState = error ? 'error' : 'none';
+        const validationState: 'error' | 'none' = error ? 'error' : 'none';
 
         const commonFieldProps = {
           key: f.name,
           label: f.label,
           validationMessage: error,
-          validationState: validationState as any,
+          validationState,
           hint: f.helperText,
           required: !!f.validation?.required,
         };

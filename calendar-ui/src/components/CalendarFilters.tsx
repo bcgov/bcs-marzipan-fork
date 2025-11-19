@@ -9,15 +9,13 @@ import {
 } from '@fluentui/react-components';
 import { ColumnFiltersState } from '@tanstack/react-table';
 import React from 'react';
-import { set } from 'zod';
 
 interface FilterProps {
   filters: ColumnFiltersState;
-  onFiltersChanged: any;
+  onFiltersChanged: (filters: ColumnFiltersState) => void;
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({
-  filters,
   onFiltersChanged,
 }) => {
   const filterData = {
