@@ -8,6 +8,7 @@ import {
   Badge,
   Button,
   makeStyles,
+  MenuButton,
 } from "@fluentui/react-components";
 
 import { CheckmarkCircle24Regular } from "@fluentui/react-icons";
@@ -182,7 +183,29 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (row, columnId, filterValue) 
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)  
   );
 };
+const arrayIncludesFilterFn: FilterFn<EventRow> = (
+      row,
+      columnId: string,
+      filterValue: string[] | string | undefined
+    ) => {
 
+      if(filterValue){
+        return (filterValue.includes(row.original.category.toLocaleLowerCase()))
+      }
+      else return true;
+    };
+
+const arrayIncludesStatusFilterFn: FilterFn<EventRow> = (
+      row,
+      columnId: string,
+      filterValue: string[] | string | undefined
+    ) => {
+
+      if(filterValue){
+        return (filterValue.includes(row.original.status.toLocaleLowerCase()))
+      }
+      else return true;
+    };
 // Status colors map
 const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> = {
   New: "success",
@@ -232,6 +255,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
     }),
      columnHelper.accessor('category', {
       cell: info => info.getValue(),
+      filterFn:  arrayIncludesFilterFn,
     }),
      columnHelper.accessor('type', {
       cell: info => info.getValue(),
@@ -240,7 +264,7 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
     columnHelper.accessor('status', {
     //id: 'status', // Unique ID for this display column
     header: 'Status',
-    sortingFn: sortStatusFn,
+    filterFn:  arrayIncludesStatusFilterFn,
     
     cell: ({ row }) => (
       <div className={styles.statusBadge}>
@@ -280,8 +304,6 @@ export const EventTable: React.FC<EventTableProps> = ({filters, globalFilterStri
       cell: info => (info.getValue() ? <CheckmarkCircle24Regular  /> : null),
       filterFn: multiColumnTabFilterFn
     }),
-    
-
   ],
   [columnHelper, styles.statusBadge]);
  
