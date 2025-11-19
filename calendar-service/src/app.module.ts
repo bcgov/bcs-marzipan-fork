@@ -1,21 +1,18 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { CalendarEntity } from './calendar/entities/calendar.entity'; // use with a real database
-import { CalendarModule } from './calendar/calendar.module';
-import { TypeOrmModule } from '@nestjs/typeorm'; // use with a real database
+import { DatabaseModule } from './database/database.module';
+import { ActivitiesModule } from './calendar/activities.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: ':memory:',
-      entities: [CalendarEntity],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
-    CalendarModule,
+    DatabaseModule,
+    ActivitiesModule,
   ],
-  // imports: [CalendarModule],
   controllers: [AppController],
   providers: [AppService],
 })
