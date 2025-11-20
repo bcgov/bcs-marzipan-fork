@@ -1,6 +1,4 @@
-
 import {
-  Button,
   Input,
   Tab,
   TabList,
@@ -12,10 +10,10 @@ import {
   MenuList,
   MenuPopover,
   MenuTrigger,
-  makeStyles,
   MenuItemCheckbox,
   MenuProps,
 } from "@fluentui/react-components";
+import { FilterAddRegular, FilterRegular } from "@fluentui/react-icons";
 
 import { ColumnFiltersState } from "@tanstack/react-table";
 import React, { useEffect } from "react";
@@ -35,16 +33,17 @@ export const CalendarFilters: React.FC<FilterProps> = ({
 
   const [checkedStatusValues, setCheckedStatusValues] = React.useState<
     Record<string, string[]>
-  >({ status: ["new", "reviewed", "changed", "deleted"] });
+  >({ status: [] });
+ // ({ status: ["new", "reviewed", "changed", "deleted"] });
   const [checkedCategoryValues, setCheckedCategoryValues] = React.useState<
     Record<string, string[]>
-  >({ category: ["release", "issue", "event"] });
-
+  >({ category: [] });
+ // ({ category: ["release", "issue", "event"] });
   const onStatusChange: MenuProps["onCheckedValueChange"] = (
     e: any,
     { name, checkedItems }: any
   ) => {
-    console.log('on status change');
+    console.log("on status change");
     setCheckedStatusValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
@@ -54,15 +53,11 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     e: any,
     { name, checkedItems }: any
   ) => {
-    console.log('on category change')
+    console.log("on category change");
     setCheckedCategoryValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
   };
-
-  useEffect(() => {
-    applyFilters();
-  }, [checkedStatusValues, checkedCategoryValues]);
 
   const filterData = {
     category: { id: "category", value: [""] },
@@ -93,7 +88,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       filterData.title,
       filterData.tabListFilter,
     ];
-      console.log(`filterArr: ${JSON.stringify(filterArr)}`);
+
     onFiltersChanged(filterArr);
   };
 
@@ -103,6 +98,17 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     applyFilters(newValue); // Pass the new value directly to avoid stale state
   };
 
+  const handleClearFilters = () => {
+    setCheckedCategoryValues(({ category: [] }));
+    setCheckedStatusValues({ status: [] });
+    setTitleFilter('');
+    setTabFilterValue('all');
+  };
+
+  useEffect(() => {
+    applyFilters();
+  }, [checkedStatusValues, checkedCategoryValues]);
+  
   return (
     <div>
       <TabList selectedValue={tabFilterValue} onTabSelect={onTabSelect}>
@@ -131,7 +137,8 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         onCheckedValueChange={onCategoryChange}
       >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton>Category</MenuButton>
+          <MenuButton> {`Categories${checkedCategoryValues['category']?.length > 0 ? 
+      ' (' + checkedCategoryValues['category'].length + ')': ''} `} </MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -153,7 +160,8 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         onCheckedValueChange={onStatusChange}
       >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton>Status</MenuButton>
+          <MenuButton>{`Status${checkedStatusValues['status']?.length > 0 ? 
+      ' (' + checkedStatusValues['status'].length + ')': ''} `}</MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -263,18 +271,26 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         </MenuPopover>
       </Menu>
 
+      <Menu>
+        <MenuTrigger disableButtonEnhancement>
+          <MenuButton 
+          appearance="subtle"
+          icon={<FilterRegular />}
+          >Filter</MenuButton>
+        </MenuTrigger>
+        <MenuPopover>
+          <MenuList>
+            <MenuItem onClick={handleClearFilters}>Reset all</MenuItem>
+            <MenuItem disabled>Save</MenuItem>
+          </MenuList>
+        </MenuPopover>
+      </Menu>
       <Input
         placeholder="Search by event title..."
         onChange={(_, data) => {
           setTitleFilter(data.value);
         }}
       />
-
-      {/* <DatePicker placeholder="From date" />
-    <DatePicker placeholder="To date" /> */}
-      <Button appearance="outline" onClick={(tabFilterValue) => applyFilters}>
-        Filter
-      </Button>
     </div>
   );
 };
