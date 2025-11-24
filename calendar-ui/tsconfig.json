@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "paths": {
-      "react": [ "./node_modules/@types/react" ]  // clears errors around icons (ts:2786)
+      "react": ["./node_modules/@types/react"] // clears errors around icons (ts:2786)
     }
   },
   "include": ["src"],

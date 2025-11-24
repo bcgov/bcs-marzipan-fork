@@ -1,6 +1,6 @@
-import axios from "axios";
-import { CalendarEntry } from "../models/CalendarEntry";
-import api from "./axios.js";
+import axios from 'axios';
+import { CalendarEntry } from '../models/CalendarEntry';
+import api from './axios.js';
 
 export async function fetchCalendarEntries(): Promise<CalendarEntry[]> {
   const res = await api.get<CalendarEntry[]>(`/calendar`);
@@ -37,11 +37,11 @@ export async function deleteCalendarEntry(id: string): Promise<void> {
 }
 
 export async function createPitch(payload: any) {
-  const { data } = await api.post("/api/pitches", payload);
+  const { data } = await api.post('/api/pitches', payload);
   return data;
 }
 
-export async function createDraftEntry(payload : any) {
+export async function createDraftEntry(payload: any) {
   const res = await api.post(`/drafts`, payload);
   return res.data;
 }

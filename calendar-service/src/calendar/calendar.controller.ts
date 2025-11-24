@@ -51,7 +51,10 @@ export class CalendarController {
   @ApiOperation({ summary: 'Edit calendar entry' })
   @ApiResponse({ status: 200, description: 'Entry modified' })
   @Patch(':id')
-  update(@Param('id', ParseIntPipe) id: string, @Body() dto: UpdateCalendarDto) {
+  update(
+    @Param('id', ParseIntPipe) id: string,
+    @Body() dto: UpdateCalendarDto
+  ) {
     return this.calendarService.update(id, dto);
   }
 

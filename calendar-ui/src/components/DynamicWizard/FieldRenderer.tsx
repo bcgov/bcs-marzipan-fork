@@ -1,4 +1,4 @@
-import * as React from "react";
+import * as React from 'react';
 import {
   Field,
   Input,
@@ -8,22 +8,22 @@ import {
   Checkbox,
   makeStyles,
   tokens,
-} from "@fluentui/react-components";
-import { FieldSchema, StepSchema } from "../../schemas/types";
+} from '@fluentui/react-components';
+import { FieldSchema, StepSchema } from '../../schemas/types';
 
 const useStyles = makeStyles({
   grid: {
-    display: "grid",
-    gridTemplateColumns: "1fr",
+    display: 'grid',
+    gridTemplateColumns: '1fr',
     gap: tokens.spacingHorizontalM,
-    "@media (min-width: 768px)": {
-      gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
+    '@media (min-width: 768px)': {
+      gridTemplateColumns: 'repeat(12, minmax(0, 1fr))',
     },
   },
-  cell12: { gridColumn: "span 12" },
+  cell12: { gridColumn: 'span 12' },
   cell6: {
-    gridColumn: "span 12",
-    "@media (min-width: 768px)": { gridColumn: "span 6" },
+    gridColumn: 'span 12',
+    '@media (min-width: 768px)': { gridColumn: 'span 6' },
   },
 });
 
@@ -49,7 +49,7 @@ export const FieldRenderer: React.FC<Props> = ({
       {step.fields.map((f) => {
         const colClass = f.colSpan === 6 ? styles.cell6 : styles.cell12;
         const error = errors[f.name];
-        const validationState = error ? "error" : "none";
+        const validationState = error ? 'error' : 'none';
 
         const commonFieldProps = {
           key: f.name,
@@ -61,16 +61,16 @@ export const FieldRenderer: React.FC<Props> = ({
         };
 
         switch (f.type) {
-          case "text":
-          case "number":
-          case "date":
-          case "time":
+          case 'text':
+          case 'number':
+          case 'date':
+          case 'time':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
                   <Input
-                    type={f.type === "number" ? "number" : f.type}
-                    value={values[f.name] ?? ""}
+                    type={f.type === 'number' ? 'number' : f.type}
+                    value={values[f.name] ?? ''}
                     placeholder={f.placeholder}
                     onChange={(_, d) => onChange(f.name, d.value)}
                     onBlur={() => onBlurValidate(f)}
@@ -83,12 +83,12 @@ export const FieldRenderer: React.FC<Props> = ({
               </div>
             );
 
-          case "textarea":
+          case 'textarea':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
                   <Textarea
-                    value={values[f.name] ?? ""}
+                    value={values[f.name] ?? ''}
                     placeholder={f.placeholder}
                     onChange={(_, d) => onChange(f.name, d.value)}
                     onBlur={() => onBlurValidate(f)}
@@ -98,14 +98,16 @@ export const FieldRenderer: React.FC<Props> = ({
               </div>
             );
 
-          case "select":
+          case 'select':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
                   <Dropdown
                     placeholder={f.placeholder}
                     selectedOptions={values[f.name] ? [values[f.name]] : []}
-                    onOptionSelect={(_, data) => onChange(f.name, data.optionValue)}
+                    onOptionSelect={(_, data) =>
+                      onChange(f.name, data.optionValue)
+                    }
                     onBlur={() => onBlurValidate(f)}
                   >
                     {f.options?.map((o) => (
@@ -118,7 +120,7 @@ export const FieldRenderer: React.FC<Props> = ({
               </div>
             );
 
-          case "multiselect":
+          case 'multiselect':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
@@ -126,7 +128,9 @@ export const FieldRenderer: React.FC<Props> = ({
                     multiselect
                     placeholder={f.placeholder}
                     selectedOptions={values[f.name] ?? []}
-                    onOptionSelect={(_, data) => onChange(f.name, data.selectedOptions)}
+                    onOptionSelect={(_, data) =>
+                      onChange(f.name, data.selectedOptions)
+                    }
                     onBlur={() => onBlurValidate(f)}
                   >
                     {f.options?.map((o) => (
@@ -139,7 +143,7 @@ export const FieldRenderer: React.FC<Props> = ({
               </div>
             );
 
-          case "checkbox":
+          case 'checkbox':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
@@ -153,11 +157,11 @@ export const FieldRenderer: React.FC<Props> = ({
               </div>
             );
 
-          case "checkbox-group":
+          case 'checkbox-group':
             return (
               <div key={f.name} className={colClass}>
                 <Field {...commonFieldProps}>
-                  <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                     {f.options?.map((o) => {
                       const selected: string[] = values[f.name] ?? [];
                       const checked = selected.includes(o.value);

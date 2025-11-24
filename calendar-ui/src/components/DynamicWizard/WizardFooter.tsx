@@ -1,13 +1,13 @@
-import * as React from "react";
-import { Button, makeStyles } from "@fluentui/react-components";
+import * as React from 'react';
+import { Button, makeStyles } from '@fluentui/react-components';
 
 const useStyles = makeStyles({
   footer: {
-    display: "flex",
-    justifyContent: "flex-end",
-    gap: "0.5rem",
-    marginTop: "1.5rem",
-    flexWrap: "wrap",
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '0.5rem',
+    marginTop: '1.5rem',
+    flexWrap: 'wrap',
   },
 });
 
@@ -36,7 +36,9 @@ export const WizardFooter: React.FC<WizardFooterProps> = ({
   return (
     <div className={styles.footer}>
       <Button onClick={onBack}>Back</Button>
-      <Button appearance="secondary" onClick={onSaveDraft}>Save as Draft</Button>
+      <Button appearance="secondary" onClick={onSaveDraft}>
+        Save as Draft
+      </Button>
       {!isLast ? (
         <Button appearance="primary" onClick={onNext} disabled={disableNext}>
           Next
