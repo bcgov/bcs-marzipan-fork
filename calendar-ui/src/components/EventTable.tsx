@@ -8,8 +8,6 @@ import {
   Badge,
   Button,
   makeStyles,
-  MenuButton,
-  Body1Stronger,
 } from '@fluentui/react-components';
 
 import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
@@ -61,6 +59,11 @@ type EventRow = {
   sharedWithMe: boolean;
   ministry: string;
   confidential: string | undefined;
+  summary: string | undefined;
+  representatives: string[] | undefined;
+  leads: string[] | undefined;
+  commsMaterials: string[] | undefined;
+  reports: string[] | undefined;
 };
 
 // Dummy table data
@@ -80,6 +83,17 @@ const eventData: EventRow[] = [
     sharedWithMe: false,
     ministry: 'hlth',
     confidential: undefined,
+    summary:
+      'Lorem ipsum dolor sit amet. Sed optio deserunt est ullam unde et dolorem saepe non asperiores pariatur id dignissimos cupiditate. Est laborum cumque ad unde odit aut sapiente impedit vel laboriosam omnis non rerum laudantium quo dolore sunt ab sapiente consectetur.',
+    representatives: ['Premier Eby', 'Minister Gauss', 'Minister Euler'],
+    leads: ['Johannes Kepler', 'Tycho Brahe', 'Caroline Herschel'],
+    commsMaterials: [
+      'Event or media plan',
+      'Media advisory',
+      'Q&As',
+      'Speaking notes',
+    ],
+    reports: undefined,
   },
   {
     date: 'Feb 4 – Mar 27',
@@ -95,6 +109,11 @@ const eventData: EventRow[] = [
     sharedWithMe: true,
     ministry: 'hlth',
     confidential: 'CONFIDENTIAL Issue',
+    summary: undefined,
+    representatives: undefined,
+    leads: undefined,
+    commsMaterials: undefined,
+    reports: undefined,
   },
   {
     date: 'Feb 29 – Apr 8',
@@ -110,7 +129,14 @@ const eventData: EventRow[] = [
     sharedWithMe: false,
     ministry: 'citz',
     confidential: 'Confidential',
+    summary:
+      'Lorem ipsum dolor sit amet. Sed optio deserunt est ullam unde et dolorem saepe non asperiores pariatur id dignissimos cupiditate. Est laborum cumque ad unde odit aut sapiente impedit vel laboriosam omnis non rerum laudantium quo dolore sunt ab sapiente consectetur.',
+    representatives: undefined,
+    leads: undefined,
+    commsMaterials: undefined,
+    reports: undefined,
   },
+
   {
     date: 'Mar 1 – Mar 31',
     id: 'HLTH-116081',
@@ -125,6 +151,12 @@ const eventData: EventRow[] = [
     sharedWithMe: false,
     ministry: 'hlth',
     confidential: undefined,
+    summary:
+      'Lorem ipsum dolor sit amet. Sed optio deserunt est ullam unde et dolorem saepe non asperiores pariatur id dignissimos cupiditate. Est laborum cumque ad unde odit aut sapiente impedit vel laboriosam omnis non rerum laudantium quo dolore sunt ab sapiente consectetur.',
+    representatives: undefined,
+    leads: undefined,
+    commsMaterials: undefined,
+    reports: undefined,
   },
 ];
 
@@ -295,15 +327,39 @@ export const EventTable: React.FC<EventTableProps> = ({
             </div>
             <div className={styles.overviewTitle}>{row.original.title}</div>
             <div>
-              <Badge className={row.original.category}></Badge>
+              <Badge
+                className={row.original.category}
+                appearance={
+                  row.original.category === 'Release' ? 'filled' : 'outline'
+                }
+              >
+                {row.original.category}
+              </Badge>
             </div>
           </div>
         ),
       }),
-      columnHelper.accessor('date', {
-        header: 'Date',
+      columnHelper.accessor('summary', {
+        header: 'Summary',
         cell: (info) => info.getValue(),
       }),
+      columnHelper.accessor('date', {
+        header: 'Schedule',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('representatives', {
+        header: 'Representatives',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('leads', {
+        header: 'Leads',
+        cell: (info) => info.getValue(),
+      }),
+      columnHelper.accessor('commsMaterials', {
+        header: 'Comms Materials',
+        cell: (info) => info.getValue(),
+      }),
+      // Todo: I should rethink how these work...
       columnHelper.accessor('title', {
         cell: (info) => info.getValue(),
       }),
