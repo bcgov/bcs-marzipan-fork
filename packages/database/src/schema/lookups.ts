@@ -20,7 +20,9 @@ export const statuses = pgTable('statuses', {
   sortOrder: integer('sort_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
   description: text('description'),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -34,7 +36,9 @@ export const cities = pgTable('cities', {
   sortOrder: integer('sort_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
   province: varchar('province', { length: 100 }),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -49,7 +53,9 @@ export const governmentRepresentatives = pgTable('government_representatives', {
   isActive: boolean('is_active').notNull().default(true),
   title: varchar('title', { length: 255 }),
   email: varchar('email', { length: 255 }),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -64,7 +70,9 @@ export const communicationContacts = pgTable('communication_contacts', {
   isActive: boolean('is_active').notNull().default(true),
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 50 }),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -79,7 +87,9 @@ export const eventPlanners = pgTable('event_planners', {
   isActive: boolean('is_active').notNull().default(true),
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 50 }),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -94,7 +104,9 @@ export const videographers = pgTable('videographers', {
   isActive: boolean('is_active').notNull().default(true),
   email: varchar('email', { length: 255 }),
   phone: varchar('phone', { length: 50 }),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -109,7 +121,9 @@ export const categories = pgTable('categories', {
   sortOrder: integer('sort_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
   description: text('description'),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 /**
@@ -123,7 +137,9 @@ export const themes = pgTable('themes', {
   displayName: varchar('display_name', { length: 255 }),
   sortOrder: integer('sort_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
   topReleaseId: uuid('top_release_id'), // FK to News Release (integration)
   featureReleaseId: uuid('feature_release_id'), // FK to News Release (integration)
 });
@@ -139,6 +155,86 @@ export const tags = pgTable('tags', {
   displayName: varchar('display_name', { length: 255 }),
   sortOrder: integer('sort_order').notNull().default(0),
   isActive: boolean('is_active').notNull().default(true),
+});
+
+/**
+ * EntryStatus lookup table - Activity entry statuses
+ * Values: 'new', 'queued', 'reviewed', 'changed', 'paused', 'deleted'
+ */
+export const entryStatuses = pgTable('entry_statuses', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * PitchStatus lookup table - Pitch approval statuses
+ * Values: 'not required', 'submitted', 'pitched', 'approved'
+ */
+export const pitchStatuses = pgTable('pitch_statuses', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * SchedulingStatus lookup table - Event scheduling statuses
+ * Values: 'unknown', 'tentative', 'confirmed'
+ */
+export const schedulingStatuses = pgTable('scheduling_statuses', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * CommsMaterials lookup table - Communication materials types
+ * Values: 'media advisory', 'q and a' (user editable)
+ */
+export const commsMaterials = pgTable('comms_materials', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+/**
+ * TranslatedLanguage lookup table - Languages for translations
+ * Values: 'french', 'simplified chinese' (user editable)
+ */
+export const translatedLanguages = pgTable('translated_languages', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 // NOTE: Initiative and Keyword tables are intentionally deferred

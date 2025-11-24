@@ -1,7 +1,23 @@
-import { pgTable, integer, boolean, timestamp, uuid, primaryKey } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  integer,
+  boolean,
+  timestamp,
+  uuid,
+  primaryKey,
+  varchar,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { activities } from './activity';
-import { themes, tags } from './lookups';
+import {
+  themes,
+  tags,
+  categories,
+  commsMaterials,
+  translatedLanguages,
+  governmentRepresentatives,
+} from './lookups';
+import { organizations } from './organizations';
 import { systemUsers } from './user';
 
 /**
@@ -18,20 +34,22 @@ export const activityThemes = pgTable(
       .notNull()
       .references(() => themes.id),
     isActive: boolean('is_active').notNull().default(true),
-    createdDateTime: timestamp('created_date_time', { withTimezone: true }).notNull().defaultNow(),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     createdBy: integer('created_by')
       .notNull()
       .references(() => systemUsers.id),
-    lastUpdatedDateTime: timestamp('last_updated_date_time', { withTimezone: true })
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
       .notNull()
       .defaultNow(),
     lastUpdatedBy: integer('last_updated_by')
       .notNull()
       .references(() => systemUsers.id),
   },
-  table => ({
-    pk: primaryKey({ columns: [table.activityId, table.themeId] }),
-  })
+  (table) => [primaryKey({ columns: [table.activityId, table.themeId] })]
 );
 
 /**
@@ -48,20 +66,22 @@ export const activityTags = pgTable(
       .notNull()
       .references(() => tags.id),
     isActive: boolean('is_active').notNull().default(true),
-    createdDateTime: timestamp('created_date_time', { withTimezone: true }).notNull().defaultNow(),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
     createdBy: integer('created_by')
       .notNull()
       .references(() => systemUsers.id),
-    lastUpdatedDateTime: timestamp('last_updated_date_time', { withTimezone: true })
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
       .notNull()
       .defaultNow(),
     lastUpdatedBy: integer('last_updated_by')
       .notNull()
       .references(() => systemUsers.id),
   },
-  table => ({
-    pk: primaryKey({ columns: [table.activityId, table.tagId] }),
-  })
+  (table) => [primaryKey({ columns: [table.activityId, table.tagId] })]
 );
 
 // Relations for junction tables
@@ -106,3 +126,563 @@ export const activityTagsRelations = relations(activityTags, ({ one }) => ({
     relationName: 'activityTagUpdatedBy',
   }),
 }));
+
+/**
+ * ActivityCategories junction table - Many-to-many relationship between Activities and Categories
+ */
+export const activityCategories = pgTable(
+  'activity_categories',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    categoryId: integer('category_id')
+      .notNull()
+      .references(() => categories.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.categoryId] })]
+);
+
+/**
+ * ActivityJointOrganizations junction table - Many-to-many relationship between Activities and Organizations (joint orgs)
+ */
+export const activityJointOrganizations = pgTable(
+  'activity_joint_organizations',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.organizationId] })]
+);
+
+/**
+ * ActivityRelatedEntries junction table - Self-referential many-to-many relationship between Activities
+ */
+export const activityRelatedEntries = pgTable(
+  'activity_related_entries',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    relatedActivityId: integer('related_activity_id')
+      .notNull()
+      .references(() => activities.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [
+    primaryKey({ columns: [table.activityId, table.relatedActivityId] }),
+  ]
+);
+
+/**
+ * ActivityCommsMaterials junction table - Many-to-many relationship between Activities and CommsMaterials
+ */
+export const activityCommsMaterials = pgTable(
+  'activity_comms_materials',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    commsMaterialId: integer('comms_material_id')
+      .notNull()
+      .references(() => commsMaterials.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [
+    primaryKey({ columns: [table.activityId, table.commsMaterialId] }),
+  ]
+);
+
+/**
+ * ActivityTranslationLanguages junction table - Many-to-many relationship between Activities and TranslatedLanguages
+ */
+export const activityTranslationLanguages = pgTable(
+  'activity_translation_languages',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    languageId: integer('language_id')
+      .notNull()
+      .references(() => translatedLanguages.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.languageId] })]
+);
+
+/**
+ * ActivityJointEventOrganizations junction table - Many-to-many relationship between Activities and Organizations (joint event orgs)
+ */
+export const activityJointEventOrganizations = pgTable(
+  'activity_joint_event_organizations',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.organizationId] })]
+);
+
+/**
+ * ActivityRepresentatives junction table - Many-to-many relationship between Activities and GovernmentRepresentatives with attending status
+ */
+export const activityRepresentatives = pgTable(
+  'activity_representatives',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    representativeId: integer('representative_id')
+      .notNull()
+      .references(() => governmentRepresentatives.id),
+    attendingStatus: varchar('attending_status', { length: 50 }).notNull(), // 'requested', 'declined', 'confirmed'
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [
+    primaryKey({ columns: [table.activityId, table.representativeId] }),
+  ]
+);
+
+/**
+ * ActivitySharedWithOrganizations junction table - Many-to-many relationship between Activities and Organizations (shared with)
+ */
+export const activitySharedWithOrganizations = pgTable(
+  'activity_shared_with_organizations',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    organizationId: uuid('organization_id')
+      .notNull()
+      .references(() => organizations.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.organizationId] })]
+);
+
+/**
+ * ActivityCanEditUsers junction table - Many-to-many relationship between Activities and SystemUsers (can edit)
+ */
+export const activityCanEditUsers = pgTable(
+  'activity_can_edit_users',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => systemUsers.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.userId] })]
+);
+
+/**
+ * ActivityCanViewUsers junction table - Many-to-many relationship between Activities and SystemUsers (can view)
+ */
+export const activityCanViewUsers = pgTable(
+  'activity_can_view_users',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id),
+    userId: integer('user_id')
+      .notNull()
+      .references(() => systemUsers.id),
+    isActive: boolean('is_active').notNull().default(true),
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by')
+      .notNull()
+      .references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by')
+      .notNull()
+      .references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.userId] })]
+);
+
+// Relations for new junction tables
+export const activityCategoriesRelations = relations(
+  activityCategories,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityCategories.activityId],
+      references: [activities.id],
+    }),
+    category: one(categories, {
+      fields: [activityCategories.categoryId],
+      references: [categories.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityCategories.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityCategoryCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityCategories.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityCategoryUpdatedBy',
+    }),
+  })
+);
+
+export const activityJointOrganizationsRelations = relations(
+  activityJointOrganizations,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityJointOrganizations.activityId],
+      references: [activities.id],
+    }),
+    organization: one(organizations, {
+      fields: [activityJointOrganizations.organizationId],
+      references: [organizations.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityJointOrganizations.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityJointOrgCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityJointOrganizations.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityJointOrgUpdatedBy',
+    }),
+  })
+);
+
+export const activityRelatedEntriesRelations = relations(
+  activityRelatedEntries,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityRelatedEntries.activityId],
+      references: [activities.id],
+      relationName: 'activity',
+    }),
+    relatedActivity: one(activities, {
+      fields: [activityRelatedEntries.relatedActivityId],
+      references: [activities.id],
+      relationName: 'relatedActivity',
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityRelatedEntries.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityRelatedEntryCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityRelatedEntries.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityRelatedEntryUpdatedBy',
+    }),
+  })
+);
+
+export const activityCommsMaterialsRelations = relations(
+  activityCommsMaterials,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityCommsMaterials.activityId],
+      references: [activities.id],
+    }),
+    commsMaterial: one(commsMaterials, {
+      fields: [activityCommsMaterials.commsMaterialId],
+      references: [commsMaterials.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityCommsMaterials.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityCommsMaterialCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityCommsMaterials.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityCommsMaterialUpdatedBy',
+    }),
+  })
+);
+
+export const activityTranslationLanguagesRelations = relations(
+  activityTranslationLanguages,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityTranslationLanguages.activityId],
+      references: [activities.id],
+    }),
+    language: one(translatedLanguages, {
+      fields: [activityTranslationLanguages.languageId],
+      references: [translatedLanguages.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityTranslationLanguages.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityTranslationLanguageCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityTranslationLanguages.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityTranslationLanguageUpdatedBy',
+    }),
+  })
+);
+
+export const activityJointEventOrganizationsRelations = relations(
+  activityJointEventOrganizations,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityJointEventOrganizations.activityId],
+      references: [activities.id],
+    }),
+    organization: one(organizations, {
+      fields: [activityJointEventOrganizations.organizationId],
+      references: [organizations.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityJointEventOrganizations.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityJointEventOrgCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityJointEventOrganizations.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityJointEventOrgUpdatedBy',
+    }),
+  })
+);
+
+export const activityRepresentativesRelations = relations(
+  activityRepresentatives,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityRepresentatives.activityId],
+      references: [activities.id],
+    }),
+    representative: one(governmentRepresentatives, {
+      fields: [activityRepresentatives.representativeId],
+      references: [governmentRepresentatives.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityRepresentatives.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityRepresentativeCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityRepresentatives.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityRepresentativeUpdatedBy',
+    }),
+  })
+);
+
+export const activitySharedWithOrganizationsRelations = relations(
+  activitySharedWithOrganizations,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activitySharedWithOrganizations.activityId],
+      references: [activities.id],
+    }),
+    organization: one(organizations, {
+      fields: [activitySharedWithOrganizations.organizationId],
+      references: [organizations.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activitySharedWithOrganizations.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activitySharedWithOrgCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activitySharedWithOrganizations.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activitySharedWithOrgUpdatedBy',
+    }),
+  })
+);
+
+export const activityCanEditUsersRelations = relations(
+  activityCanEditUsers,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityCanEditUsers.activityId],
+      references: [activities.id],
+    }),
+    user: one(systemUsers, {
+      fields: [activityCanEditUsers.userId],
+      references: [systemUsers.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityCanEditUsers.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityCanEditUserCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityCanEditUsers.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityCanEditUserUpdatedBy',
+    }),
+  })
+);
+
+export const activityCanViewUsersRelations = relations(
+  activityCanViewUsers,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityCanViewUsers.activityId],
+      references: [activities.id],
+    }),
+    user: one(systemUsers, {
+      fields: [activityCanViewUsers.userId],
+      references: [systemUsers.id],
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityCanViewUsers.createdBy],
+      references: [systemUsers.id],
+      relationName: 'activityCanViewUserCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityCanViewUsers.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'activityCanViewUserUpdatedBy',
+    }),
+  })
+);
