@@ -1,5 +1,4 @@
 import {
-<<<<<<< HEAD
   Input,
   Tab,
   TabList,
@@ -13,25 +12,12 @@ import {
   MenuTrigger,
   MenuItemCheckbox,
   MenuProps,
-} from "@fluentui/react-components";
-import { FilterAddRegular, FilterRegular } from "@fluentui/react-icons";
-
-import { ColumnFiltersState } from "@tanstack/react-table";
-import React, { useEffect } from "react";
-import { set } from "zod";
-=======
-  Button,
-  Input,
-  tokens,
-  Option,
-  Combobox,
-  SelectionEvents,
-  OptionOnSelectData,
 } from '@fluentui/react-components';
+import { FilterAddRegular, FilterRegular } from '@fluentui/react-icons';
+
 import { ColumnFiltersState } from '@tanstack/react-table';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { set } from 'zod';
->>>>>>> 015dc0f (ran lint and format)
 
 interface FilterProps {
   filters: ColumnFiltersState;
@@ -42,107 +28,70 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   filters,
   onFiltersChanged,
 }) => {
-<<<<<<< HEAD
   const [titleFilter, setTitleFilter] = React.useState<string>();
-  const [tabFilterValue, setTabFilterValue] = React.useState<string>("all");
+  const [tabFilterValue, setTabFilterValue] = React.useState<string>('all');
 
   const [checkedStatusValues, setCheckedStatusValues] = React.useState<
     Record<string, string[]>
   >({ status: [] });
- // ({ status: ["new", "reviewed", "changed", "deleted"] });
+  // ({ status: ["new", "reviewed", "changed", "deleted"] });
   const [checkedCategoryValues, setCheckedCategoryValues] = React.useState<
     Record<string, string[]>
   >({ category: [] });
- // ({ category: ["release", "issue", "event"] });
-  const onStatusChange: MenuProps["onCheckedValueChange"] = (
+  // ({ category: ["release", "issue", "event"] });
+  const onStatusChange: MenuProps['onCheckedValueChange'] = (
     e: any,
     { name, checkedItems }: any
   ) => {
-    console.log("on status change");
+    console.log('on status change');
     setCheckedStatusValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
   };
 
-  const onCategoryChange: MenuProps["onCheckedValueChange"] = (
+  const onCategoryChange: MenuProps['onCheckedValueChange'] = (
     e: any,
     { name, checkedItems }: any
   ) => {
-    console.log("on category change");
+    console.log('on category change');
     setCheckedCategoryValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
   };
 
   const filterData = {
-    category: { id: "category", value: [""] },
-    status: { id: "status", value: [""] },
-    title: { id: "title", value: "" },
-    tabListFilter: { id: "tabListFilter", value: tabFilterValue },
+    category: { id: 'category', value: [''] },
+    status: { id: 'status', value: [''] },
+    title: { id: 'title', value: '' },
+    tabListFilter: { id: 'tabListFilter', value: tabFilterValue },
   };
 
   const applyFilters = (tabValue?: string) => {
     const currentTabValue = tabValue || tabFilterValue; // Use passed value if provided, else fall back to state
     filterData.category = {
-      id: "category",
+      id: 'category',
       value: checkedCategoryValues.category || [],
     };
     filterData.status = {
-      id: "status",
+      id: 'status',
       value: checkedStatusValues.status || [],
     };
-=======
-  const filterData = {
-    category: { id: 'category', value: '' },
-    title: { id: 'title', value: '' },
-  };
-  const categoryFilters = ['Event', 'Release', 'Issue'];
-  const [categoryFilter, setCategoryFilter] = React.useState<string>(); // this may end up being <string[]>
-  const [titleFilter, setTitleFilter] = React.useState<string>(); // this may end up being <string[]>
-
-  const handleCategoryChange = (
-    _: SelectionEvents,
-    data: OptionOnSelectData
-  ) => {
-    setCategoryFilter(data.optionText);
-  };
-
-  const applyFilters = () => {
-    // todo: need to rethink this so we can filter on multiple values
-    if (categoryFilter) {
-      filterData.category = { id: 'category', value: categoryFilter };
-    } else {
-      filterData.category = { id: 'category', value: '' };
-    }
->>>>>>> 015dc0f (ran lint and format)
     if (titleFilter) {
       filterData.title = { id: 'title', value: titleFilter };
     } else {
-<<<<<<< HEAD
-      filterData.title = { id: "title", value: "" };
+      filterData.title = { id: 'title', value: '' };
     }
-    filterData.tabListFilter = { id: "mine", value: currentTabValue };
+    filterData.tabListFilter = { id: 'mine', value: currentTabValue };
     const filterArr: ColumnFiltersState = [
       filterData.category,
       filterData.status,
       filterData.title,
       filterData.tabListFilter,
     ];
-=======
-      filterData.title = { id: 'title', value: '' };
-    }
-
-    const filterArr: ColumnFiltersState = [
-      filterData.category,
-      filterData.title,
-    ];
-    console.log(filterArr);
->>>>>>> 015dc0f (ran lint and format)
 
     onFiltersChanged(filterArr);
   };
 
-<<<<<<< HEAD
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
     const newValue = data.value as string;
     setTabFilterValue(newValue);
@@ -150,7 +99,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   };
 
   const handleClearFilters = () => {
-    setCheckedCategoryValues(({ category: [] }));
+    setCheckedCategoryValues({ category: [] });
     setCheckedStatusValues({ status: [] });
     setTitleFilter('');
     setTabFilterValue('all');
@@ -159,7 +108,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   useEffect(() => {
     applyFilters();
   }, [checkedStatusValues, checkedCategoryValues]);
-  
+
   return (
     <div>
       <TabList selectedValue={tabFilterValue} onTabSelect={onTabSelect}>
@@ -168,7 +117,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         <Tab value="recent">Recent</Tab>
         <Tab value="ministry" disabled>
           HLTH
-        </Tab>{" "}
+        </Tab>{' '}
         {/* I assume this becomes user's ministry, whatever it is */}
         <Tab value="shared">Shared</Tab>
       </TabList>
@@ -188,8 +137,14 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         onCheckedValueChange={onCategoryChange}
       >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton> {`Categories${checkedCategoryValues['category']?.length > 0 ? 
-      ' (' + checkedCategoryValues['category'].length + ')': ''} `} </MenuButton>
+          <MenuButton>
+            {' '}
+            {`Categories${
+              checkedCategoryValues['category']?.length > 0
+                ? ' (' + checkedCategoryValues['category'].length + ')'
+                : ''
+            } `}{' '}
+          </MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -211,8 +166,11 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         onCheckedValueChange={onStatusChange}
       >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton>{`Status${checkedStatusValues['status']?.length > 0 ? 
-      ' (' + checkedStatusValues['status'].length + ')': ''} `}</MenuButton>
+          <MenuButton>{`Status${
+            checkedStatusValues['status']?.length > 0
+              ? ' (' + checkedStatusValues['status'].length + ')'
+              : ''
+          } `}</MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -324,10 +282,9 @@ export const CalendarFilters: React.FC<FilterProps> = ({
 
       <Menu>
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton 
-          appearance="subtle"
-          icon={<FilterRegular />}
-          >Filter</MenuButton>
+          <MenuButton appearance="subtle" icon={<FilterRegular />}>
+            Filter
+          </MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
@@ -336,46 +293,12 @@ export const CalendarFilters: React.FC<FilterProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
-=======
-  return (
-    <div
-      style={{
-        display: 'flex',
-        flexWrap: 'wrap',
-        gap: tokens.spacingHorizontalM,
-        alignItems: 'center',
-        marginBottom: tokens.spacingVerticalL,
-      }}
-    >
-      <Button>All</Button>
-      <Button>My Activities</Button>
-      <Button>Shared With Me</Button>
-      <Button>Watchlist</Button>
->>>>>>> 015dc0f (ran lint and format)
       <Input
         placeholder="Search by event title..."
         onChange={(_, data) => {
           setTitleFilter(data.value);
         }}
       />
-<<<<<<< HEAD
-=======
-
-      <Combobox
-        placeholder="Category filter..."
-        onOptionSelect={handleCategoryChange}
-      >
-        <Option text="" />
-        {categoryFilters.map((option) => (
-          <Option key={option}>{option}</Option>
-        ))}
-      </Combobox>
-      {/* <DatePicker placeholder="From date" />
-    <DatePicker placeholder="To date" /> */}
-      <Button appearance="outline" onClick={applyFilters}>
-        Filter
-      </Button>
->>>>>>> 015dc0f (ran lint and format)
     </div>
   );
 };
