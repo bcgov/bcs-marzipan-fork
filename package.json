@@ -4,6 +4,10 @@
     "calendar-ui",
     "calendar-service"
   ],
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
+  },
   "scripts": {
     "start": "concurrently \"npm --prefix calendar-ui run dev\" \"npm --prefix calendar-service run start:dev\"",
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
