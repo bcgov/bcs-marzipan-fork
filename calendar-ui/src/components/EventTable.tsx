@@ -9,10 +9,10 @@ import {
   Button,
   makeStyles,
   MenuButton,
-} from "@fluentui/react-components";
-import { UnseenEditSignal } from "@fluentui/react-experiments";
+} from '@fluentui/react-components';
+import { UnseenEditSignal } from '@fluentui/react-experiments';
 
-import { CheckmarkCircle24Regular } from "@fluentui/react-icons";
+import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
 import {
   flexRender,
   getCoreRowModel,
@@ -25,15 +25,15 @@ import {
   createColumnHelper,
   SortingFn,
   FilterFn,
-} from "@tanstack/react-table";
+} from '@tanstack/react-table';
 
-import { useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { set } from "zod";
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { set } from 'zod';
 
 const useStyles = makeStyles({
   statusBadge: {
-    paddingTop: "8px",
+    paddingTop: '8px',
   },
 });
 
@@ -44,7 +44,7 @@ type EventRow = {
   title: string;
   category: string;
   type: string;
-  status: "New" | "Reviewed" | "Changed" | "Deleted";
+  status: 'New' | 'Reviewed' | 'Changed' | 'Deleted';
   confirmed: boolean;
   dateCreated: string;
   dateModified: Date | undefined;
@@ -56,62 +56,62 @@ type EventRow = {
 // Dummy table data
 const eventData: EventRow[] = [
   {
-    date: "Jan 21 – Mar 29",
-    id: "PSFS-113714",
-    title: "$6M to increase Indigenous learners...",
-    category: "Release",
-    type: "News Release",
-    status: "New",
+    date: 'Jan 21 – Mar 29',
+    id: 'PSFS-113714',
+    title: '$6M to increase Indigenous learners...',
+    category: 'Release',
+    type: 'News Release',
+    status: 'New',
     confirmed: false,
-    dateCreated: "Jan 03 2025",
+    dateCreated: 'Jan 03 2025',
     //dateCreated:  new Date('2025-01-03T10:30:00Z'), we'll probably use actual dates in the future
     dateModified: undefined,
     mine: true,
     sharedWithMe: false,
-    ministry: "hlth",
+    ministry: 'hlth',
   },
   {
-    date: "Feb 4 – Mar 27",
-    id: "TACS-116305",
-    title: "Royal BC Museum Phase 2 Conversations",
-    category: "Issue",
-    type: "Issue",
-    status: "Reviewed",
+    date: 'Feb 4 – Mar 27',
+    id: 'TACS-116305',
+    title: 'Royal BC Museum Phase 2 Conversations',
+    category: 'Issue',
+    type: 'Issue',
+    status: 'Reviewed',
     confirmed: true,
-    dateCreated: "Jan 03 2025",
+    dateCreated: 'Jan 03 2025',
     dateModified: new Date('2025-11-16T03:30:00Z'),
 
     mine: false,
     sharedWithMe: true,
-    ministry: "hlth",
+    ministry: 'hlth',
   },
   {
-    date: "Feb 29 – Apr 8",
-    id: "MOTI-112502",
-    title: "Pattullo Bridge Project milestone",
-    category: "Release",
-    type: "News Release",
-    status: "Changed",
+    date: 'Feb 29 – Apr 8',
+    id: 'MOTI-112502',
+    title: 'Pattullo Bridge Project milestone',
+    category: 'Release',
+    type: 'News Release',
+    status: 'Changed',
     confirmed: true,
-    dateCreated: "Jan 03 2025",
-    dateModified: new Date("2025-11-16T03:30:00Z"),
+    dateCreated: 'Jan 03 2025',
+    dateModified: new Date('2025-11-16T03:30:00Z'),
     mine: false,
     sharedWithMe: false,
-    ministry: "citz",
+    ministry: 'citz',
   },
   {
-    date: "Mar 1 – Mar 31",
-    id: "HLTH-116081",
-    title: "Pharmacy Appreciation Month",
-    category: "Event",
-    type: "Awareness Date",
-    status: "Reviewed",
+    date: 'Mar 1 – Mar 31',
+    id: 'HLTH-116081',
+    title: 'Pharmacy Appreciation Month',
+    category: 'Event',
+    type: 'Awareness Date',
+    status: 'Reviewed',
     confirmed: true,
-    dateCreated: "Jan 03 2025",
-    dateModified: new Date("2025-09-10T10:30:00Z"),
+    dateCreated: 'Jan 03 2025',
+    dateModified: new Date('2025-09-10T10:30:00Z'),
     mine: false,
     sharedWithMe: false,
-    ministry: "hlth",
+    ministry: 'hlth',
   },
 ];
 
@@ -126,7 +126,7 @@ const getLastModifiedString = (modified: Date | undefined) => {
     const hoursAgo = difference / (1000 * 3600);
     if (hoursAgo < 1) {
       if (Math.floor(difference / (1000 * 60)) < 2) {
-        return "Modified just now";
+        return 'Modified just now';
       } else {
         return `Modified ${Math.floor(difference / (1000 * 60))} minutes ago`;
       }
@@ -171,14 +171,14 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (
 ) => {
   // Check if the filterValue exists in firstName, lastName, or email
   const lowerCaseFilter = String(filterValue).toLowerCase();
-  if (lowerCaseFilter === "recent" && row.original.dateModified) {
+  if (lowerCaseFilter === 'recent' && row.original.dateModified) {
     const rightNow = new Date();
     return getDaysDifference(rightNow, row.original.dateModified) < 2;
   }
   return (
-    filterValue === "all" ||
-    (lowerCaseFilter === "mine" && row.original.mine) ||
-    (lowerCaseFilter === "shared" && row.original.sharedWithMe) ||
+    filterValue === 'all' ||
+    (lowerCaseFilter === 'mine' && row.original.mine) ||
+    (lowerCaseFilter === 'shared' && row.original.sharedWithMe) ||
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
   );
 };
@@ -206,12 +206,12 @@ const arrayIncludesStatusFilterFn: FilterFn<EventRow> = (
   return true;
 };
 // Status colors map
-const statusColor: Record<string, "brand" | "danger" | "warning" | "success"> =
+const statusColor: Record<string, 'brand' | 'danger' | 'warning' | 'success'> =
   {
-    New: "success",
-    Reviewed: "brand",
-    Changed: "warning",
-    Deleted: "danger",
+    New: 'success',
+    Reviewed: 'brand',
+    Changed: 'warning',
+    Deleted: 'danger',
   };
 
 interface EventTableProps {
@@ -228,7 +228,7 @@ export const EventTable: React.FC<EventTableProps> = ({
   const navigate = useNavigate();
 
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
+  const [globalFilter, setGlobalFilter] = useState('');
 
   useEffect(() => {
     setColumnFilters(filters);
@@ -244,27 +244,27 @@ export const EventTable: React.FC<EventTableProps> = ({
 
   const columns = useMemo(
     () => [
-      columnHelper.accessor("date", {
-        header: "Date",
+      columnHelper.accessor('date', {
+        header: 'Date',
         cell: (info) => info.getValue(),
       }),
-      columnHelper.accessor("id", {
+      columnHelper.accessor('id', {
         cell: (info) => info.getValue(),
       }),
-      columnHelper.accessor("title", {
+      columnHelper.accessor('title', {
         cell: (info) => info.getValue(),
       }),
-      columnHelper.accessor("category", {
+      columnHelper.accessor('category', {
         cell: (info) => info.getValue(),
         filterFn: arrayIncludesFilterFn,
       }),
-      columnHelper.accessor("type", {
+      columnHelper.accessor('type', {
         cell: (info) => info.getValue(),
       }),
 
-      columnHelper.accessor("status", {
+      columnHelper.accessor('status', {
         //id: 'status', // Unique ID for this display column
-        header: "Status",
+        header: 'Status',
         filterFn: arrayIncludesStatusFilterFn,
         sortingFn: sortStatusFn,
         sortUndefined: -1,
@@ -288,22 +288,22 @@ export const EventTable: React.FC<EventTableProps> = ({
           </div>
         ),
       }),
-      columnHelper.accessor("confirmed", {
+      columnHelper.accessor('confirmed', {
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
       }),
 
       // TODO: make all these a 'tabListFilter' column with all the values, and custom filter to victory.
-      columnHelper.accessor("mine", {
+      columnHelper.accessor('mine', {
         enableHiding: true,
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
         filterFn: multiColumnTabFilterFn,
       }),
-      columnHelper.accessor("sharedWithMe", {
+      columnHelper.accessor('sharedWithMe', {
         enableHiding: true,
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
         filterFn: multiColumnTabFilterFn,
       }),
-      columnHelper.accessor("ministry", {
+      columnHelper.accessor('ministry', {
         enableHiding: true,
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
         filterFn: multiColumnTabFilterFn,
@@ -331,7 +331,7 @@ export const EventTable: React.FC<EventTableProps> = ({
     },
     onSortingChange: setSorting,
     onPaginationChange: (updater) => {
-      if (typeof updater === "function") {
+      if (typeof updater === 'function') {
         const newState = updater({ pageIndex, pageSize: 2 });
         setPageIndex(newState.pageIndex);
       } else {
@@ -351,7 +351,7 @@ export const EventTable: React.FC<EventTableProps> = ({
   });
 
   return (
-    <div style={{ padding: "24px", background: "#fff", borderRadius: 8 }}>
+    <div style={{ padding: '24px', background: '#fff', borderRadius: 8 }}>
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -365,15 +365,15 @@ export const EventTable: React.FC<EventTableProps> = ({
                       : undefined
                   }
                   style={{
-                    cursor: header.column.getCanSort() ? "pointer" : undefined,
+                    cursor: header.column.getCanSort() ? 'pointer' : undefined,
                   }}
                 >
                   {flexRender(
                     header.column.columnDef.header,
                     header.getContext()
                   )}
-                  {header.column.getIsSorted() === "asc" && " ▲"}
-                  {header.column.getIsSorted() === "desc" && " ▼"}
+                  {header.column.getIsSorted() === 'asc' && ' ▲'}
+                  {header.column.getIsSorted() === 'desc' && ' ▼'}
                 </TableHeaderCell>
               ))}
             </TableRow>
@@ -383,8 +383,8 @@ export const EventTable: React.FC<EventTableProps> = ({
           {table.getRowModel().rows.map((row) => (
             <TableRow
               key={row.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => navigate("/details", { state: row.original })}
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate('/details', { state: row.original })}
             >
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
@@ -396,7 +396,7 @@ export const EventTable: React.FC<EventTableProps> = ({
         </TableBody>
       </Table>
       <div
-        style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center" }}
+        style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}
       >
         <Button
           onClick={() => table.previousPage()}
@@ -405,7 +405,7 @@ export const EventTable: React.FC<EventTableProps> = ({
           Previous
         </Button>
         <span>
-          Page {table.getState().pagination.pageIndex + 1} of{" "}
+          Page {table.getState().pagination.pageIndex + 1} of{' '}
           {table.getPageCount()}
         </span>
         <Button
