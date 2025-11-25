@@ -1,17 +1,14 @@
-import * as React from "react";
-import { calendarWizardSchema } from "../schemas/calendarWizard.schema";
-import { createCalendarEntry } from "../api/calendarApi";
-import {
-  FluentProvider,
-  webLightTheme,
-} from "@fluentui/react-components";
-import Wizard from "../components/DynamicWizard/Wizard";
+import * as React from 'react';
+import { calendarWizardSchema } from '../schemas/calendarWizard.schema';
+import { createCalendarEntry } from '../api/calendarApi';
+import { FluentProvider, webLightTheme } from '@fluentui/react-components';
+import Wizard from '../components/DynamicWizard/Wizard';
 
 const makeStyles = () => ({
   container: {
     maxWidth: 800,
-    margin: "0 auto",
-    padding: "1rem",
+    margin: '0 auto',
+    padding: '1rem',
   },
 });
 
@@ -23,10 +20,10 @@ export const DynamicCalendarEntryForm: React.FC = () => {
     try {
       await createCalendarEntry(formValues); // Call your API function
       // Optionally show a success message or redirect
-      alert("Calendar entry saved!");
+      alert('Calendar entry saved!');
     } catch (err) {
       // Optionally show an error message
-      alert("Failed to save entry.");
+      alert('Failed to save entry.');
       console.error(err);
     }
   };
@@ -41,24 +38,24 @@ export const DynamicCalendarEntryForm: React.FC = () => {
           initialValues={{
             // 👇 pre-fill dummy values for testing
             details: {
-              title: "Test Event",
-              summary: "Testing dynamic wizard form",
+              title: 'Test Event',
+              summary: 'Testing dynamic wizard form',
             },
             schedule: {
-              startDate: new Date().toISOString().split("T")[0], // today
-              startTime: "09:00",
-              endDate: new Date().toISOString().split("T")[0],
-              endTime: "10:00",
+              startDate: new Date().toISOString().split('T')[0], // today
+              startTime: '09:00',
+              endDate: new Date().toISOString().split('T')[0],
+              endTime: '10:00',
             },
             events: {
-              topic: "Press Briefing",
-              tags: ["Policy", "Health"],
+              topic: 'Press Briefing',
+              tags: ['Policy', 'Health'],
             },
             comms: {
-              channels: ["Email"],
+              channels: ['Email'],
             },
             sharing: {
-              sharedWith: ["HR", "Finance"],
+              sharedWith: ['HR', 'Finance'],
             },
           }}
           onSubmit={handleSubmit}

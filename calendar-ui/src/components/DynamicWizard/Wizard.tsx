@@ -1,9 +1,9 @@
-import * as React from "react";
-import { WizardStepForm } from "./WizardStepForm";
-import { WizardHeader } from "./WizardHeader";
-import { WizardFooter } from "./WizardFooter";
-import { zodForStep } from "../../schemas/buildZod";
-import { StepSchema } from "../../schemas/types";
+import * as React from 'react';
+import { WizardStepForm } from './WizardStepForm';
+import { WizardHeader } from './WizardHeader';
+import { WizardFooter } from './WizardFooter';
+import { zodForStep } from '../../schemas/buildZod';
+import { StepSchema } from '../../schemas/types';
 
 type WizardProps = {
   title: string;
@@ -21,7 +21,8 @@ const Wizard: React.FC<WizardProps> = ({
   onSubmit,
 }) => {
   const [stepIndex, setStepIndex] = React.useState(0);
-  const [values, setValues] = React.useState<Record<string, any>>(initialValues);
+  const [values, setValues] =
+    React.useState<Record<string, any>>(initialValues);
   const [errors, setErrors] = React.useState<Record<string, any>>({});
 
   const stepSchema = schema[stepIndex];

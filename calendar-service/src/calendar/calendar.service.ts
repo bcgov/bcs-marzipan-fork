@@ -9,7 +9,7 @@ import { UpdateCalendarDto } from './dto/update-calendar.dto';
 export class CalendarService {
   constructor(
     @InjectRepository(CalendarEntity)
-    private readonly calendarRepository: Repository<CalendarEntity>,
+    private readonly calendarRepository: Repository<CalendarEntity>
   ) {}
 
   async create(dto: CreateCalendarDto) {
@@ -43,7 +43,7 @@ export class CalendarService {
     return { message: `Entry #${id} deleted successfully` };
   }
 
-    /**
+  /**
    * Soft delete (status update instead of hard delete)
    */
   async softDelete(id: string, reason?: string): Promise<CalendarEntity> {
@@ -51,7 +51,7 @@ export class CalendarService {
 
     entry.status = 'deleted';
     entry.deleted_on = new Date();
-    if(reason) entry.deleted_reason = reason;
+    if (reason) entry.deleted_reason = reason;
 
     return await this.calendarRepository.save(entry);
   }
