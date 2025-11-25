@@ -498,7 +498,11 @@ export const EventTable: React.FC<EventTableProps> = ({
                     position: header.column.getIsPinned()
                       ? 'sticky'
                       : 'relative', // Make pinned columns sticky
-                    left: header.column.getIsPinned() ? 0 : 'auto', // Stick to left
+                    left: header.column.getIsPinned()
+                      ? header.column.id === 'id' // Only offset the 'id' column. This was a freaking ordeal
+                        ? `${header.column.getStart('left') + 16}px`
+                        : `${header.column.getStart('left')}px`
+                      : 'auto',
                     zIndex: header.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
                     background: header.column.getIsPinned()
                       ? '#fff'
@@ -530,11 +534,16 @@ export const EventTable: React.FC<EventTableProps> = ({
                   key={cell.id}
                   style={{
                     position: cell.column.getIsPinned() ? 'sticky' : 'relative', // Make pinned cells sticky
-                    left: cell.column.getIsPinned() ? 0 : 'auto', // Stick to left
+                    left: cell.column.getIsPinned()
+                      ? cell.column.id === 'id'
+                        ? `${cell.column.getStart('left') + 16}px`
+                        : `${cell.column.getStart('left')}px`
+                      : 'auto',
                     zIndex: cell.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
                     background: cell.column.getIsPinned()
                       ? '#fff'
                       : 'transparent', // Optional: Match row background
+                    boxSizing: 'border-box', // Include padding in width calculation
                   }}
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
