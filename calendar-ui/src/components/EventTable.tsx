@@ -291,6 +291,9 @@ export const EventTable: React.FC<EventTableProps> = ({
     () => [
       columnHelper.display({
         id: 'select', // Unique ID for your checkbox column
+        size: 20, // Narrow for checkboxes
+        enableResizing: false, // Disable resizing for this column
+        enablePinning: true,
         header: ({ table }) => (
           <input
             type="checkbox"
@@ -312,6 +315,8 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('id', {
         header: 'Overview',
         enableResizing: false,
+        enablePinning: true,
+        size: 250,
         cell: ({ row }) => (
           <div>
             {/* todo: Let's make these complicated columns separate components, and pass everything in as props*/}
@@ -341,6 +346,8 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('summary', {
         header: 'Summary',
+        size: 800,
+        enableResizing: false,
         cell: (info) => info.getValue(),
       }),
       columnHelper.accessor('date', {
@@ -398,6 +405,7 @@ export const EventTable: React.FC<EventTableProps> = ({
         ),
       }),
       columnHelper.accessor('confirmed', {
+        size: 20,
         cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
       }),
 
@@ -435,6 +443,7 @@ export const EventTable: React.FC<EventTableProps> = ({
         mine: false,
         ministry: false,
       },
+      columnPinning: { left: ['select', 'id'] }, // Pin the 'id' column to the left
     },
     filterFns: {
       multiColumn: multiColumnTabFilterFn, // "mine", "Shared with me", and other tab options
@@ -461,7 +470,15 @@ export const EventTable: React.FC<EventTableProps> = ({
   });
 
   return (
-    <div style={{ padding: '24px', background: '#fff', borderRadius: 8 }}>
+    <div
+      style={{
+        padding: '24px',
+        background: '#fff',
+        borderRadius: 8,
+        overflowX: 'auto',
+        maxWidth: '800px',
+      }}
+    >
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -476,6 +493,16 @@ export const EventTable: React.FC<EventTableProps> = ({
                   }
                   style={{
                     cursor: header.column.getCanSort() ? 'pointer' : undefined,
+                    width: header.getSize(),
+                    maxWidth: '250px',
+                    position: header.column.getIsPinned()
+                      ? 'sticky'
+                      : 'relative', // Make pinned columns sticky
+                    left: header.column.getIsPinned() ? 0 : 'auto', // Stick to left
+                    zIndex: header.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
+                    background: header.column.getIsPinned()
+                      ? '#fff'
+                      : 'transparent', // Optional: Match table background
                   }}
                 >
                   {flexRender(
@@ -499,7 +526,17 @@ export const EventTable: React.FC<EventTableProps> = ({
               }}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
+                <TableCell
+                  key={cell.id}
+                  style={{
+                    position: cell.column.getIsPinned() ? 'sticky' : 'relative', // Make pinned cells sticky
+                    left: cell.column.getIsPinned() ? 0 : 'auto', // Stick to left
+                    zIndex: cell.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
+                    background: cell.column.getIsPinned()
+                      ? '#fff'
+                      : 'transparent', // Optional: Match row background
+                  }}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
