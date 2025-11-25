@@ -25,7 +25,10 @@ export const CalendarEntriesList = () => {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
         <header
           style={{
+            flex: 1,
             display: 'flex',
+            flexDirection: 'column',
+            overflowX: 'hidden', // Prevents horizontal scrolling on the page
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '16px 24px',

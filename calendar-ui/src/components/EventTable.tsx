@@ -475,8 +475,10 @@ export const EventTable: React.FC<EventTableProps> = ({
         padding: '24px',
         background: '#fff',
         borderRadius: 8,
+        flex: 1,
+        display: 'flex',
+        flexDirection: 'column',
         overflowX: 'auto',
-        maxWidth: '800px',
       }}
     >
       <Table>
