@@ -64,7 +64,7 @@ export const CalendarEntriesList = () => {
         {/* Content */}
         <div
           style={{
-            padding: '24px',
+            // padding: '24px',
             overflowY: 'auto',
             backgroundColor: '#fafafa',
             flex: 1,

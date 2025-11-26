@@ -1,3 +1,4 @@
+import { Icon } from '@fluentui/react';
 import {
   Table,
   TableBody,
@@ -10,7 +11,12 @@ import {
   makeStyles,
 } from '@fluentui/react-components';
 
-import { CheckmarkCircle24Regular } from '@fluentui/react-icons';
+import {
+  Calendar24Regular,
+  CheckmarkCircle24Regular,
+  Clock20Regular,
+  Location20Regular,
+} from '@fluentui/react-icons';
 import {
   flexRender,
   getCoreRowModel,
@@ -64,11 +70,17 @@ type EventRow = {
   leads: string[] | undefined;
   commsMaterials: string[] | undefined;
   reports: string[] | undefined;
+  tags: string[] | undefined;
+  startDate: Date;
+  endDate: Date | undefined;
+  location: string | undefined;
 };
 
 // Dummy table data
 const eventData: EventRow[] = [
   {
+    startDate: new Date('2025-01-21T09:30:00'),
+    endDate: new Date('2025-03-29'),
     date: 'Jan 21 – Mar 29',
     id: 'PSFS-113714',
     title: '$6M to increase Indigenous learners...',
@@ -93,10 +105,14 @@ const eventData: EventRow[] = [
       'Q&As',
       'Speaking notes',
     ],
-    reports: undefined,
+    reports: ['Report One', 'Report Two'],
+    tags: undefined,
+    location: undefined,
   },
   {
     date: 'Feb 4 – Mar 27',
+    startDate: new Date('2025-02-04T09:30:00'),
+    endDate: new Date('2025-03-27'),
     id: 'TACS-116305',
     title: 'Royal BC Museum Phase 2 Conversations',
     category: 'Issue',
@@ -110,13 +126,17 @@ const eventData: EventRow[] = [
     ministry: 'hlth',
     confidential: 'CONFIDENTIAL Issue',
     summary: undefined,
-    representatives: undefined,
-    leads: undefined,
-    commsMaterials: undefined,
-    reports: undefined,
+    representatives: ['Minister Smith', 'Deputy Minister Johnson'],
+    leads: ['Lead One', 'Lead Two'],
+    commsMaterials: ['Event or media plan', 'Media advisory'],
+    reports: ['Report One', 'Report Two'],
+    tags: ['ECC'],
+    location: 'BC Legislature, Victoria BC',
   },
   {
     date: 'Feb 29 – Apr 8',
+    startDate: new Date('2025-02-29T09:30:00'),
+    endDate: new Date('2025-04-08'),
     id: 'MOTI-112502',
     title: 'Pattullo Bridge Project milestone',
     category: 'Release',
@@ -135,10 +155,14 @@ const eventData: EventRow[] = [
     leads: undefined,
     commsMaterials: undefined,
     reports: undefined,
+    tags: ['Infrastructure', 'Transportation'],
+    location: undefined,
   },
 
   {
     date: 'Mar 1 – Mar 31',
+    startDate: new Date('2025-03-01T09:30:00'),
+    endDate: new Date('2025-03-31'),
     id: 'HLTH-116081',
     title: 'Pharmacy Appreciation Month',
     category: 'Event',
@@ -157,6 +181,8 @@ const eventData: EventRow[] = [
     leads: undefined,
     commsMaterials: undefined,
     reports: undefined,
+    tags: ['Health', 'Pharmacy'],
+    location: undefined,
   },
 ];
 
@@ -227,16 +253,16 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
   );
 };
-const arrayIncludesFilterFn: FilterFn<EventRow> = (
-  row,
-  columnId: string,
-  filterValue: string[] | string | undefined
-) => {
-  if (filterValue && filterValue.length) {
-    // don't filter anything if no filter selected
-    return filterValue.includes(row.original.category.toLocaleLowerCase());
-  } else return true;
-};
+// const arrayIncludesFilterFn: FilterFn<EventRow> = (
+//   row,
+//   columnId: string,
+//   filterValue: string[] | string | undefined
+// ) => {
+//   if (filterValue && filterValue.length) {
+//     // don't filter anything if no filter selected
+//     return filterValue.includes(row.original.category.toLocaleLowerCase());
+//   } else return true;
+// };
 
 // I'd love to consolidate this with the function above, but not bothering right now
 const arrayIncludesStatusFilterFn: FilterFn<EventRow> = (
@@ -316,7 +342,7 @@ export const EventTable: React.FC<EventTableProps> = ({
         header: 'Overview',
         enableResizing: false,
         enablePinning: true,
-        size: 250,
+        size: 200,
         cell: ({ row }) => (
           <div>
             {/* todo: Let's make these complicated columns separate components, and pass everything in as props*/}
@@ -346,41 +372,144 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('summary', {
         header: 'Summary',
-        size: 800,
+        size: 250,
         enableResizing: false,
-        cell: (info) => info.getValue(),
+        cell: ({ row }) => (
+          <div>
+            {row.original.summary}
+            <div
+              style={{
+                marginTop: 8,
+                display: 'flex',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
+              {row.original.tags && row.original.tags.length
+                ? row.original.tags.map((tag) => (
+                    <Badge key={tag} appearance="filled">
+                      {tag}
+                    </Badge>
+                  ))
+                : null}
+            </div>
+          </div>
+        ),
       }),
       columnHelper.accessor('date', {
         header: 'Schedule',
-        cell: (info) => info.getValue(),
+        cell: ({ row }) => {
+          const start: Date = row.original.startDate;
+          const end: Date | undefined = row.original.endDate;
+
+          const dateLine = (
+            <div style={{ display: 'flex', alignItems: 'center' }}>
+              <Calendar24Regular />
+              <span>
+                {start.toLocaleDateString(undefined, {
+                  month: 'short',
+                  day: 'numeric',
+                })}
+                {end
+                  ? ` – ${end.toLocaleDateString(undefined, {
+                      month: 'short',
+                      day: 'numeric',
+                    })}`
+                  : ''}
+              </span>
+            </div>
+          );
+
+          const timeLine = (
+            <div
+              style={{ marginTop: 6, display: 'flex', alignItems: 'center' }}
+            >
+              <Clock20Regular />
+              <span>
+                {start.toLocaleTimeString(undefined, {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+                {end
+                  ? ` – ${end.toLocaleTimeString(undefined, {
+                      hour: 'numeric',
+                      minute: '2-digit',
+                    })}`
+                  : ''}
+              </span>
+            </div>
+          );
+
+          const locationLine = row.original.location ? (
+            <div
+              style={{ marginTop: 6, display: 'flex', alignItems: 'center' }}
+            >
+              <Location20Regular />
+              <span>{row.original.location}</span>
+            </div>
+          ) : null;
+
+          return (
+            <div>
+              {dateLine}
+              {timeLine}
+              {locationLine}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor('representatives', {
         header: 'Representatives',
-        cell: (info) => info.getValue(),
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {row.original.representatives && row.original.representatives.length
+              ? row.original.representatives.map((rep) => (
+                  <Badge key={rep} appearance="outline">
+                    {rep}
+                  </Badge>
+                ))
+              : null}
+          </div>
+        ),
       }),
       columnHelper.accessor('leads', {
         header: 'Leads',
-        cell: (info) => info.getValue(),
+        size: 80,
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {row.original.leads && row.original.leads.length
+              ? row.original.leads.map((lead) => (
+                  <div key={lead} style={{ fontWeight: 'bold' }}>
+                    {lead}
+                  </div>
+                ))
+              : null}
+          </div>
+        ),
       }),
       columnHelper.accessor('commsMaterials', {
         header: 'Comms Materials',
         cell: (info) => info.getValue(),
       }),
-      // Todo: I should rethink how these work...
-      columnHelper.accessor('title', {
-        cell: (info) => info.getValue(),
+      columnHelper.accessor('reports', {
+        header: 'Reports',
+        size: 100,
+        cell: ({ row }) => (
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            {row.original.reports && row.original.reports.length
+              ? row.original.reports.map((report) => (
+                  <Badge key={report} appearance="filled">
+                    {report}
+                  </Badge>
+                ))
+              : null}
+          </div>
+        ),
       }),
-      columnHelper.accessor('category', {
-        cell: (info) => info.getValue(),
-        filterFn: arrayIncludesFilterFn,
-      }),
-      columnHelper.accessor('type', {
-        cell: (info) => info.getValue(),
-      }),
-
       columnHelper.accessor('status', {
         //id: 'status', // Unique ID for this display column
         header: 'Status',
+        size: 100,
         filterFn: arrayIncludesStatusFilterFn,
         sortingFn: sortStatusFn,
         sortUndefined: -1,
@@ -410,9 +539,19 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
 
       // TODO: make all these a 'tabListFilter' column with all the values, and custom filter to victory.
+      columnHelper.accessor('category', {
+        enableHiding: true,
+        cell: (info) => info.getValue(),
+        filterFn: multiColumnTabFilterFn,
+      }),
+       columnHelper.accessor('title', {
+        enableHiding: true,
+        cell: (info) => info.getValue(),
+        filterFn: multiColumnTabFilterFn,
+      }),
       columnHelper.accessor('mine', {
         enableHiding: true,
-        cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
+        cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
       }),
       columnHelper.accessor('sharedWithMe', {
@@ -422,7 +561,7 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('ministry', {
         enableHiding: true,
-        cell: (info) => (info.getValue() ? <CheckmarkCircle24Regular /> : null),
+        cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
       }),
     ],
@@ -472,89 +611,105 @@ export const EventTable: React.FC<EventTableProps> = ({
   return (
     <div
       style={{
-        padding: '24px',
+        // padding: '0px, 100px, 0px, 24px',
         background: '#fff',
         borderRadius: 8,
-        flex: 1,
         display: 'flex',
         flexDirection: 'column',
-        overflowX: 'auto',
+        height: '100%',
+        minHeight: 0,
       }}
     >
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHeaderCell
-                  key={header.id}
-                  onClick={
-                    header.column.getCanSort()
-                      ? header.column.getToggleSortingHandler()
-                      : undefined
-                  }
-                  style={{
-                    cursor: header.column.getCanSort() ? 'pointer' : undefined,
-                    width: header.getSize(),
-                    maxWidth: '250px',
-                    position: header.column.getIsPinned()
-                      ? 'sticky'
-                      : 'relative', // Make pinned columns sticky
-                    left: header.column.getIsPinned()
-                      ? header.column.id === 'id' // Only offset the 'id' column. This was a freaking ordeal
-                        ? `${header.column.getStart('left') + 16}px`
-                        : `${header.column.getStart('left')}px`
-                      : 'auto',
-                    zIndex: header.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
-                    background: header.column.getIsPinned()
-                      ? '#fff'
-                      : 'transparent', // Optional: Match table background
-                  }}
-                >
-                  {flexRender(
-                    header.column.columnDef.header,
-                    header.getContext()
-                  )}
-                  {header.column.getIsSorted() === 'asc' && ' ▲'}
-                  {header.column.getIsSorted() === 'desc' && ' ▼'}
-                </TableHeaderCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow
-              key={row.id}
-              style={{ cursor: 'pointer' }}
-              onClick={() => {
-                void navigate('/details', { state: row.original });
-              }}
-            >
-              {row.getVisibleCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  style={{
-                    position: cell.column.getIsPinned() ? 'sticky' : 'relative', // Make pinned cells sticky
-                    left: cell.column.getIsPinned()
-                      ? cell.column.id === 'id'
-                        ? `${cell.column.getStart('left') + 16}px`
-                        : `${cell.column.getStart('left')}px`
-                      : 'auto',
-                    zIndex: cell.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
-                    background: cell.column.getIsPinned()
-                      ? '#fff'
-                      : 'transparent', // Optional: Match row background
-                    boxSizing: 'border-box', // Include padding in width calculation
-                  }}
-                >
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+      <div
+        style={{
+          overflowX: 'auto',
+          overflowY: 'auto',
+          flex: 1,
+          minHeight: 0,
+          minWidth: 0,
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHeaderCell
+                    key={header.id}
+                    onClick={
+                      header.column.getCanSort()
+                        ? header.column.getToggleSortingHandler()
+                        : undefined
+                    }
+                    style={{
+                      cursor: header.column.getCanSort()
+                        ? 'pointer'
+                        : undefined,
+                      width: header.getSize(),
+                      position: header.column.getIsPinned()
+                        ? 'sticky'
+                        : 'relative', // Make pinned columns sticky
+                      left: header.column.getIsPinned()
+                        ? header.column.id === 'id' // Only offset the 'id' column. This was a freaking ordeal
+                          ? `${header.column.getStart('left') + 16}px`
+                          : `${header.column.getStart('left')}px`
+                        : 'auto',
+                      zIndex: header.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
+                      background: header.column.getIsPinned()
+                        ? '#fff'
+                        : 'transparent', // Optional: Match table background
+                    }}
+                  >
+                    {flexRender(
+                      header.column.columnDef.header,
+                      header.getContext()
+                    )}
+                    {header.column.getIsSorted() === 'asc' && ' ▲'}
+                    {header.column.getIsSorted() === 'desc' && ' ▼'}
+                  </TableHeaderCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow
+                key={row.id}
+                style={{ cursor: 'pointer' }}
+                onClick={() => {
+                  void navigate('/details', { state: row.original });
+                }}
+              >
+                {row.getVisibleCells().map((cell) => (
+                  <TableCell
+                    key={cell.id}
+                    style={{
+                      position: cell.column.getIsPinned()
+                        ? 'sticky'
+                        : 'relative', // Make pinned cells sticky
+                      left: cell.column.getIsPinned()
+                        ? cell.column.id === 'id'
+                          ? `${cell.column.getStart('left') + 16}px`
+                          : `${cell.column.getStart('left')}px`
+                        : 'auto',
+                      zIndex: cell.column.getIsPinned() ? 1 : 'auto', // Ensure it stays on top
+                      background: cell.column.getIsPinned()
+                        ? '#fff'
+                        : 'transparent', // Optional: Match row background
+                      boxSizing: 'border-box', // Include padding in width calculation
+                      width: cell.column.columnDef.size,
+                      minWidth: cell.column.columnDef.size,
+                    }}
+                  >
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       <div
         style={{ marginTop: 16, display: 'flex', gap: 8, alignItems: 'center' }}
       >
