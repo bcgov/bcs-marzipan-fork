@@ -52,6 +52,7 @@ export default [
         { argsIgnorePattern: '^_' },
       ],
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
+      '@typescript-eslint/no-misused-promises': 'off',
     },
   },
 

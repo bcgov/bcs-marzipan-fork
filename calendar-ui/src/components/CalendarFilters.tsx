@@ -12,6 +12,7 @@ import {
   MenuTrigger,
   MenuItemCheckbox,
   MenuProps,
+  MenuCheckedValueChangeData,
 } from '@fluentui/react-components';
 import { FilterAddRegular, FilterRegular } from '@fluentui/react-icons';
 
@@ -21,7 +22,7 @@ import { set } from 'zod';
 
 interface FilterProps {
   filters: ColumnFiltersState;
-  onFiltersChanged: any;
+  onFiltersChanged: (filters: ColumnFiltersState) => void;
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({
@@ -40,20 +41,18 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   >({ category: [] });
   // ({ category: ["release", "issue", "event"] });
   const onStatusChange: MenuProps['onCheckedValueChange'] = (
-    e: any,
-    { name, checkedItems }: any
+    _,
+    { name, checkedItems }: MenuCheckedValueChangeData
   ) => {
-    console.log('on status change');
     setCheckedStatusValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
   };
 
   const onCategoryChange: MenuProps['onCheckedValueChange'] = (
-    e: any,
-    { name, checkedItems }: any
+    _, // e: MenuCheckedValueChangeEvent,
+    { name, checkedItems }: MenuCheckedValueChangeData
   ) => {
-    console.log('on category change');
     setCheckedCategoryValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });

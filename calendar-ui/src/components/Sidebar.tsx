@@ -39,19 +39,22 @@ import {
   PreviewLink20Regular,
   bundleIcon,
   PersonCircle32Regular,
-  Calendar16Regular,
   Calendar20Regular,
   Calendar20Filled,
 } from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
   root: {
-    overflow: 'hidden',
+    overflow: 'visible',
     display: 'flex',
     height: '100vh',
+    position: 'relative',
+    zIndex: 2000,
   },
   nav: {
     minWidth: '260px',
+    position: 'relative',
+    zIndex: 2000,
   },
   content: {
     flex: '1',
@@ -87,9 +90,13 @@ const HealthPlans = bundleIcon(HeartPulse20Filled, HeartPulse20Regular);
 
 type DrawerType = Required<DrawerProps>['type'];
 
-export const Sidebar = () => {
+type SidebarProps = {
+  isOpen: boolean;
+  onToggle: () => void;
+};
+
+export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const styles = useStyles();
-  const [isOpen, setIsOpen] = React.useState(true);
   const [enabledLinks, setEnabledLinks] = React.useState(true);
   const [type, setType] = React.useState<DrawerType>('inline');
   const [isMultiple, setIsMultiple] = React.useState(true);
@@ -122,7 +129,7 @@ export const Sidebar = () => {
       >
         <NavDrawerHeader>
           <Tooltip content="Close Navigation" relationship="label">
-            <Hamburger onClick={() => setIsOpen(!isOpen)} />
+            <Hamburger onClick={() => onToggle()} />
           </Tooltip>
         </NavDrawerHeader>
 
@@ -178,11 +185,11 @@ export const Sidebar = () => {
           </NavCategory>
         </NavDrawerBody>
       </NavDrawer>
-      <div className={styles.content}>
+        <div className={styles.content}>
         {!isOpen && (
           <Tooltip content="Toggle navigation pane" relationship="label">
             <Hamburger
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => onToggle()}
               {...restoreFocusTargetAttributes}
               aria-expanded={isOpen}
             />
