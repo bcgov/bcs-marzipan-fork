@@ -581,6 +581,8 @@ export const EventTable: React.FC<EventTableProps> = ({
         sharedWithMe: false,
         mine: false,
         ministry: false,
+        title: false,
+        category: false,
       },
       columnPinning: { left: ['select', 'id'] }, // Pin the 'id' column to the left
     },
