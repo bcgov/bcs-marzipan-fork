@@ -98,7 +98,7 @@ type SidebarProps = {
 export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const styles = useStyles();
   const [enabledLinks, setEnabledLinks] = React.useState(true);
-  const [type, setType] = React.useState<DrawerType>("inline");
+  const [type, setType] = React.useState<DrawerType>('inline');
   const [isMultiple, setIsMultiple] = React.useState(true);
   const location = useLocation();
 

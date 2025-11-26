@@ -1,0 +1,15 @@
+echo "Running pre-commit checks (non-blocking)..."
+
+# Auto-fix linting issues
+echo "Auto-fixing linting issues..."
+npm run lint || echo "Warning: Some linting issues could not be auto-fixed"
+
+# Check for remaining linting issues (non-blocking)
+echo "Checking for remaining linting issues..."
+npm run lint:check || echo "Warning: Linting issues found"
+
+# Check formatting (non-blocking)
+echo "Checking code formatting..."
+npm run format:check || echo "Warning: Formatting issues found"
+
+echo "✅ Pre-commit checks completed (non-blocking mode)"
