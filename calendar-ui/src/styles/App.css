@@ -2,6 +2,7 @@ html, body {
     margin: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background-color: #f3f2f1;
+    overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {

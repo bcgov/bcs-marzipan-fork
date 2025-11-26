@@ -28,6 +28,7 @@ lerna-debug.log*
 Thumbs.db
 .vscode/
 .idea/
+*.patch
 
 # testing
 /coverage
