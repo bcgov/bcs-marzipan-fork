@@ -44,7 +44,6 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     _,
     { name, checkedItems }: MenuCheckedValueChangeData
   ) => {
-    console.log('on status change');
     setCheckedStatusValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });
@@ -54,7 +53,6 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     _, // e: MenuCheckedValueChangeEvent,
     { name, checkedItems }: MenuCheckedValueChangeData
   ) => {
-    console.log('on category change');
     setCheckedCategoryValues((s) => {
       return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
     });

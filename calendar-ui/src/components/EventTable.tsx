@@ -544,7 +544,7 @@ export const EventTable: React.FC<EventTableProps> = ({
         cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
       }),
-       columnHelper.accessor('title', {
+      columnHelper.accessor('title', {
         enableHiding: true,
         cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
