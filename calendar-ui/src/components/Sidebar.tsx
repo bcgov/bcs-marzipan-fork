@@ -1,5 +1,5 @@
-import { DrawerProps } from "@fluentui/react-components";
-import * as React from "react";
+import { DrawerProps } from '@fluentui/react-components';
+import * as React from 'react';
 import {
   AppItem,
   Hamburger,
@@ -12,14 +12,14 @@ import {
   NavSectionHeader,
   NavSubItem,
   NavSubItemGroup,
-} from "@fluentui/react-nav-preview";
-import { Link, useLocation } from "react-router-dom";
+} from '@fluentui/react-nav-preview';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Tooltip,
   makeStyles,
   tokens,
   useRestoreFocusTarget,
-} from "@fluentui/react-components";
+} from '@fluentui/react-components';
 import {
   Board20Filled,
   Board20Regular,
@@ -39,39 +39,42 @@ import {
   PreviewLink20Regular,
   bundleIcon,
   PersonCircle32Regular,
-  Calendar16Regular,
   Calendar20Regular,
   Calendar20Filled,
-} from "@fluentui/react-icons";
+} from '@fluentui/react-icons';
 
 const useStyles = makeStyles({
   root: {
-    overflow: "hidden",
-    display: "flex",
-    height: "100vh",
+    overflow: 'visible',
+    display: 'flex',
+    height: '100vh',
+    position: 'relative',
+    zIndex: 2000,
   },
   nav: {
-    minWidth: "260px",
+    minWidth: '260px',
+    position: 'relative',
+    zIndex: 2000,
   },
   content: {
-    flex: "1",
-    padding: "2px",
-    display: "grid",
-    justifyContent: "flex-start",
-    alignItems: "flex-start",
+    flex: '1',
+    padding: '2px',
+    display: 'grid',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
   },
   field: {
-    display: "flex",
-    marginTop: "4px",
-    marginLeft: "8px",
-    flexDirection: "column",
+    display: 'flex',
+    marginTop: '4px',
+    marginLeft: '8px',
+    flexDirection: 'column',
     gridRowGap: tokens.spacingVerticalS,
   },
 });
 
 const Person = bundleIcon(Person20Filled, Person20Regular);
 const Dashboard = bundleIcon(Board20Filled, Board20Regular);
-const Calendar = bundleIcon(Calendar20Filled, Calendar20Regular)
+const Calendar = bundleIcon(Calendar20Filled, Calendar20Regular);
 const Announcements = bundleIcon(MegaphoneLoud20Filled, MegaphoneLoud20Regular);
 const EmployeeSpotlight = bundleIcon(
   PersonLightbulb20Filled,
@@ -85,11 +88,15 @@ const PerformanceReviews = bundleIcon(
 const JobPostings = bundleIcon(NotePin20Filled, NotePin20Regular);
 const HealthPlans = bundleIcon(HeartPulse20Filled, HeartPulse20Regular);
 
-type DrawerType = Required<DrawerProps>["type"];
+type DrawerType = Required<DrawerProps>['type'];
 
-export const Sidebar = () => {
+type SidebarProps = {
+  isOpen: boolean;
+  onToggle: () => void;
+};
+
+export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
   const styles = useStyles();
-  const [isOpen, setIsOpen] = React.useState(true);
   const [enabledLinks, setEnabledLinks] = React.useState(true);
   const [type, setType] = React.useState<DrawerType>("inline");
   const [isMultiple, setIsMultiple] = React.useState(true);
@@ -98,18 +105,18 @@ export const Sidebar = () => {
   // Tabster prop used to restore focus to the navigation trigger for overlay nav drawers
   const restoreFocusTargetAttributes = useRestoreFocusTarget();
 
-  const linkDestination = enabledLinks ? "https://www.bing.com" : "";
+  const linkDestination = enabledLinks ? 'https://www.bing.com' : '';
 
   // Map paths to NavItem values
   const pathToValue: Record<string, string> = {
-    "/dashboard": "1",
-    "/": "2",
-    "/drafts": "3",
-    "/pitch": "4",
+    '/dashboard': '1',
+    '/': '2',
+    '/drafts': '3',
+    '/pitch': '4',
     // Add more mappings as needed
   };
 
-  const selectedValue = pathToValue[location.pathname] || "2";
+  const selectedValue = pathToValue[location.pathname] || '2';
 
   return (
     <div className={styles.root}>
@@ -122,7 +129,7 @@ export const Sidebar = () => {
       >
         <NavDrawerHeader>
           <Tooltip content="Close Navigation" relationship="label">
-            <Hamburger onClick={() => setIsOpen(!isOpen)} />
+            <Hamburger onClick={() => onToggle()} />
           </Tooltip>
         </NavDrawerHeader>
 
@@ -140,11 +147,7 @@ export const Sidebar = () => {
           <NavItem icon={<Calendar />} as="a" href="/" value="2">
             Calendar
           </NavItem>
-          <NavItem
-            as="a" href="/drafts"
-            icon={<EmployeeSpotlight />}
-            value="3"
-          >
+          <NavItem as="a" href="/drafts" icon={<EmployeeSpotlight />} value="3">
             Drafts
           </NavItem>
           <NavItem icon={<Search />} as="a" href="/pitch" value="4">
@@ -152,9 +155,7 @@ export const Sidebar = () => {
           </NavItem>
           <NavSectionHeader>Reporting</NavSectionHeader>
           <NavCategory value="6">
-            <NavCategoryItem icon={<JobPostings />}>
-              Reports
-            </NavCategoryItem>
+            <NavCategoryItem icon={<JobPostings />}>Reports</NavCategoryItem>
             <NavSubItemGroup>
               <NavSubItem href={linkDestination} value="7">
                 Analytics
@@ -184,11 +185,11 @@ export const Sidebar = () => {
           </NavCategory>
         </NavDrawerBody>
       </NavDrawer>
-      <div className={styles.content}>
+        <div className={styles.content}>
         {!isOpen && (
           <Tooltip content="Toggle navigation pane" relationship="label">
             <Hamburger
-              onClick={() => setIsOpen(!isOpen)}
+              onClick={() => onToggle()}
               {...restoreFocusTargetAttributes}
               aria-expanded={isOpen}
             />
