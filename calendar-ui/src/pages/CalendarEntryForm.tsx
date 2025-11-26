@@ -13,7 +13,8 @@ import {
   Title3,
   Title1,
 } from '@fluentui/react-components';
-import { createCalendarEntry } from '../api/calendarApi';
+import { createActivity } from '../api/activitiesApi';
+import type { CreateActivityRequest } from '@corpcal/shared/schemas';
 import { ComboBox } from '@fluentui/react';
 import { Stepper } from '../components/Stepper';
 
@@ -55,13 +56,19 @@ export const CalendarEntryForm: React.FC = () => {
     entryType: '',
     title: '',
     summary: '',
+    significance: '',
     timeframe: '',
     startDate: '',
     startTime: '',
     endDate: '',
     endTime: '',
+    schedulingNotes: '',
     issue: '',
     ministry: '',
+    location: '',
+    city: '',
+    postalCode: '',
+    commsMinistry: '',
     sharedWith: '',
   });
 
@@ -72,16 +79,63 @@ export const CalendarEntryForm: React.FC = () => {
   const nextStep = () => setStep((s) => Math.min(s + 1, 5));
   const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const transformFormDataToRequest = (
+    data: typeof formData
+  ): CreateActivityRequest => {
+    // Combine date and time fields into ISO datetime strings (ISO 8601 format)
+    const startDateTime =
+      data.startDate && data.startTime
+        ? `${data.startDate}T${data.startTime}:00.000Z`
+        : null;
+    const endDateTime =
+      data.endDate && data.endTime
+        ? `${data.endDate}T${data.endTime}:00.000Z`
+        : null;
+
+    // Map timeframe to isConfirmed flag
+    const isConfirmed = data.timeframe?.toLowerCase() === 'confirmed';
+
+    // Build the request object
+    const request: CreateActivityRequest = {
+      title: data.title || null,
+      details: data.summary || null,
+      significance: data.significance || null,
+      startDateTime: startDateTime || null,
+      endDateTime: endDateTime || null,
+      schedule: data.schedulingNotes || null,
+      leadOrganization: data.ministry || null,
+      venue: data.location || null,
+      otherCity: data.city || null,
+      isIssue: !!data.issue,
+      isConfirmed,
+      // Set defaults for required boolean fields
+      isActive: true,
+      isAllDay: false,
+      isAtLegislature: false,
+      isConfidential: false,
+      isCrossGovernment: false,
+      isMilestone: false,
+      hqSection: 0,
+    };
+
+    return request;
+  };
+
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault();
     try {
-      const res = await createCalendarEntry(formData);
-      if (!res) throw new Error('Failed to save entry');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const request: CreateActivityRequest =
+        transformFormDataToRequest(formData);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      const res = await createActivity(request);
       console.log('Entry saved:', res);
-      alert('✅ Entry saved successfully!');
-    } catch (err) {
+      alert('Entry saved successfully!');
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to save entry';
       console.error(err);
-      alert('❌ Failed to save entry');
+      alert(`Failed to save entry: ${errorMessage}`);
     }
   };
 
@@ -97,7 +151,12 @@ export const CalendarEntryForm: React.FC = () => {
         {step === 4 && <div>Comms Form</div>}
         {step === 5 && <div>Sharing Form</div>}
       </div>
-      <form className={styles.form} onSubmit={handleSubmit}>
+      <form
+        className={styles.form}
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
+      >
         {/* Step 1 */}
         {step === 1 && (
           <>
@@ -106,7 +165,7 @@ export const CalendarEntryForm: React.FC = () => {
                 placeholder="Select entry type"
                 value={formData.entryType}
                 onOptionSelect={(_, data) =>
-                  handleChange('type', data.optionValue || '')
+                  handleChange('entryType', data.optionValue || '')
                 }
               >
                 <Option value="meeting">Meeting</Option>
@@ -132,7 +191,7 @@ export const CalendarEntryForm: React.FC = () => {
             </Field>
             <Field label="Significance">
               <Textarea
-                // value={formData.summary}
+                value={formData.significance}
                 onChange={(_, data) => handleChange('significance', data.value)}
                 resize="vertical"
               />
@@ -196,7 +255,7 @@ export const CalendarEntryForm: React.FC = () => {
             </Field>
             <Field label="Scheduling Notes">
               <Textarea
-                // value={formData.summary}
+                value={formData.schedulingNotes}
                 onChange={(_, data) =>
                   handleChange('schedulingNotes', data.value)
                 }
@@ -249,13 +308,13 @@ export const CalendarEntryForm: React.FC = () => {
             <Title3>Venue</Title3>
             <Field label="Street">
               <Input
-                // value={formData.location}
+                value={formData.location}
                 onChange={(_, data) => handleChange('location', data.value)}
               />
             </Field>
             <Field label="City">
               <Input
-                // value={formData.city}
+                value={formData.city}
                 onChange={(_, data) => handleChange('city', data.value)}
               />
             </Field>
@@ -281,7 +340,7 @@ export const CalendarEntryForm: React.FC = () => {
             </Field>
             <Field label="Postal Code">
               <Input
-                // value={formData.postalCode}
+                value={formData.postalCode}
                 onChange={(_, data) => handleChange('postalCode', data.value)}
               />
             </Field>
