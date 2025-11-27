@@ -460,6 +460,13 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('representatives', {
         header: 'Representatives',
+        filterFn: (row, columnId, filterValue) => {
+          // filterValue is an array of selected representative names
+          if (!filterValue || !filterValue.length) return true;
+          const representatives = row.original.representatives || [];
+          // Only show rows that have at least one selected representative
+          return filterValue.some((val: string) => representatives.includes(val));
+        },
         cell: ({ row }) => (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {row.original.representatives && row.original.representatives.length

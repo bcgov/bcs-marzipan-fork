@@ -43,6 +43,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   // ({ category: ["release", "issue", "event"] });
   const [dateRange, setDateRange] = React.useState<{ start: string; end: string }>({ start: '', end: '' });
   const [checkedReportsValues, setCheckedReportsValues] = React.useState<Record<string, string[]>>({ reports: [] });
+  const [checkedRepresentativesValues, setCheckedRepresentativesValues] = React.useState<Record<string, string[]>>({ representative: [] });
 
   const onStatusChange: MenuProps['onCheckedValueChange'] = (
     _,
@@ -68,6 +69,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     title: { id: 'title', value: '' },
     tabListFilter: { id: 'tabListFilter', value: tabFilterValue },
     reports: { id: 'reports', value: checkedReportsValues.reports || [] },
+    representatives: { id: 'representatives', value: checkedRepresentativesValues.representative || [] },
   };
 
   // Helper to handle date range change and apply filter
@@ -97,12 +99,14 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     filterData.title = { id: 'title', value: titleFilter || '' };
     filterData.tabListFilter = { id: 'mine', value: currentTabValue };
     filterData.reports = { id: 'reports', value: checkedReportsValues.reports || [] };
+    filterData.representatives = { id: 'representatives', value: checkedRepresentativesValues.representative || [] };
     const filterArr: ColumnFiltersState = [
       filterData.category,
       filterData.status,
       filterData.title,
       filterData.tabListFilter,
       filterData.reports,
+      filterData.representatives,
     ];
     // Add dateRange filter if both dates are set
     if ((startDate && endDate) || (dateRange.start && dateRange.end)) {
@@ -122,11 +126,12 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     setCheckedStatusValues({ status: [] });
     setTitleFilter('');
     setTabFilterValue('all');
+    setCheckedRepresentativesValues({ representative: [] });
   };
 
   useEffect(() => {
     applyFilters();
-  }, [checkedStatusValues, checkedCategoryValues, checkedReportsValues]);
+  }, [checkedStatusValues, checkedCategoryValues, checkedReportsValues, checkedRepresentativesValues]);
 
   return (
     <div>
@@ -280,14 +285,33 @@ export const CalendarFilters: React.FC<FilterProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
-      <Menu>
+      <Menu
+        checkedValues={checkedRepresentativesValues}
+        onCheckedValueChange={(_, { name, checkedItems }) => {
+          setCheckedRepresentativesValues((prev) => ({ ...prev, [name]: checkedItems }));
+        }}
+      >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton disabled>Representatives</MenuButton>
+          <MenuButton>
+            {`Representatives${
+              checkedRepresentativesValues['representative']?.length > 0
+                ? ' (' + checkedRepresentativesValues['representative'].length + ')'
+                : ''
+            } `}
+          </MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
+            {Array.from(
+              new Set(
+                eventData
+                  .flatMap((event) => event.representatives || [])
+              )
+            ).map((representative) => (
+              <MenuItemCheckbox key={representative} name="representative" value={representative}>
+                {representative}
+              </MenuItemCheckbox>
+            ))}
           </MenuList>
         </MenuPopover>
       </Menu>
@@ -297,8 +321,12 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
+            <MenuItemCheckbox name="lead" value="Lead One">
+              Lead One
+            </MenuItemCheckbox>
+            <MenuItemCheckbox name="lead" value="Lead Two">
+              Lead Two
+            </MenuItemCheckbox>
           </MenuList>
         </MenuPopover>
       </Menu>
@@ -309,18 +337,30 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         <MenuPopover>
           <MenuList>
             <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
           </MenuList>
         </MenuPopover>
       </Menu>
       <Menu>
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton disabled>Tags</MenuButton>
+          <MenuButton>Tags</MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
+            <MenuItemCheckbox name="tag" value="Infrastructure">
+              Infrastructure
+            </MenuItemCheckbox>
+            <MenuItemCheckbox name="tag" value="Transportation">
+              Transportation
+            </MenuItemCheckbox>
+             <MenuItemCheckbox name="tag" value="Health">
+              Health
+            </MenuItemCheckbox>
+             <MenuItemCheckbox name="tag" value="Pharmacy">
+              Pharmacy
+            </MenuItemCheckbox>
+             <MenuItemCheckbox name="tag" value="ECC">
+              ECC
+            </MenuItemCheckbox>
           </MenuList>
         </MenuPopover>
       </Menu>
