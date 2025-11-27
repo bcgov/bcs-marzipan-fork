@@ -1,21 +1,17 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { db } from '@corpcal/database';
+import { databaseProvider, DATABASE_CLIENT } from './database.provider';
+import { DatabaseService } from './database.service';
 
 /**
  * Database Module
- * Provides Drizzle database instance globally
- * The db instance is initialized from @corpcal/database package
+ * Provides Drizzle database instance globally using NestJS DI
+ * The database connection is configured via DATABASE_URL environment variable
  */
 @Global()
 @Module({
   imports: [ConfigModule],
-  providers: [
-    {
-      provide: 'DB',
-      useValue: db,
-    },
-  ],
-  exports: ['DB'],
+  providers: [databaseProvider, DatabaseService],
+  exports: [DATABASE_CLIENT, DatabaseService],
 })
 export class DatabaseModule {}
