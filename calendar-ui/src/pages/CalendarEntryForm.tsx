@@ -13,7 +13,7 @@ import {
   Title3,
   Title1,
 } from '@fluentui/react-components';
-import { createCalendarEntry } from '../api/calendarApi';
+import { createActivity } from '../api/activitiesApi';
 import { ComboBox } from '@fluentui/react';
 import { Stepper } from '../components/Stepper';
 
@@ -75,7 +75,7 @@ export const CalendarEntryForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await createCalendarEntry(formData);
+      const res = await createActivity(formData);
       if (!res) throw new Error('Failed to save entry');
       console.log('Entry saved:', res);
       alert('✅ Entry saved successfully!');
