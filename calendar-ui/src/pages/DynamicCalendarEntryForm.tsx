@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { calendarWizardSchema } from '../schemas/calendarWizard.schema';
-import { createActivity } from '../api/activitiesApi';
-import type { CreateActivityRequest } from '@corpcal/shared/schemas';
+import { createCalendarEntry } from '../api/calendarApi';
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import Wizard from '../components/DynamicWizard/Wizard';
 
@@ -16,60 +15,15 @@ const makeStyles = () => ({
 export const DynamicCalendarEntryForm: React.FC = () => {
   const styles = makeStyles();
 
-  // Transform wizard form values to CreateActivityRequest
-  const transformWizardDataToRequest = (
-    formValues: Record<string, any>
-  ): CreateActivityRequest => {
-    const details = formValues.details || {};
-    const schedule = formValues.schedule || {};
-
-    // Combine date and time fields into ISO datetime strings (ISO 8601 format)
-    const startDateTime =
-      schedule.startDate && schedule.startTime
-        ? `${schedule.startDate}T${schedule.startTime}:00.000Z`
-        : null;
-    const endDateTime =
-      schedule.endDate && schedule.endTime
-        ? `${schedule.endDate}T${schedule.endTime}:00.000Z`
-        : null;
-
-    // Map timeframe to isConfirmed flag
-    const isConfirmed = schedule.timeframe?.toLowerCase() === 'confirmed';
-
-    // Build the request object
-    const request: CreateActivityRequest = {
-      title: details.title || null,
-      details: details.summary || null,
-      startDateTime: startDateTime || null,
-      endDateTime: endDateTime || null,
-      leadOrganization: details.ministry || null,
-      isIssue: !!formValues.events?.issue,
-      isConfirmed,
-      // Set defaults for required boolean fields
-      isActive: true,
-      isAllDay: false,
-      isAtLegislature: false,
-      isConfidential: false,
-      isCrossGovernment: false,
-      isMilestone: false,
-      hqSection: 0,
-    };
-
-    return request;
-  };
-
   // This is the function that will send the data to your API
   const handleSubmit = async (formValues: Record<string, any>) => {
     try {
-      const request = transformWizardDataToRequest(formValues);
-      await createActivity(request);
+      await createCalendarEntry(formValues); // Call your API function
       // Optionally show a success message or redirect
       alert('Calendar entry saved!');
     } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to save entry';
       // Optionally show an error message
-      alert(`Failed to save entry: ${errorMessage}`);
+      alert('Failed to save entry.');
       console.error(err);
     }
   };

@@ -26,42 +26,30 @@ export const CalendarEntriesList = () => {
         <header
           style={{
             display: 'flex',
+            flexDirection: 'row',
+            overflowX: 'hidden', // Prevents horizontal scrolling on the page
             alignItems: 'center',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-end',
             padding: '16px 24px',
             borderBottom: '1px solid #e0e0e0',
             backgroundColor: '#ffffff',
+            gap: '16px',
           }}
         >
-          {/* Left: Title and Search */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-            <Input
-              placeholder="Enter keyword, activity ID, or location"
-              style={{ width: '320px' }}
-              onChange={(_, data) => {
-                handleKeywordInput(data.value);
-              }}
-            />
-          </div>
-
-          {/* Right: Icons + Avatar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <div>
-              <Button
-                appearance="primary"
-                onClick={() => window.open('/entry-form', '_blank')}
-                icon={<Add24Regular />}
-              >
-                Add new
-              </Button>
-            </div>
-          </div>
+          {/* Add Button */}
+          <Button
+            appearance="primary"
+            onClick={() => window.open('/entry-form', '_blank')}
+            icon={<Add24Regular />}
+          >
+            New Entry
+          </Button>
         </header>
 
         {/* Content */}
         <div
           style={{
-            padding: '24px',
+            // padding: '24px',
             overflowY: 'auto',
             backgroundColor: '#fafafa',
             flex: 1,
