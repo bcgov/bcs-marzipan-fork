@@ -185,7 +185,7 @@ export const Sidebar = ({ isOpen, onToggle }: SidebarProps) => {
           </NavCategory>
         </NavDrawerBody>
       </NavDrawer>
-      <div className={styles.content}>
+        <div className={styles.content}>
         {!isOpen && (
           <Tooltip content="Toggle navigation pane" relationship="label">
             <Hamburger

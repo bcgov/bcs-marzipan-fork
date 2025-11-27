@@ -13,6 +13,7 @@ import {
   Title3,
   Title1,
 } from '@fluentui/react-components';
+
 import { createActivity } from '../api/activitiesApi';
 import { ComboBox } from '@fluentui/react';
 import { Stepper } from '../components/Stepper';
