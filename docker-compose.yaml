@@ -2,7 +2,7 @@ services:
   api-gateway:
     build: ./api-gateway
     ports:
-      - "3000:3000"
+      - '3000:3000'
     depends_on:
       - calendar-service
 
@@ -11,7 +11,7 @@ services:
       context: .
       dockerfile: calendar-service/Dockerfile
     ports:
-      - "3001:3001"
+      - '3001:3001'
     environment:
       - DATABASE_URL=${DATABASE_URL}
       - PORT=${PORT:-3001}
@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: calendar-ui/Dockerfile
     ports:
-      - "8080:80"
+      - '8080:80'
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL:-http://localhost:3001}
     depends_on:
