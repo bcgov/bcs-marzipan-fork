@@ -19,6 +19,7 @@ import { FilterAddRegular, FilterRegular } from '@fluentui/react-icons';
 import { ColumnFiltersState } from '@tanstack/react-table';
 import React, { useEffect } from 'react';
 import { set } from 'zod';
+import { eventData } from './EventTable';
 
 interface FilterProps {
   filters: ColumnFiltersState;
@@ -40,6 +41,9 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     Record<string, string[]>
   >({ category: [] });
   // ({ category: ["release", "issue", "event"] });
+  const [dateRange, setDateRange] = React.useState<{ start: string; end: string }>({ start: '', end: '' });
+  const [checkedReportsValues, setCheckedReportsValues] = React.useState<Record<string, string[]>>({ reports: [] });
+
   const onStatusChange: MenuProps['onCheckedValueChange'] = (
     _,
     { name, checkedItems }: MenuCheckedValueChangeData
@@ -63,9 +67,24 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     status: { id: 'status', value: [''] },
     title: { id: 'title', value: '' },
     tabListFilter: { id: 'tabListFilter', value: tabFilterValue },
+    reports: { id: 'reports', value: checkedReportsValues.reports || [] },
   };
 
-  const applyFilters = (tabValue?: string) => {
+  // Helper to handle date range change and apply filter
+  const handleDateRangeChange = (field: 'start' | 'end', value: string) => {
+    setDateRange((prev) => {
+      const updated = { ...prev, [field]: value };
+      // Only apply filter if both dates are set
+      if (updated.start && updated.end) {
+        applyFilters(undefined, updated.start, updated.end);
+      } else {
+        applyFilters();
+      }
+      return updated;
+    });
+  };
+
+  const applyFilters = (tabValue?: string, startDate?: string, endDate?: string) => {
     const currentTabValue = tabValue || tabFilterValue; // Use passed value if provided, else fall back to state
     filterData.category = {
       id: 'category',
@@ -75,19 +94,20 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       id: 'status',
       value: checkedStatusValues.status || [],
     };
-    if (titleFilter) {
-      filterData.title = { id: 'title', value: titleFilter };
-    } else {
-      filterData.title = { id: 'title', value: '' };
-    }
+    filterData.title = { id: 'title', value: titleFilter || '' };
     filterData.tabListFilter = { id: 'mine', value: currentTabValue };
+    filterData.reports = { id: 'reports', value: checkedReportsValues.reports || [] };
     const filterArr: ColumnFiltersState = [
       filterData.category,
       filterData.status,
       filterData.title,
       filterData.tabListFilter,
+      filterData.reports,
     ];
-
+    // Add dateRange filter if both dates are set
+    if ((startDate && endDate) || (dateRange.start && dateRange.end)) {
+      filterArr.unshift({ id: 'dateRange', value: { start: startDate || dateRange.start, end: endDate || dateRange.end } });
+    }
     onFiltersChanged(filterArr);
   };
 
@@ -106,7 +126,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
 
   useEffect(() => {
     applyFilters();
-  }, [checkedStatusValues, checkedCategoryValues]);
+  }, [checkedStatusValues, checkedCategoryValues, checkedReportsValues]);
 
   return (
     <div>
@@ -123,26 +143,47 @@ export const CalendarFilters: React.FC<FilterProps> = ({
 
       <Menu>
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton className="dropdownItem" disabled>
-            Date
-          </MenuButton>
+          <MenuButton className="dropdownItem">Date</MenuButton>
         </MenuTrigger>
         <MenuPopover>
-          <MenuList>{/* I assum this will be a range */}</MenuList>
+          <MenuList>
+            <MenuItem>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }} onClick={(e) => e.stopPropagation()}>
+                <label>
+                  Start Date:
+                  <input
+                    type="date"
+                    value={dateRange.start}
+                    onChange={(e) => handleDateRangeChange('start', e.target.value)}
+                    style={{ marginLeft: 8 }}
+                  />
+                </label>
+                <label>
+                  End Date:
+                  <input
+                    type="date"
+                    value={dateRange.end}
+                    onChange={(e) => handleDateRangeChange('end', e.target.value)}
+                    style={{ marginLeft: 8 }}
+                  />
+                </label>
+              </div>
+            </MenuItem>
+          </MenuList>
         </MenuPopover>
       </Menu>
+
       <Menu
         checkedValues={checkedCategoryValues}
         onCheckedValueChange={onCategoryChange}
       >
         <MenuTrigger disableButtonEnhancement>
           <MenuButton>
-            {' '}
-            {`Categories${
+            {`Category${
               checkedCategoryValues['category']?.length > 0
                 ? ' (' + checkedCategoryValues['category'].length + ')'
                 : ''
-            } `}{' '}
+            } `}
           </MenuButton>
         </MenuTrigger>
         <MenuPopover>
@@ -201,36 +242,41 @@ export const CalendarFilters: React.FC<FilterProps> = ({
         </MenuPopover>
       </Menu>
 
-      <Menu>
+      <Menu
+        checkedValues={checkedReportsValues}
+        onCheckedValueChange={(_, { name, checkedItems }) => {
+          setCheckedReportsValues((prev) => ({ ...prev, [name]: checkedItems }));
+        }}
+      >
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton disabled>Reports</MenuButton>
+          <MenuButton>Reports</MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
+            { /* todo: we will need to map this to something concrete one day soon, 
+            like from people in a contacts who are "reports", whatever that means. */ }
+            <MenuItemCheckbox name="reports" value="Report One">
+              Report One
+            </MenuItemCheckbox>
+            <MenuItemCheckbox name="reports" value="Report Two">
+              Report Two
+            </MenuItemCheckbox>
           </MenuList>
         </MenuPopover>
       </Menu>
       <Menu>
         <MenuTrigger disableButtonEnhancement>
-          <MenuButton disabled>Location</MenuButton>
+          <MenuButton>Location</MenuButton>
         </MenuTrigger>
         <MenuPopover>
           <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
-          </MenuList>
-        </MenuPopover>
-      </Menu>
-      <Menu>
-        <MenuTrigger disableButtonEnhancement>
-          <MenuButton disabled>Category</MenuButton>
-        </MenuTrigger>
-        <MenuPopover>
-          <MenuList>
-            <MenuItem>Item a</MenuItem>
-            <MenuItem>Item b</MenuItem>
+            { /* same thing, will need actual location data one day */  }
+            <MenuItemCheckbox name="location" value="BC Legislature, Victoria BC">
+              BC Legislature, Victoria BC
+            </MenuItemCheckbox>
+            <MenuItemCheckbox name="location" value="Main Office, Vancouver BC">
+              Main Office, Vancouver BC
+            </MenuItemCheckbox>
           </MenuList>
         </MenuPopover>
       </Menu>

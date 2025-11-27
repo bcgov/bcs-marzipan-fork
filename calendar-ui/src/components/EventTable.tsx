@@ -77,7 +77,7 @@ type EventRow = {
 };
 
 // Dummy table data
-const eventData: EventRow[] = [
+export const eventData: EventRow[] = [
   {
     startDate: new Date('2025-01-21T09:30:00'),
     endDate: new Date('2025-03-29'),
@@ -154,7 +154,7 @@ const eventData: EventRow[] = [
     representatives: undefined,
     leads: undefined,
     commsMaterials: undefined,
-    reports: undefined,
+    reports: ['Report One'],
     tags: ['Infrastructure', 'Transportation'],
     location: undefined,
   },
@@ -494,6 +494,13 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('reports', {
         header: 'Reports',
         size: 100,
+        filterFn: (row, columnId, filterValue) => {
+          // filterValue is an array of selected report names
+          if (!filterValue || !filterValue.length) return true;
+          const reports = row.original.reports || [];
+          // Only show rows that have at least one selected report
+          return filterValue.some((val: string) => reports.includes(val));
+        },
         cell: ({ row }) => (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {row.original.reports && row.original.reports.length
@@ -542,7 +549,15 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('category', {
         enableHiding: true,
         cell: (info) => info.getValue(),
-        filterFn: multiColumnTabFilterFn,
+        filterFn: (row, columnId, filterValue) => {
+          // Expecting filterValue to be an array of selected category strings
+          if (!filterValue) return true;
+          const selected = Array.isArray(filterValue) ? filterValue : [filterValue];
+          if (selected.length === 0) return true;
+          const lowerSelected = selected.map((s: string) => String(s).toLowerCase());
+          const rowCat = String(row.original.category || '').toLowerCase();
+          return lowerSelected.includes(rowCat);
+        },
       }),
       columnHelper.accessor('title', {
         enableHiding: true,
@@ -568,13 +583,26 @@ export const EventTable: React.FC<EventTableProps> = ({
     [columnHelper, styles.statusBadge]
   );
 
+  // Date range filter function
+  const dateRangeFilterFn: FilterFn<EventRow> = (row, columnId, value) => {
+    if (!value || !value.start || !value.end) return true;
+    const start = new Date(value.start);
+    const end = new Date(value.end);
+    // Event must start and end within the range
+    return (
+      row.original.startDate >= start &&
+      row.original.endDate !== undefined &&
+      row.original.endDate <= end
+    );
+  };
+
   const table = useReactTable({
     data: eventData,
     columns,
     enableRowSelection: true,
     state: {
       sorting,
-      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      pagination: { pageIndex, pageSize: 5 },
       globalFilter,
       columnFilters,
       columnVisibility: {
@@ -584,10 +612,11 @@ export const EventTable: React.FC<EventTableProps> = ({
         title: false,
         category: false,
       },
-      columnPinning: { left: ['select', 'id'] }, // Pin the 'id' column to the left
+      columnPinning: { left: ['select', 'id'] },
     },
     filterFns: {
-      multiColumn: multiColumnTabFilterFn, // "mine", "Shared with me", and other tab options
+      multiColumn: multiColumnTabFilterFn,
+      dateRange: dateRangeFilterFn,
     },
     onSortingChange: setSorting,
     onPaginationChange: (updater) => {
