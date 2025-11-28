@@ -1,6 +1,6 @@
 import { EventTable } from '../components/EventTable';
 import { CalendarFilters } from '../components/CalendarFilters';
-import { Input, Button } from '@fluentui/react-components';
+import { Button } from '@fluentui/react-components';
 import { Add24Regular } from '@fluentui/react-icons';
 import { ColumnFiltersState } from '@tanstack/react-table';
 import { useState } from 'react';
@@ -10,7 +10,7 @@ export const CalendarEntriesList = () => {
   const [globalFilter, setGlobalFilter] = useState<string>('');
 
   // for filters set through the CalendarFilters component
-  const handleFilterUpdate = (filters: ColumnFiltersState) => {
+  const handleFilterUpdate = (filters: ColumnFiltersState): void => {
     setColumnFilters(filters);
   };
 
@@ -56,8 +56,8 @@ export const CalendarEntriesList = () => {
           }}
         >
           <CalendarFilters
-            filters={columnFilters}
             onFiltersChanged={handleFilterUpdate}
+            onKeywordFilterChanged={handleKeywordInput}
           />
           <EventTable
             filters={columnFilters}
