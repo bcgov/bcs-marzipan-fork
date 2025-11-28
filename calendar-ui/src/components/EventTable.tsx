@@ -1,4 +1,3 @@
-import { Icon } from '@fluentui/react';
 import {
   Table,
   TableBody,
@@ -77,7 +76,7 @@ type EventRow = {
 };
 
 // Dummy table data
-const eventData: EventRow[] = [
+export const eventData: EventRow[] = [
   {
     startDate: new Date('2025-01-21T09:30:00'),
     endDate: new Date('2025-03-29'),
@@ -154,7 +153,7 @@ const eventData: EventRow[] = [
     representatives: undefined,
     leads: undefined,
     commsMaterials: undefined,
-    reports: undefined,
+    reports: ['Report One'],
     tags: ['Infrastructure', 'Transportation'],
     location: undefined,
   },
@@ -253,16 +252,6 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
   );
 };
-// const arrayIncludesFilterFn: FilterFn<EventRow> = (
-//   row,
-//   columnId: string,
-//   filterValue: string[] | string | undefined
-// ) => {
-//   if (filterValue && filterValue.length) {
-//     // don't filter anything if no filter selected
-//     return filterValue.includes(row.original.category.toLocaleLowerCase());
-//   } else return true;
-// };
 
 // I'd love to consolidate this with the function above, but not bothering right now
 const arrayIncludesStatusFilterFn: FilterFn<EventRow> = (
@@ -460,6 +449,15 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('representatives', {
         header: 'Representatives',
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          // filterValue is an array of selected representative names
+          if (!filterValue || !filterValue.length) return true;
+          const representatives = row.original.representatives || [];
+          // Only show rows that have at least one selected representative
+          return filterValue.some((val: string) =>
+            representatives.includes(val)
+          );
+        },
         cell: ({ row }) => (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {row.original.representatives && row.original.representatives.length
@@ -486,6 +484,13 @@ export const EventTable: React.FC<EventTableProps> = ({
               : null}
           </div>
         ),
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          // filterValue is an array of selected report names
+          if (!filterValue || !filterValue.length) return true;
+          const leads = row.original.leads || [];
+          // Only show rows that have at least one selected report
+          return filterValue.some((val: string) => leads.includes(val));
+        },
       }),
       columnHelper.accessor('commsMaterials', {
         header: 'Comms Materials',
@@ -494,6 +499,13 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('reports', {
         header: 'Reports',
         size: 100,
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          // filterValue is an array of selected report names
+          if (!filterValue || !filterValue.length) return true;
+          const reports = row.original.reports || [];
+          // Only show rows that have at least one selected report
+          return filterValue.some((val: string) => reports.includes(val));
+        },
         cell: ({ row }) => (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
             {row.original.reports && row.original.reports.length
@@ -542,7 +554,19 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('category', {
         enableHiding: true,
         cell: (info) => info.getValue(),
-        filterFn: multiColumnTabFilterFn,
+        filterFn: (row, columnId, filterValue) => {
+          // Expecting filterValue to be an array of selected category strings
+          if (!filterValue) return true;
+          const selected = Array.isArray(filterValue)
+            ? filterValue
+            : [filterValue];
+          if (selected.length === 0) return true;
+          const lowerSelected = selected.map((s: string) =>
+            String(s).toLowerCase()
+          );
+          const rowCat = String(row.original.category || '').toLowerCase();
+          return lowerSelected.includes(rowCat);
+        },
       }),
       columnHelper.accessor('title', {
         enableHiding: true,
@@ -564,6 +588,17 @@ export const EventTable: React.FC<EventTableProps> = ({
         cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
       }),
+      columnHelper.accessor('tags', {
+        enableHiding: true,
+        cell: (info) => info.getValue(),
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          if (filterValue && filterValue.length) {
+            // don't filter anything if no filter selected
+            const rowTags = row.original.tags || [];
+            return filterValue.some((val: string) => rowTags.includes(val));
+          } else return true;
+        },
+      }),
     ],
     [columnHelper, styles.statusBadge]
   );
@@ -574,7 +609,7 @@ export const EventTable: React.FC<EventTableProps> = ({
     enableRowSelection: true,
     state: {
       sorting,
-      pagination: { pageIndex, pageSize: 5 }, // Show 2 rows per page for dem
+      pagination: { pageIndex, pageSize: 5 },
       globalFilter,
       columnFilters,
       columnVisibility: {
@@ -583,11 +618,13 @@ export const EventTable: React.FC<EventTableProps> = ({
         ministry: false,
         title: false,
         category: false,
+        tags: false,
       },
-      columnPinning: { left: ['select', 'id'] }, // Pin the 'id' column to the left
+      columnPinning: { left: ['select', 'id'] },
     },
     filterFns: {
-      multiColumn: multiColumnTabFilterFn, // "mine", "Shared with me", and other tab options
+      multiColumn: multiColumnTabFilterFn,
+      // dateRange: dateRangeFilterFn,
     },
     onSortingChange: setSorting,
     onPaginationChange: (updater) => {
