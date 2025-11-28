@@ -6,6 +6,11 @@ dist
 build
 *.tsbuildinfo
 
+# compiled scripts (scripts are run with ts-node, not compiled)
+scripts/**/*.js
+scripts/**/*.js.map
+scripts/**/*.d.ts
+
 # environment variables and secrets
 .env*
 !.env.example
