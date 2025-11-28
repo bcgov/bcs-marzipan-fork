@@ -24,11 +24,20 @@ export default [
 
   // Base recommended configs
   eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
+  // Type-checked configs (exclude scripts which have their own config)
+  ...tseslint.configs.recommendedTypeChecked.map((config) => ({
+    ...config,
+    files: config.files || ['**/*.ts', '**/*.tsx'],
+    ignores: [
+      ...(config.ignores || []),
+      'calendar-service/scripts/**/*.ts',
+    ],
+  })),
 
   // Calendar Service (NestJS) specific config - adopting Nest.js defaults
+  // Excludes scripts directory which has its own config below
   {
-    files: ['calendar-service/**/*.ts'],
+    files: ['calendar-service/**/*.ts', '!calendar-service/scripts/**/*.ts'],
     languageOptions: {
       globals: {
         ...globals.node,
@@ -53,6 +62,25 @@ export default [
       ],
       'prettier/prettier': ['error', { endOfLine: 'auto' }],
       '@typescript-eslint/no-misused-promises': 'off',
+    },
+  },
+  // Calendar Service scripts - basic linting without type checking
+  {
+    files: ['calendar-service/scripts/**/*.ts'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
+      sourceType: 'commonjs',
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-floating-promises': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'prettier/prettier': ['error', { endOfLine: 'auto' }],
     },
   },
 
