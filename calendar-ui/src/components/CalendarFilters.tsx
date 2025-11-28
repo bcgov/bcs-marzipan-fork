@@ -13,6 +13,7 @@ import {
   MenuItemCheckbox,
   MenuProps,
   MenuCheckedValueChangeData,
+  SearchBox,
 } from '@fluentui/react-components';
 import { FilterAddRegular, FilterRegular } from '@fluentui/react-icons';
 
@@ -24,13 +25,15 @@ import { eventData } from './EventTable';
 interface FilterProps {
   filters: ColumnFiltersState;
   onFiltersChanged: (filters: ColumnFiltersState) => void;
+  onKeywordFilterChanged: (keyword: string) => void;
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({
   filters,
   onFiltersChanged,
+  onKeywordFilterChanged,
 }) => {
-  const [titleFilter, setTitleFilter] = React.useState<string>();
+  const [keywordFilter, setKeywordFilter] = React.useState<string>();
   const [tabFilterValue, setTabFilterValue] = React.useState<string>('all');
 
   const [checkedStatusValues, setCheckedStatusValues] = React.useState<
@@ -84,7 +87,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   const filterData = {
     category: { id: 'category', value: [''] },
     status: { id: 'status', value: [''] },
-    title: { id: 'title', value: '' },
+    // keyword: { id: 'keyword', value: '' },
     tabListFilter: { id: 'tabListFilter', value: tabFilterValue },
     reports: { id: 'reports', value: checkedReportsValues.reports || [] },
     representatives: {
@@ -122,7 +125,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       id: 'status',
       value: checkedStatusValues.status || [],
     };
-    filterData.title = { id: 'title', value: titleFilter || '' };
+    // filterData.keyword = { id: 'keyword', value: keywordFilter || '' };
     filterData.tabListFilter = { id: 'mine', value: currentTabValue };
     filterData.reports = {
       id: 'reports',
@@ -136,7 +139,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     const filterArr: ColumnFiltersState = [
       filterData.category,
       filterData.status,
-      filterData.title,
+      // filterData.keyword,
       filterData.tabListFilter,
       filterData.reports,
       filterData.representatives,
@@ -164,7 +167,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   const handleClearFilters = () => {
     setCheckedCategoryValues({ category: [] });
     setCheckedStatusValues({ status: [] });
-    setTitleFilter('');
+    setKeywordFilter('');
     setTabFilterValue('all');
     setCheckedRepresentativesValues({ representative: [] });
     setCheckedReportsValues({ reports: [] });
@@ -182,6 +185,10 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     checkedRepresentativesValues,
     checkedTagsValues,
   ]);
+
+  useEffect(() => {
+    onKeywordFilterChanged(keywordFilter || '');
+  }, [keywordFilter]);
 
   return (
     <div>
@@ -455,10 +462,10 @@ export const CalendarFilters: React.FC<FilterProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
-      <Input
-        placeholder="Search by event title..."
+      <SearchBox
+        placeholder="Search"
         onChange={(_, data) => {
-          setTitleFilter(data.value);
+          setKeywordFilter(data.value);
         }}
       />
     </div>

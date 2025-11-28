@@ -10,7 +10,7 @@ export const CalendarEntriesList = () => {
   const [globalFilter, setGlobalFilter] = useState<string>('');
 
   // for filters set through the CalendarFilters component
-  const handleFilterUpdate = (filters: ColumnFiltersState) => {
+  const handleFilterUpdate = (filters: ColumnFiltersState): void => {
     setColumnFilters(filters);
   };
 
@@ -58,6 +58,7 @@ export const CalendarEntriesList = () => {
           <CalendarFilters
             filters={columnFilters}
             onFiltersChanged={handleFilterUpdate}
+            onKeywordFilterChanged={handleKeywordInput}
           />
           <EventTable
             filters={columnFilters}
