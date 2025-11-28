@@ -253,16 +253,6 @@ const multiColumnTabFilterFn: FilterFn<EventRow> = (
     String(row.original.ministry).toLowerCase().includes(lowerCaseFilter)
   );
 };
-// const arrayIncludesFilterFn: FilterFn<EventRow> = (
-//   row,
-//   columnId: string,
-//   filterValue: string[] | string | undefined
-// ) => {
-//   if (filterValue && filterValue.length) {
-//     // don't filter anything if no filter selected
-//     return filterValue.includes(row.original.category.toLocaleLowerCase());
-//   } else return true;
-// };
 
 // I'd love to consolidate this with the function above, but not bothering right now
 const arrayIncludesStatusFilterFn: FilterFn<EventRow> = (
@@ -495,6 +485,13 @@ export const EventTable: React.FC<EventTableProps> = ({
               : null}
           </div>
         ),
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          // filterValue is an array of selected report names
+          if (!filterValue || !filterValue.length) return true;
+          const leads = row.original.leads || [];
+          // Only show rows that have at least one selected report
+          return filterValue.some((val: string) => leads.includes(val));
+        },
       }),
       columnHelper.accessor('commsMaterials', {
         header: 'Comms Materials',
@@ -592,22 +589,20 @@ export const EventTable: React.FC<EventTableProps> = ({
         cell: (info) => info.getValue(),
         filterFn: multiColumnTabFilterFn,
       }),
+      columnHelper.accessor('tags', {
+        enableHiding: true,
+        cell: (info) => info.getValue(),
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
+          if (filterValue && filterValue.length) {
+            // don't filter anything if no filter selected
+            const rowTags = row.original.tags || [];
+            return filterValue.some((val: string) => rowTags.includes(val));
+          } else return true;
+        },
+      }),
     ],
     [columnHelper, styles.statusBadge]
   );
-
-  // Date range filter function
-  const dateRangeFilterFn: FilterFn<EventRow> = (row, columnId, value) => {
-    if (!value || !value.start || !value.end) return true;
-    const start = new Date(value.start);
-    const end = new Date(value.end);
-    // Event must start and end within the range
-    return (
-      row.original.startDate >= start &&
-      row.original.endDate !== undefined &&
-      row.original.endDate <= end
-    );
-  };
 
   const table = useReactTable({
     data: eventData,
@@ -624,12 +619,13 @@ export const EventTable: React.FC<EventTableProps> = ({
         ministry: false,
         title: false,
         category: false,
+        tags: false,
       },
       columnPinning: { left: ['select', 'id'] },
     },
     filterFns: {
       multiColumn: multiColumnTabFilterFn,
-      dateRange: dateRangeFilterFn,
+      // dateRange: dateRangeFilterFn,
     },
     onSortingChange: setSorting,
     onPaginationChange: (updater) => {
