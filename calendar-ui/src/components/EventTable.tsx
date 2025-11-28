@@ -1,4 +1,3 @@
-import { Icon } from '@fluentui/react';
 import {
   Table,
   TableBody,

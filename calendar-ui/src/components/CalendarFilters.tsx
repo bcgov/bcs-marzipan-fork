@@ -1,5 +1,4 @@
 import {
-  Input,
   Tab,
   TabList,
   SelectTabData,
@@ -15,7 +14,7 @@ import {
   MenuCheckedValueChangeData,
   SearchBox,
 } from '@fluentui/react-components';
-import { FilterAddRegular, FilterRegular } from '@fluentui/react-icons';
+import { FilterRegular } from '@fluentui/react-icons';
 
 import { ColumnFiltersState } from '@tanstack/react-table';
 import React, { useEffect } from 'react';
@@ -23,13 +22,11 @@ import { set } from 'zod';
 import { eventData } from './EventTable';
 
 interface FilterProps {
-  filters: ColumnFiltersState;
   onFiltersChanged: (filters: ColumnFiltersState) => void;
   onKeywordFilterChanged: (keyword: string) => void;
 }
 
 export const CalendarFilters: React.FC<FilterProps> = ({
-  filters,
   onFiltersChanged,
   onKeywordFilterChanged,
 }) => {
@@ -76,14 +73,6 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     });
   };
 
-  const onTagChange: MenuProps['onCheckedValueChange'] = (
-    _, // e: MenuCheckedValueChangeEvent,
-    { name, checkedItems }: MenuCheckedValueChangeData
-  ) => {
-    setCheckedTagsValues((s) => {
-      return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
-    });
-  };
   const filterData = {
     category: { id: 'category', value: [''] },
     status: { id: 'status', value: [''] },
