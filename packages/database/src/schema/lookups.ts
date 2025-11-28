@@ -12,6 +12,7 @@ import {
 /**
  * Status lookup table - Activity statuses
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/Status.cs
+ * Values: 'new', 'queued', 'reviewed', 'changed', 'paused', 'deleted'
  */
 export const statuses = pgTable('statuses', {
   id: serial('id').primaryKey(),
@@ -28,6 +29,7 @@ export const statuses = pgTable('statuses', {
 /**
  * City lookup table - Cities for activities
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/City.cs
+ * TODO: Consider address complete common component
  */
 export const cities = pgTable('cities', {
   id: serial('id').primaryKey(),
@@ -44,6 +46,7 @@ export const cities = pgTable('cities', {
 /**
  * Government Representative lookup table - Representatives for activities
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/GovernmentRepresentative.cs
+ * TODO: Consider ministry API
  */
 export const governmentRepresentatives = pgTable('government_representatives', {
   id: serial('id').primaryKey(),
@@ -61,6 +64,7 @@ export const governmentRepresentatives = pgTable('government_representatives', {
 /**
  * Communication Contact lookup table - Communication contacts for activities
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/CommunicationContact.cs
+ * TODO: this might be related to user accounts in the future
  */
 export const communicationContacts = pgTable('communication_contacts', {
   id: serial('id').primaryKey(),
@@ -112,6 +116,7 @@ export const videographers = pgTable('videographers', {
 /**
  * Category lookup table - Classification categories for activities
  * Extensible by admins via admin UI.
+ * Values: 'event', 'release', 'awareness', 'conference', 'fyi', 'social media', 'speech', 'tv radio'
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/Category.cs
  */
 export const categories = pgTable('categories', {
@@ -119,6 +124,7 @@ export const categories = pgTable('categories', {
   name: varchar('name', { length: 255 }).notNull(),
   displayName: varchar('display_name', { length: 255 }),
   sortOrder: integer('sort_order').notNull().default(0),
+  pitchNotRequired: boolean('pitch_not_required').notNull().default(false),
   isActive: boolean('is_active').notNull().default(true),
   description: text('description'),
   timestamp: timestamp('timestamp', { withTimezone: true })
@@ -158,22 +164,6 @@ export const tags = pgTable('tags', {
 });
 
 /**
- * EntryStatus lookup table - Activity entry statuses
- * Values: 'new', 'queued', 'reviewed', 'changed', 'paused', 'deleted'
- */
-export const entryStatuses = pgTable('entry_statuses', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  displayName: varchar('display_name', { length: 255 }),
-  sortOrder: integer('sort_order').notNull().default(0),
-  isActive: boolean('is_active').notNull().default(true),
-  description: text('description'),
-  timestamp: timestamp('timestamp', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
-/**
  * PitchStatus lookup table - Pitch approval statuses
  * Values: 'not required', 'submitted', 'pitched', 'approved'
  */
@@ -207,7 +197,7 @@ export const schedulingStatuses = pgTable('scheduling_statuses', {
 
 /**
  * CommsMaterials lookup table - Communication materials types
- * Values: 'media advisory', 'q and a' (user editable)
+ * Values: 'Backgrounder','Digital Content','Event or Media Plan','Factsheet','IGRS: Biography','IGRS: Briefing Note','IGRS: Gift','Information Bulletin','Issues Note','Itinerary','Key Messages','Media Advisory','Minister's Message','News Release','NYCU News You Can Use','Opinion Editorial','Press Conference','Q&As','Quote','Report','Speaking Notes','Statement','Tech Briefing' (user editable)
  */
 export const commsMaterials = pgTable('comms_materials', {
   id: serial('id').primaryKey(),
@@ -223,7 +213,7 @@ export const commsMaterials = pgTable('comms_materials', {
 
 /**
  * TranslatedLanguage lookup table - Languages for translations
- * Values: 'french', 'simplified chinese' (user editable)
+ * Values: 'Arabic','Chinese Simplified','Chinese Traditional','Dutch','Farsi','Finnish','French','Gujarati','Hebrew','Hindi','Indonesian','Japanese','Korean','Portuguese','Punjabi','Russian','Somali','Spanish','Swahili','Tagalog','Ukrainian','Urdu','Vietnamese' (user editable)
  */
 export const translatedLanguages = pgTable('translated_languages', {
   id: serial('id').primaryKey(),
@@ -237,9 +227,22 @@ export const translatedLanguages = pgTable('translated_languages', {
     .defaultNow(),
 });
 
-// NOTE: Initiative and Keyword tables are intentionally deferred
-// These will be added in a future phase when needed.
-// See MIGRATION_PLAN.md for details.
+/**
+ * ReviewStatus lookup table - Review statuses for activity fields
+ * Values: 'none', 'changed', 'review_requested', 'reviewed', 'approved', 'rejected'
+ * Replaces the boolean "needs review" flags with a more flexible status system
+ */
+export const reviewStatuses = pgTable('review_statuses', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  displayName: varchar('display_name', { length: 255 }),
+  sortOrder: integer('sort_order').notNull().default(0),
+  isActive: boolean('is_active').notNull().default(true),
+  description: text('description'),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
 // Relations for lookup tables
 // Note: Reverse relations are defined in activity.ts to avoid circular dependencies

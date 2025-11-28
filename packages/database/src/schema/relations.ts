@@ -6,6 +6,8 @@ import {
   uuid,
   primaryKey,
   varchar,
+  text,
+  serial,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 import { activities } from './activity';
@@ -16,6 +18,7 @@ import {
   commsMaterials,
   translatedLanguages,
   governmentRepresentatives,
+  reviewStatuses,
 } from './lookups';
 import { organizations } from './organizations';
 import { systemUsers } from './user';
@@ -319,37 +322,34 @@ export const activityJointEventOrganizations = pgTable(
 
 /**
  * ActivityRepresentatives junction table - Many-to-many relationship between Activities and GovernmentRepresentatives with attending status
+ * Supports both system representatives (via representativeId) and free-text representatives (via representativeName)
  */
-export const activityRepresentatives = pgTable(
-  'activity_representatives',
-  {
-    activityId: integer('activity_id')
-      .notNull()
-      .references(() => activities.id),
-    representativeId: integer('representative_id')
-      .notNull()
-      .references(() => governmentRepresentatives.id),
-    attendingStatus: varchar('attending_status', { length: 50 }).notNull(), // 'requested', 'declined', 'confirmed'
-    isActive: boolean('is_active').notNull().default(true),
-    createdDateTime: timestamp('created_date_time', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
-    createdBy: integer('created_by')
-      .notNull()
-      .references(() => systemUsers.id),
-    lastUpdatedDateTime: timestamp('last_updated_date_time', {
-      withTimezone: true,
-    })
-      .notNull()
-      .defaultNow(),
-    lastUpdatedBy: integer('last_updated_by')
-      .notNull()
-      .references(() => systemUsers.id),
-  },
-  (table) => [
-    primaryKey({ columns: [table.activityId, table.representativeId] }),
-  ]
-);
+export const activityRepresentatives = pgTable('activity_representatives', {
+  id: serial('id').primaryKey(),
+  activityId: integer('activity_id')
+    .notNull()
+    .references(() => activities.id),
+  representativeId: integer('representative_id').references(
+    () => governmentRepresentatives.id
+  ), // Nullable - mutually exclusive with representativeName
+  representativeName: varchar('representative_name', { length: 255 }), // Free text for non-system representatives (mutually exclusive with representativeId)
+  attendingStatus: varchar('attending_status', { length: 50 }).notNull(), // 'requested', 'declined', 'confirmed'
+  isActive: boolean('is_active').notNull().default(true),
+  createdDateTime: timestamp('created_date_time', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  createdBy: integer('created_by')
+    .notNull()
+    .references(() => systemUsers.id),
+  lastUpdatedDateTime: timestamp('last_updated_date_time', {
+    withTimezone: true,
+  })
+    .notNull()
+    .defaultNow(),
+  lastUpdatedBy: integer('last_updated_by')
+    .notNull()
+    .references(() => systemUsers.id),
+});
 
 /**
  * ActivitySharedWithOrganizations junction table - Many-to-many relationship between Activities and Organizations (shared with)
@@ -601,6 +601,7 @@ export const activityRepresentativesRelations = relations(
     representative: one(governmentRepresentatives, {
       fields: [activityRepresentatives.representativeId],
       references: [governmentRepresentatives.id],
+      relationName: 'representative',
     }),
     createdByUser: one(systemUsers, {
       fields: [activityRepresentatives.createdBy],
@@ -683,6 +684,78 @@ export const activityCanViewUsersRelations = relations(
       fields: [activityCanViewUsers.lastUpdatedBy],
       references: [systemUsers.id],
       relationName: 'activityCanViewUserUpdatedBy',
+    }),
+  })
+);
+
+/**
+ * ActivityFieldReviewStatuses junction table - Tracks review status for each field of an activity
+ * Replaces the boolean "needs review" flags with a more flexible status system
+ * Field names: 'title', 'details', 'representative', 'city', 'start_date', 'end_date',
+ * 'categories', 'active', 'comm_materials', 'significance', 'strategy',
+ * 'scheduling_considerations', 'internal_notes', 'lead_organization', 'initiatives',
+ * 'tags', 'origin', 'distribution', 'translations_required', 'premier_requested',
+ * 'venue', 'event_planner', 'digital'
+ */
+export const activityFieldReviewStatuses = pgTable(
+  'activity_field_review_statuses',
+  {
+    activityId: integer('activity_id')
+      .notNull()
+      .references(() => activities.id, { onDelete: 'cascade' }),
+    fieldName: varchar('field_name', { length: 100 }).notNull(), // e.g., 'title', 'details', etc.
+    reviewStatusId: integer('review_status_id')
+      .notNull()
+      .references(() => reviewStatuses.id),
+    requestedBy: integer('requested_by').references(() => systemUsers.id),
+    requestedAt: timestamp('requested_at', { withTimezone: true }),
+    reviewedBy: integer('reviewed_by').references(() => systemUsers.id),
+    reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+    notes: text('notes'), // Optional notes about the review
+    createdDateTime: timestamp('created_date_time', { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdBy: integer('created_by').references(() => systemUsers.id),
+    lastUpdatedDateTime: timestamp('last_updated_date_time', {
+      withTimezone: true,
+    })
+      .notNull()
+      .defaultNow(),
+    lastUpdatedBy: integer('last_updated_by').references(() => systemUsers.id),
+  },
+  (table) => [primaryKey({ columns: [table.activityId, table.fieldName] })]
+);
+
+export const activityFieldReviewStatusesRelations = relations(
+  activityFieldReviewStatuses,
+  ({ one }) => ({
+    activity: one(activities, {
+      fields: [activityFieldReviewStatuses.activityId],
+      references: [activities.id],
+    }),
+    reviewStatus: one(reviewStatuses, {
+      fields: [activityFieldReviewStatuses.reviewStatusId],
+      references: [reviewStatuses.id],
+    }),
+    requestedByUser: one(systemUsers, {
+      fields: [activityFieldReviewStatuses.requestedBy],
+      references: [systemUsers.id],
+      relationName: 'fieldReviewRequestedBy',
+    }),
+    reviewedByUser: one(systemUsers, {
+      fields: [activityFieldReviewStatuses.reviewedBy],
+      references: [systemUsers.id],
+      relationName: 'fieldReviewReviewedBy',
+    }),
+    createdByUser: one(systemUsers, {
+      fields: [activityFieldReviewStatuses.createdBy],
+      references: [systemUsers.id],
+      relationName: 'fieldReviewCreatedBy',
+    }),
+    updatedByUser: one(systemUsers, {
+      fields: [activityFieldReviewStatuses.lastUpdatedBy],
+      references: [systemUsers.id],
+      relationName: 'fieldReviewUpdatedBy',
     }),
   })
 );

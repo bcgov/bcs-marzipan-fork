@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, and, SQL } from 'drizzle-orm';
+import { eq, and, SQL, gte, lte } from 'drizzle-orm';
 import { activities } from '@corpcal/database/schema';
 import type { Activity, NewActivity } from '@corpcal/database/types';
 import type {
@@ -19,11 +19,8 @@ export class ActivitiesService {
    */
   async create(dto: CreateActivityRequest): Promise<ActivityResponse> {
     const newActivity: NewActivity = {
-      ...dto,
+      ...(dto as Partial<NewActivity>),
       createdDateTime: new Date(),
-      startDateTime: dto.startDateTime ? new Date(dto.startDateTime) : null,
-      endDateTime: dto.endDateTime ? new Date(dto.endDateTime) : null,
-      nrDateTime: dto.nrDateTime ? new Date(dto.nrDateTime) : null,
     };
 
     const [created] = await this.databaseService.db
@@ -42,11 +39,37 @@ export class ActivitiesService {
       if (filters.title) {
         conditions.push(eq(activities.title, filters.title));
       }
-      if (filters.statusId) {
-        conditions.push(eq(activities.statusId, filters.statusId));
+      if (filters.entryStatusId !== undefined) {
+        conditions.push(eq(activities.entryStatusId, filters.entryStatusId));
       }
       if (filters.isActive !== undefined) {
         conditions.push(eq(activities.isActive, filters.isActive));
+      }
+      if (filters.isConfidential !== undefined) {
+        conditions.push(eq(activities.isConfidential, filters.isConfidential));
+      }
+      if (filters.isIssue !== undefined) {
+        conditions.push(eq(activities.isIssue, filters.isIssue));
+      }
+      if (filters.contactMinistryId) {
+        conditions.push(
+          eq(activities.contactMinistryId, filters.contactMinistryId)
+        );
+      }
+      if (filters.cityId) {
+        conditions.push(eq(activities.cityId, filters.cityId));
+      }
+      if (filters.startDateFrom) {
+        conditions.push(gte(activities.startDate, filters.startDateFrom));
+      }
+      if (filters.startDateTo) {
+        conditions.push(lte(activities.startDate, filters.startDateTo));
+      }
+      if (filters.endDateFrom) {
+        conditions.push(gte(activities.endDate, filters.endDateFrom));
+      }
+      if (filters.endDateTo) {
+        conditions.push(lte(activities.endDate, filters.endDateTo));
       }
       if (conditions.length > 0) {
         const results = await this.databaseService.db
@@ -89,13 +112,8 @@ export class ActivitiesService {
     await this.findOne(id);
 
     const updateData: Partial<Activity> = {
-      ...dto,
+      ...(dto as Partial<Activity>),
       lastUpdatedDateTime: new Date(),
-      startDateTime: dto.startDateTime
-        ? new Date(dto.startDateTime)
-        : undefined,
-      endDateTime: dto.endDateTime ? new Date(dto.endDateTime) : undefined,
-      nrDateTime: dto.nrDateTime ? new Date(dto.nrDateTime) : undefined,
     };
 
     const [updated] = await this.databaseService.db
@@ -172,8 +190,9 @@ export class ActivitiesService {
       // Basic info
       title: activity.title ?? '',
       summary: activity.summary ?? null,
-      issue: activity.issue ?? false,
+      issue: activity.isIssue ?? false,
       oicRelated: activity.oicRelated ?? false,
+      isActive: activity.isActive ?? true,
 
       // Organizations
       leadOrg: activity.leadOrgId ?? null,
@@ -184,10 +203,9 @@ export class ActivitiesService {
       tags: [],
 
       // Approvals
-      significance: activity.significance ?? null,
       pitchStatus: activity.pitchStatusId?.toString() ?? 'unknown', // TODO: join with pitchStatuses
       pitchComments: activity.pitchComments ?? null,
-      confidential: activity.confidential ?? false,
+      confidential: activity.isConfidential ?? false,
 
       // Scheduling
       schedulingStatus: activity.schedulingStatusId?.toString() ?? 'unknown', // TODO: join with schedulingStatuses
@@ -201,7 +219,6 @@ export class ActivitiesService {
       // Comms
       commsLead: activity.commsLeadId?.toString() ?? null,
       commsMaterials: [], // TODO: join with activity_comms_materials junction table
-      strategy: activity.strategy ?? null,
       newsReleaseId: activity.newsReleaseId ?? null,
       translationsRequired: [], // TODO: join with activity_translations junction table
 
@@ -216,14 +233,30 @@ export class ActivitiesService {
           provinceOrState: string;
           country: string;
         } | null) ?? null,
-      eventLead: activity.eventLeadId?.toString() ?? null,
+      eventLead:
+        activity.eventLeadId?.toString() ??
+        ('eventLeadName' in activity &&
+        typeof activity.eventLeadName === 'string'
+          ? activity.eventLeadName
+          : null),
+      eventLeadName:
+        'eventLeadName' in activity &&
+        typeof activity.eventLeadName === 'string'
+          ? activity.eventLeadName
+          : null,
       videographer: activity.videographerUserId?.toString() ?? null,
       graphics: activity.graphicsId?.toString() ?? null,
 
       // Reports
       notForLookAhead: activity.notForLookAhead ?? false,
-      lookAheadStatus: 'none', // TODO: compute from activity data
-      lookAheadSection: 'events', // TODO: compute from activity data
+      lookAheadStatus:
+        (activity.lookAheadStatus as 'none' | 'new' | 'changed') ?? 'none',
+      lookAheadSection:
+        (activity.lookAheadSection as
+          | 'events'
+          | 'issues'
+          | 'news'
+          | 'awareness') ?? 'events',
       planningReport: activity.planningReport ?? false,
       thirtySixtyNinetyReport: activity.thirtySixtyNinetyReport ?? false,
 
@@ -232,7 +265,9 @@ export class ActivitiesService {
       sharedWith: [], // TODO: join with activity_shared_with junction table
       canEdit: [], // TODO: join with activity_can_edit_users junction table
       canView: [], // TODO: join with activity_can_view_users junction table
-      calendarVisibility: 'visible', // TODO: compute from activity data
+      calendarVisibility:
+        (activity.calendarVisibility as 'visible' | 'partial' | 'hidden') ??
+        'visible',
 
       // Meta
       createdDateTime:
