@@ -30,6 +30,8 @@ lerna-debug.log*
 # environment variables
 .env*
 !.env.example
+.env.local
+.env.*.local
 
 # editor and OS specific files
 .DS_Store

@@ -1,7 +1,7 @@
 name: CI/CD
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -9,13 +9,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build calendar-service
         run: |
-          cd calendar-service
-          docker build -t ${{ secrets.REGISTRY }}/calendar-service:${{ github.sha }} .
+          docker build -f calendar-service/Dockerfile -t ${{ secrets.REGISTRY }}/calendar-service:${{ github.sha }} .
           docker push ${{ secrets.REGISTRY }}/calendar-service:${{ github.sha }}
       - name: Build calendar-ui
         run: |
-          cd calendar-ui
-          docker build -t ${{ secrets.REGISTRY }}/calendar-ui:${{ github.sha }} .
+          docker build -f calendar-ui/Dockerfile -t ${{ secrets.REGISTRY }}/calendar-ui:${{ github.sha }} .
           docker push ${{ secrets.REGISTRY }}/calendar-ui:${{ github.sha }}
       - name: Deploy to OpenShift (optional)
         env:

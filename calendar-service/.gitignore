@@ -1,1 +1,29 @@
+# dependencies
 node_modules
+
+# build output
+dist
+build
+*.tsbuildinfo
+
+# environment variables and secrets
+.env*
+!.env.example
+.env.local
+.env.*.local
+
+# Nest.js specific
+.nest/
+*.log
+
+# testing
+coverage
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
