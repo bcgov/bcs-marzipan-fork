@@ -460,12 +460,14 @@ export const EventTable: React.FC<EventTableProps> = ({
       }),
       columnHelper.accessor('representatives', {
         header: 'Representatives',
-        filterFn: (row, columnId, filterValue) => {
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
           // filterValue is an array of selected representative names
           if (!filterValue || !filterValue.length) return true;
           const representatives = row.original.representatives || [];
           // Only show rows that have at least one selected representative
-          return filterValue.some((val: string) => representatives.includes(val));
+          return filterValue.some((val: string) =>
+            representatives.includes(val)
+          );
         },
         cell: ({ row }) => (
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -501,7 +503,7 @@ export const EventTable: React.FC<EventTableProps> = ({
       columnHelper.accessor('reports', {
         header: 'Reports',
         size: 100,
-        filterFn: (row, columnId, filterValue) => {
+        filterFn: (row, columnId, filterValue: string[] | undefined) => {
           // filterValue is an array of selected report names
           if (!filterValue || !filterValue.length) return true;
           const reports = row.original.reports || [];
@@ -559,9 +561,13 @@ export const EventTable: React.FC<EventTableProps> = ({
         filterFn: (row, columnId, filterValue) => {
           // Expecting filterValue to be an array of selected category strings
           if (!filterValue) return true;
-          const selected = Array.isArray(filterValue) ? filterValue : [filterValue];
+          const selected = Array.isArray(filterValue)
+            ? filterValue
+            : [filterValue];
           if (selected.length === 0) return true;
-          const lowerSelected = selected.map((s: string) => String(s).toLowerCase());
+          const lowerSelected = selected.map((s: string) =>
+            String(s).toLowerCase()
+          );
           const rowCat = String(row.original.category || '').toLowerCase();
           return lowerSelected.includes(rowCat);
         },

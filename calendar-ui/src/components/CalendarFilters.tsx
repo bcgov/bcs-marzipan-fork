@@ -51,6 +51,10 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   const [checkedRepresentativesValues, setCheckedRepresentativesValues] =
     React.useState<Record<string, string[]>>({ representative: [] });
 
+  const [checkedTagsValues, setCheckedTagsValues] = React.useState<
+    Record<string, string[]>
+  >({ tag: [] });
+
   const onStatusChange: MenuProps['onCheckedValueChange'] = (
     _,
     { name, checkedItems }: MenuCheckedValueChangeData
@@ -69,6 +73,14 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     });
   };
 
+  const onTagChange: MenuProps['onCheckedValueChange'] = (
+    _, // e: MenuCheckedValueChangeEvent,
+    { name, checkedItems }: MenuCheckedValueChangeData
+  ) => {
+    setCheckedTagsValues((s) => {
+      return s ? { ...s, [name]: checkedItems } : { [name]: checkedItems };
+    });
+  };
   const filterData = {
     category: { id: 'category', value: [''] },
     status: { id: 'status', value: [''] },
@@ -79,6 +91,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       id: 'representatives',
       value: checkedRepresentativesValues.representative || [],
     },
+    tags: { id: 'tags', value: checkedTagsValues.tag || [] },
   };
 
   // Helper to handle date range change and apply filter
@@ -119,6 +132,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       id: 'representatives',
       value: checkedRepresentativesValues.representative || [],
     };
+    filterData.tags = { id: 'tags', value: checkedTagsValues.tag || [] };
     const filterArr: ColumnFiltersState = [
       filterData.category,
       filterData.status,
@@ -126,6 +140,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       filterData.tabListFilter,
       filterData.reports,
       filterData.representatives,
+      filterData.tags,
     ];
     // Add dateRange filter if both dates are set
     if ((startDate && endDate) || (dateRange.start && dateRange.end)) {
@@ -161,6 +176,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     checkedCategoryValues,
     checkedReportsValues,
     checkedRepresentativesValues,
+    checkedTagsValues,
   ]);
 
   return (
@@ -389,7 +405,15 @@ export const CalendarFilters: React.FC<FilterProps> = ({
           </MenuList>
         </MenuPopover>
       </Menu>
-      <Menu>
+      <Menu
+        checkedValues={checkedTagsValues}
+        onCheckedValueChange={(_, { name, checkedItems }) => {
+          setCheckedTagsValues((prev) => ({
+            ...prev,
+            [name]: checkedItems,
+          }));
+        }}
+      >
         <MenuTrigger disableButtonEnhancement>
           <MenuButton>Tags</MenuButton>
         </MenuTrigger>
