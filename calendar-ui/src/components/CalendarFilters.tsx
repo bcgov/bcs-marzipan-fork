@@ -167,6 +167,10 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     setTitleFilter('');
     setTabFilterValue('all');
     setCheckedRepresentativesValues({ representative: [] });
+    setCheckedReportsValues({ reports: [] });
+    setCheckedTagsValues({ tag: [] });
+    setDateRange({ start: '', end: '' });
+    onFiltersChanged([]);
   };
 
   useEffect(() => {
