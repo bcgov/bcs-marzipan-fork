@@ -190,7 +190,7 @@ export class ActivitiesService {
       // Basic info
       title: activity.title ?? '',
       summary: activity.summary ?? null,
-      issue: activity.isIssue ?? false,
+      isIssue: activity.isIssue ?? false,
       oicRelated: activity.oicRelated ?? false,
       isActive: activity.isActive ?? true,
 

@@ -22,7 +22,7 @@ export const activityResponseSchema = z.object({
   // Basic info
   title: z.string(),
   summary: z.string().nullable(), // 1000 char limit
-  issue: z.boolean(),
+  isIssue: z.boolean(),
   oicRelated: z.boolean(),
   isActive: z.boolean(),
 
