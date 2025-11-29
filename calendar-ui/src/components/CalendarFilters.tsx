@@ -20,6 +20,7 @@ import { ColumnFiltersState } from '@tanstack/react-table';
 import React, { useEffect } from 'react';
 import { set } from 'zod';
 import { eventData } from './EventTable';
+import { useCookies } from 'react-cookie';
 
 interface FilterProps {
   onFiltersChanged: (filters: ColumnFiltersState) => void;
@@ -100,6 +101,28 @@ export const CalendarFilters: React.FC<FilterProps> = ({
     });
   };
 
+  // Cookie handling: "C" is for "Cookie", and that's good enough for me
+  const [cookies, setCookie, removeCookie] = useCookies(['filtersCookie']);
+
+  const handleSetCookie = () => {
+    const filterCookieValue = {
+      status: checkedStatusValues,
+      category: checkedCategoryValues,
+      keyword: keywordFilter,
+      tab: tabFilterValue,
+      reports: checkedReportsValues,
+      representatives: checkedRepresentativesValues,
+      tags: checkedTagsValues,
+      dateRange: dateRange,
+    };
+    setCookie('filtersCookie', filterCookieValue, { path: '/' });
+    console.log('Set filter cookie:');
+  };
+
+  const handleRemoveCookie = () => {
+    removeCookie('filtersCookie', { path: '/' });
+  };
+
   const applyFilters = (
     tabValue?: string,
     startDate?: string,
@@ -145,6 +168,7 @@ export const CalendarFilters: React.FC<FilterProps> = ({
       });
     }
     onFiltersChanged(filterArr);
+    handleSetCookie();
   };
 
   const onTabSelect = (event: SelectTabEvent, data: SelectTabData) => {
@@ -178,6 +202,39 @@ export const CalendarFilters: React.FC<FilterProps> = ({
   useEffect(() => {
     onKeywordFilterChanged(keywordFilter || '');
   }, [keywordFilter]);
+
+  const setFiltersFromCookie = () => {
+    const filterCookie = cookies['filtersCookie'];
+    console.log('Loaded filter cookie (raw string):', filterCookie);
+    if (filterCookie) {
+      try {
+        // Parse the JSON string back to an object
+        const parsed = filterCookie;
+        console.log('Parsed cookie data:', parsed);
+        if (parsed.status) setCheckedStatusValues(parsed.status);
+        if (parsed.category) setCheckedCategoryValues(parsed.category);
+        if (parsed.keyword !== undefined) setKeywordFilter(parsed.keyword); // Handle null/undefined
+        if (parsed.tab) setTabFilterValue(parsed.tab);
+        if (parsed.reports) setCheckedReportsValues(parsed.reports);
+        if (parsed.representatives)
+          setCheckedRepresentativesValues(parsed.representatives);
+        if (parsed.tags) setCheckedTagsValues(parsed.tags);
+        if (parsed.dateRange) setDateRange(parsed.dateRange);
+        // No applyFilters() here—let the useEffect handle it
+      } catch (error) {
+        console.error('Error parsing filters from cookie:', error);
+        // Optional: Clear the bad cookie and reset to defaults
+        handleRemoveCookie();
+        handleClearFilters();
+      }
+    } else {
+      console.log('No filter cookie found. Using defaults.');
+    }
+  };
+
+  useEffect(() => {
+    setFiltersFromCookie();
+  }, []);
 
   return (
     <div>
