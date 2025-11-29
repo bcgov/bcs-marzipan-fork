@@ -22,7 +22,6 @@ import {
   communicationContacts,
   eventPlanners,
   videographers,
-  entryStatuses,
   pitchStatuses,
   schedulingStatuses,
 } from './lookups';
@@ -42,6 +41,7 @@ import {
   activitySharedWithOrganizations,
   activityCanEditUsers,
   activityCanViewUsers,
+  activityFieldReviewStatuses,
 } from './relations';
 
 /**
@@ -54,63 +54,65 @@ export const activities = pgTable('activities', {
   // Display ID (computed: MIN-###### format)
   displayId: varchar('display_id', { length: 50 }), // Computed field: {ministryAcronym}-{paddedId}
 
-  // Date/Time fields (new - separate date and time)
+  // Scheduling
+
   startDate: date('start_date'),
   startTime: time('start_time'),
   endDate: date('end_date'),
   endTime: time('end_time'),
-
   // Date/Time fields (deprecated - kept for backward compatibility)
-  startDateTime: timestamp('start_date_time', { withTimezone: true }),
-  endDateTime: timestamp('end_date_time', { withTimezone: true }),
-  nrDateTime: timestamp('nr_date_time', { withTimezone: true }), // News Release date
+  // startDateTime: timestamp('start_date_time', { withTimezone: true }),
+  // endDateTime: timestamp('end_date_time', { withTimezone: true }),
+  // nrDateTime: timestamp('nr_date_time', { withTimezone: true }), // News Release date
+  schedulingStatusId: integer('scheduling_status_id'), // FK to SchedulingStatusˆ
+  // isConfirmed: boolean('is_confirmed').notNull().default(false), // Deprecated - use schedulingStatusId
+  schedulingConsiderations: text('scheduling_considerations'), // Renamed from schedule (500 char limit)
+  // schedule: text('schedule'), // Deprecated - kept for backward compatibility
 
-  // Text fields
+  // Overview and approval
   title: varchar('title', { length: 500 }),
   summary: text('summary'), // Renamed from details (1000 char limit in new type)
-  details: text('details'), // Deprecated - kept for backward compatibility
+  // details: text('details'), // Deprecated - kept for backward compatibility
   comments: text('comments'), // Deprecated - kept for backward compatibility
-  hqComments: text('hq_comments'), // Deprecated - kept for backward compatibility
+  // hqComments: text('hq_comments'), // Deprecated - kept for backward compatibility
   leadOrganization: varchar('lead_organization', { length: 255 }), // Deprecated - replaced by leadOrgId
   venue: varchar('venue', { length: 500 }), // Deprecated - replaced by venueAddress
   venueAddress: jsonb('venue_address'), // New: {street, city, provinceOrState, country}
-  otherCity: varchar('other_city', { length: 255 }), // Deprecated - kept for backward compatibility
-  schedulingConsiderations: text('scheduling_considerations'), // Renamed from schedule (500 char limit)
-  schedule: text('schedule'), // Deprecated - kept for backward compatibility
+  // otherCity: varchar('other_city', { length: 255 }), // Deprecated - kept for backward compatibility
   significance: text('significance'),
-  strategy: text('strategy'), // 500 char limit in new type
+  // strategy: text('strategy'), // 500 char limit in new type
   pitchComments: text('pitch_comments'), // New (500 char limit)
-  potentialDates: text('potential_dates'), // Deprecated - kept for backward compatibility
-  translations: text('translations'), // Deprecated - replaced by junction table
+  //potentialDates: text('potential_dates'), // Deprecated - kept for backward compatibility
+  // translations: text('translations'), // Deprecated - replaced by junction table
   newsReleaseId: uuid('news_release_id'), // New
 
   // Foreign keys (new)
   entryStatusId: integer('entry_status_id'), // FK to EntryStatus (replaces statusId)
+  // statusId: integer('status_id'), // FK to Status (deprecated - use entryStatusId)
   pitchStatusId: integer('pitch_status_id'), // FK to PitchStatus
-  schedulingStatusId: integer('scheduling_status_id'), // FK to SchedulingStatus
   leadOrgId: uuid('lead_org_id'), // FK to Organizations
   eventLeadOrgId: uuid('event_lead_org_id'), // FK to Organizations
   commsLeadId: integer('comms_lead_id'), // FK to SystemUser
-  eventLeadId: integer('event_lead_id'), // FK to SystemUser
+  eventLeadId: integer('event_lead_id'), // FK to SystemUser (mutually exclusive with eventLeadName)
+  eventLeadName: varchar('event_lead_name', { length: 255 }), // Free text for non-system user event leads (mutually exclusive with eventLeadId)
   videographerUserId: integer('videographer_user_id'), // FK to SystemUser (replaces videographerId lookup)
-  graphicsId: integer('graphics_id'), // FK to SystemUser
+  graphicsUserId: integer('graphics_id'), // FK to SystemUser (replaces graphicsId lookup)
   ownerId: integer('owner_id'), // FK to SystemUser
 
-  // Foreign keys (deprecated - kept for backward compatibility)
-  statusId: integer('status_id'), // FK to Status (deprecated - use entryStatusId)
-  hqStatusId: integer('hq_status_id'), // FK to Status
+  // Foreign keys
+  // hqStatusId: integer('hq_status_id'), // FK to Status (deprecated - use entryStatusId)
   nrDistributionId: integer('nr_distribution_id'), // FK to NRDistribution
   premierRequestedId: integer('premier_requested_id'), // FK to PremierRequested
   contactMinistryId: uuid('contact_ministry_id'), // FK to Ministry
-  governmentRepresentativeId: integer('government_representative_id'), // FK to GovernmentRepresentative (deprecated - use junction table)
-  communicationContactId: integer('communication_contact_id'), // FK to CommunicationContact (deprecated - use commsLeadId)
-  eventPlannerId: integer('event_planner_id'), // FK to EventPlanner
-  videographerId: integer('videographer_id'), // FK to Videographer (deprecated - use videographerUserId)
+  // governmentRepresentativeId: integer('government_representative_id'), // FK to GovernmentRepresentative (deprecated - use junction table)
+  // communicationContactId: integer('communication_contact_id'), // FK to CommunicationContact (deprecated - use commsLeadId)
+  // eventPlannerId: integer('event_planner_id'), // FK to EventPlanner (deprecated - use eventLeadId)
+  videographerId: integer('videographer_id'), // FK to Videographer  (TODO: may be deprecated)
+  graphicsId: integer('graphics_id'), // FK to Graphics (TODO: may be deprecated)
   cityId: integer('city_id'), // FK to City
 
   // Boolean flags (new)
-  issue: boolean('issue').notNull().default(false), // Renamed from isIssue
-  confidential: boolean('confidential').notNull().default(false), // Renamed from isConfidential
+  isAllDay: boolean('is_all_day').notNull().default(false),
   oicRelated: boolean('oic_related').notNull().default(false), // New
   notForLookAhead: boolean('not_for_look_ahead').notNull().default(false), // New
   planningReport: boolean('planning_report').notNull().default(false), // New
@@ -118,15 +120,14 @@ export const activities = pgTable('activities', {
     .notNull()
     .default(false), // New (fixed typo from "thrity")
 
-  // Boolean flags (deprecated - kept for backward compatibility)
-  isActive: boolean('is_active').notNull().default(true), // Deprecated
-  isConfirmed: boolean('is_confirmed').notNull().default(false), // Deprecated - use schedulingStatusId
-  isAllDay: boolean('is_all_day').notNull().default(false),
-  isAtLegislature: boolean('is_at_legislature').notNull().default(false), // Deprecated
+  // Boolean flags
+  isActive: boolean('is_active').notNull().default(true), // Relates to entryStatusId
+
+  // isAtLegislature: boolean('is_at_legislature').notNull().default(false), // Deprecated
   isConfidential: boolean('is_confidential').notNull().default(false), // Deprecated - use confidential
-  isCrossGovernment: boolean('is_cross_government').notNull().default(false), // Deprecated
-  isIssue: boolean('is_issue').notNull().default(false), // Deprecated - use issue
-  isMilestone: boolean('is_milestone').notNull().default(false), // Deprecated
+  // isCrossGovernment: boolean('is_cross_government').notNull().default(false), // Deprecated
+  isIssue: boolean('is_issue').notNull().default(false),
+  // isMilestone: boolean('is_milestone').notNull().default(false), // Deprecated
 
   // Enums (stored as varchar)
   lookAheadStatus: varchar('look_ahead_status', { length: 50 }), // 'none', 'new', 'changed'
@@ -134,74 +135,75 @@ export const activities = pgTable('activities', {
   calendarVisibility: varchar('calendar_visibility', { length: 50 }), // 'visible', 'partial', 'hidden'
 
   // HQ Section (deprecated - kept for backward compatibility)
-  hqSection: integer('hq_section').notNull().default(0),
+  hqSection: integer('hq_section').notNull().default(0), // TODO: unsure what this is for?
 
-  // "Needs Review" flags (15+ boolean fields for granular review)
-  isTitleNeedsReview: boolean('is_title_needs_review').notNull().default(false),
-  isDetailsNeedsReview: boolean('is_details_needs_review')
-    .notNull()
-    .default(false),
-  isRepresentativeNeedsReview: boolean('is_representative_needs_review')
-    .notNull()
-    .default(false),
-  isCityNeedsReview: boolean('is_city_needs_review').notNull().default(false),
-  isStartDateNeedsReview: boolean('is_start_date_needs_review')
-    .notNull()
-    .default(false),
-  isEndDateNeedsReview: boolean('is_end_date_needs_review')
-    .notNull()
-    .default(false),
-  isCategoriesNeedsReview: boolean('is_categories_needs_review')
-    .notNull()
-    .default(false),
-  isActiveNeedsReview: boolean('is_active_needs_review')
-    .notNull()
-    .default(false),
-  isCommMaterialsNeedsReview: boolean('is_comm_materials_needs_review')
-    .notNull()
-    .default(false),
-  isSignificanceNeedsReview: boolean('is_significance_needs_review')
-    .notNull()
-    .default(false),
-  isStrategyNeedsReview: boolean('is_strategy_needs_review')
-    .notNull()
-    .default(false),
-  isSchedulingConsiderationsNeedsReview: boolean(
-    'is_scheduling_considerations_needs_review'
-  )
-    .notNull()
-    .default(false),
-  isInternalNotesNeedsReview: boolean('is_internal_notes_needs_review')
-    .notNull()
-    .default(false),
-  isLeadOrganizationNeedsReview: boolean('is_lead_organization_needs_review')
-    .notNull()
-    .default(false),
-  isInitiativesNeedsReview: boolean('is_initiatives_needs_review')
-    .notNull()
-    .default(false),
-  isTagsNeedsReview: boolean('is_tags_needs_review').notNull().default(false),
-  isOriginNeedsReview: boolean('is_origin_needs_review')
-    .notNull()
-    .default(false),
-  isDistributionNeedsReview: boolean('is_distribution_needs_review')
-    .notNull()
-    .default(false),
-  isTranslationsRequiredNeedsReview: boolean(
-    'is_translations_required_needs_review'
-  )
-    .notNull()
-    .default(false),
-  isPremierRequestedNeedsReview: boolean('is_premier_requested_needs_review')
-    .notNull()
-    .default(false),
-  isVenueNeedsReview: boolean('is_venue_needs_review').notNull().default(false),
-  isEventPlannerNeedsReview: boolean('is_event_planner_needs_review')
-    .notNull()
-    .default(false),
-  isDigitalNeedsReview: boolean('is_digital_needs_review')
-    .notNull()
-    .default(false),
+  // "Needs Review" flags (legacy boolean fields for granular review)
+  // Deprecated - use activityFieldReviewStatuses junction table instead
+  // isTitleNeedsReview: boolean('is_title_needs_review').notNull().default(false),
+  // isDetailsNeedsReview: boolean('is_details_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isRepresentativeNeedsReview: boolean('is_representative_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isCityNeedsReview: boolean('is_city_needs_review').notNull().default(false),
+  // isStartDateNeedsReview: boolean('is_start_date_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isEndDateNeedsReview: boolean('is_end_date_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isCategoriesNeedsReview: boolean('is_categories_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isActiveNeedsReview: boolean('is_active_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isCommMaterialsNeedsReview: boolean('is_comm_materials_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isSignificanceNeedsReview: boolean('is_significance_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isStrategyNeedsReview: boolean('is_strategy_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isSchedulingConsiderationsNeedsReview: boolean(
+  //   'is_scheduling_considerations_needs_review'
+  // )
+  //   .notNull()
+  //   .default(false),
+  // isInternalNotesNeedsReview: boolean('is_internal_notes_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isLeadOrganizationNeedsReview: boolean('is_lead_organization_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isInitiativesNeedsReview: boolean('is_initiatives_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isTagsNeedsReview: boolean('is_tags_needs_review').notNull().default(false),
+  // isOriginNeedsReview: boolean('is_origin_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isDistributionNeedsReview: boolean('is_distribution_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isTranslationsRequiredNeedsReview: boolean(
+  //   'is_translations_required_needs_review'
+  // )
+  //   .notNull()
+  //   .default(false),
+  // isPremierRequestedNeedsReview: boolean('is_premier_requested_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isVenueNeedsReview: boolean('is_venue_needs_review').notNull().default(false),
+  // isEventPlannerNeedsReview: boolean('is_event_planner_needs_review')
+  //   .notNull()
+  //   .default(false),
+  // isDigitalNeedsReview: boolean('is_digital_needs_review')
+  //   .notNull()
+  //   .default(false),
 
   // Audit fields
   createdDateTime: timestamp('created_date_time', { withTimezone: true }),
@@ -216,11 +218,11 @@ export const activities = pgTable('activities', {
 
 // Relations - using actual table objects for type safety
 export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  // New relations
-  entryStatus: one(entryStatuses, {
-    fields: [activities.entryStatusId],
-    references: [entryStatuses.id],
-  }),
+  // Deprecated relation - statusId field no longer exists (replaced by entryStatusId)
+  // status: one(statuses, {
+  //   fields: [activities.statusId],
+  //   references: [statuses.id],
+  // }),
   pitchStatus: one(pitchStatuses, {
     fields: [activities.pitchStatusId],
     references: [pitchStatuses.id],
@@ -265,15 +267,11 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   }),
 
   // Deprecated relations (kept for backward compatibility)
-  status: one(statuses, {
-    fields: [activities.statusId],
-    references: [statuses.id],
-  }),
-  hqStatus: one(statuses, {
-    fields: [activities.hqStatusId],
-    references: [statuses.id],
-    relationName: 'hqStatus',
-  }),
+  // hqStatus: one(statuses, {
+  //   fields: [activities.hqStatusId],
+  //   references: [statuses.id],
+  //   relationName: 'hqStatus',
+  // }),
   contactMinistry: one(ministries, {
     fields: [activities.contactMinistryId],
     references: [ministries.id],
@@ -282,18 +280,18 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
     fields: [activities.cityId],
     references: [cities.id],
   }),
-  governmentRepresentative: one(governmentRepresentatives, {
-    fields: [activities.governmentRepresentativeId],
-    references: [governmentRepresentatives.id],
-  }),
-  communicationContact: one(communicationContacts, {
-    fields: [activities.communicationContactId],
-    references: [communicationContacts.id],
-  }),
-  eventPlanner: one(eventPlanners, {
-    fields: [activities.eventPlannerId],
-    references: [eventPlanners.id],
-  }),
+  // governmentRepresentative: one(governmentRepresentatives, {
+  //   fields: [activities.governmentRepresentativeId],
+  //   references: [governmentRepresentatives.id],
+  // }),
+  // communicationContact: one(communicationContacts, {
+  //   fields: [activities.communicationContactId],
+  //   references: [communicationContacts.id],
+  // }),
+  // eventPlanner: one(eventPlanners, {
+  //   fields: [activities.eventPlannerId],
+  //   references: [eventPlanners.id],
+  // }),
   videographer: one(videographers, {
     fields: [activities.videographerId],
     references: [videographers.id],
@@ -320,26 +318,19 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   activitySharedWithOrganizations: many(activitySharedWithOrganizations),
   activityCanEditUsers: many(activityCanEditUsers),
   activityCanViewUsers: many(activityCanViewUsers),
+  activityFieldReviewStatuses: many(activityFieldReviewStatuses),
 
   // Junction tables (existing)
   activityThemes: many(activityThemes),
   activityTags: many(activityTags),
 
   // Deprecated junction table references (deferred to future phase)
-  // @ts-expect-error - Junction table not yet defined (deferred to future phase)
-  activityInitiatives: many('activityInitiatives'),
-  // @ts-expect-error - Junction table not yet defined (deferred to future phase)
-  activityKeywords: many('activityKeywords'),
-  // @ts-expect-error - Junction table not yet defined
-  activityNROrigins: many('activityNROrigins'),
-  // @ts-expect-error - Junction table not yet defined
-  activitySectors: many('activitySectors'),
-  // @ts-expect-error - Table not yet defined
-  activityFiles: many('activityFiles'),
-  // @ts-expect-error - Junction table not yet defined
-  activityFavorites: many('activityFavorites'),
-  // @ts-expect-error - Table not yet defined
-  logs: many('logs'),
-  // @ts-expect-error - Table not yet defined
-  newsFeeds: many('newsFeeds'),
+  // activityInitiatives: many('activityInitiatives'),
+  // activityKeywords: many('activityKeywords'),
+  // activityNROrigins: many('activityNROrigins'),
+  // activitySectors: many('activitySectors'),
+  // activityFiles: many('activityFiles'),
+  // activityFavorites: many('activityFavorites'),
+  // logs: many('logs'),
+  // newsFeeds: many('newsFeeds'),
 }));

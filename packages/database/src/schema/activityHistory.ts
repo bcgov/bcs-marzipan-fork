@@ -27,7 +27,7 @@ export const activityHistory = pgTable(
     userId: integer('user_id')
       .notNull()
       .references(() => systemUsers.id),
-    actionType: varchar('action_type', { length: 50 }).notNull(), // 'created', 'updated', 'deleted', etc.
+    actionType: varchar('action_type', { length: 50 }).notNull(), // 'created', 'updated', 'deleted', `activity_status_changed`, etc.
     changes: jsonb('changes'), // Array of change objects: [{field, oldValue, newValue}]
     notes: text('notes'), // Optional user notes
     timestamp: timestamp('timestamp', { withTimezone: true })

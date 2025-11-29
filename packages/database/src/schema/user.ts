@@ -1,4 +1,12 @@
-import { pgTable, serial, varchar, integer, boolean, text, timestamp } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  serial,
+  varchar,
+  integer,
+  boolean,
+  text,
+  timestamp,
+} from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 /**
@@ -18,7 +26,12 @@ export const systemUsers = pgTable('system_users', {
   // Active Directory / Keycloak integration
   externalId: varchar('external_id', { length: 255 }), // Keycloak user ID
   adUsername: varchar('ad_username', { length: 255 }), // Legacy Active Directory username
-
+  adDisplayName: varchar('ad_display_name', { length: 255 }), // Legacy Active Directory display name
+  adEmail: varchar('ad_email', { length: 255 }), // Legacy Active Directory email
+  adPhone: varchar('ad_phone', { length: 50 }), // Legacy Active Directory phone
+  adDivision: varchar('ad_division', { length: 255 }), // Legacy Active Directory division
+  adDepartment: varchar('ad_department', { length: 255 }), // Legacy Active Directory department
+  adJobTitle: varchar('ad_job_title', { length: 255 }), // Legacy Active Directory job title
   // Additional user info
   phone: varchar('phone', { length: 50 }),
   department: varchar('department', { length: 255 }),
@@ -28,9 +41,13 @@ export const systemUsers = pgTable('system_users', {
   lastLoginDateTime: timestamp('last_login_date_time', { withTimezone: true }),
   createdDateTime: timestamp('created_date_time', { withTimezone: true }),
   createdBy: integer('created_by'), // FK to SystemUser (self-reference)
-  lastUpdatedDateTime: timestamp('last_updated_date_time', { withTimezone: true }),
+  lastUpdatedDateTime: timestamp('last_updated_date_time', {
+    withTimezone: true,
+  }),
   lastUpdatedBy: integer('last_updated_by'), // FK to SystemUser (self-reference)
-  timestamp: timestamp('timestamp', { withTimezone: true }).notNull().defaultNow(),
+  timestamp: timestamp('timestamp', { withTimezone: true })
+    .notNull()
+    .defaultNow(),
 });
 
 // Relations for SystemUser

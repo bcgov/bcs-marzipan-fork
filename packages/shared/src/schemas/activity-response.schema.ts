@@ -22,18 +22,17 @@ export const activityResponseSchema = z.object({
   // Basic info
   title: z.string(),
   summary: z.string().nullable(), // 1000 char limit
-  issue: z.boolean(),
+  isIssue: z.boolean(),
   oicRelated: z.boolean(),
+  isActive: z.boolean(),
 
   // Organizations
-  leadOrg: z.string().uuid().nullable(), // organizationId
-  jointOrg: z.array(z.string().uuid()).optional(), // Array of organizationIds
+  leadOrg: z.uuid().nullable(), // organizationId
+  jointOrg: z.array(z.uuid()).optional(), // Array of organizationIds
 
   // Related entries and tags
   relatedEntries: z.array(z.string()).optional(), // Array of activity IDs
-  tags: z
-    .array(z.object({ id: z.string().uuid(), text: z.string() }))
-    .optional(),
+  tags: z.array(z.object({ id: z.uuid(), text: z.string() })).optional(),
 
   // Approvals
   significance: z.string().nullable(), // 500 char limit
@@ -53,13 +52,12 @@ export const activityResponseSchema = z.object({
   // Comms
   commsLead: z.string().nullable(), // userId
   commsMaterials: z.array(z.string()).optional(), // Array of CommsMaterials enum values
-  strategy: z.string().nullable(), // 500 char limit
-  newsReleaseId: z.string().uuid().nullable(),
+  newsReleaseId: z.uuid().nullable(),
   translationsRequired: z.array(z.string()).optional(), // Array of TranslatedLanguage enum values
 
   // Event
-  eventLeadOrg: z.string().uuid().nullable(), // organizationId
-  jointEventOrg: z.array(z.string().uuid()).optional(), // Array of organizationIds
+  eventLeadOrg: z.uuid().nullable(), // organizationId
+  jointEventOrg: z.array(z.uuid()).optional(), // Array of organizationIds
   representativesAttending: z
     .array(
       z.object({
@@ -76,7 +74,8 @@ export const activityResponseSchema = z.object({
       country: z.string(),
     })
     .nullable(),
-  eventLead: z.string().nullable(), // userId
+  eventLead: z.string().nullable(), // userId or eventLeadName
+  eventLeadName: z.string().nullable().optional(), // Free text for non-system user event leads
   videographer: z.string().nullable(), // userId
   graphics: z.string().nullable(), // userId
 
@@ -89,15 +88,15 @@ export const activityResponseSchema = z.object({
 
   // Sharing
   owner: z.string().nullable(), // userId
-  sharedWith: z.array(z.string().uuid()).optional(), // Array of organizationIds
+  sharedWith: z.array(z.uuid()).optional(), // Array of organizationIds
   canEdit: z.array(z.string()).optional(), // Array of userIds
   canView: z.array(z.string()).optional(), // Array of userIds
   calendarVisibility: z.enum(['visible', 'partial', 'hidden']),
 
   // Meta
-  createdDateTime: z.string().datetime(),
+  createdDateTime: z.iso.datetime(),
   createdBy: z.string(), // userId
-  lastUpdatedDateTime: z.string().datetime(),
+  lastUpdatedDateTime: z.iso.datetime(),
   lastUpdatedBy: z.string(), // userId
 });
 
