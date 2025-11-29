@@ -43,5 +43,6 @@
   },
   "dependencies": {
     "zod": "^4.1.12"
+    "react-cookie": "^8.0.1"
   }
 }
