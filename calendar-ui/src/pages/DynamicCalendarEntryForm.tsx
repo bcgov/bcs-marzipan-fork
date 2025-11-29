@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { calendarWizardSchema } from '../schemas/calendarWizard.schema';
-import { createCalendarEntry } from '../api/calendarApi';
+import { createActivity } from '../api/activitiesApi';
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import Wizard from '../components/DynamicWizard/Wizard';
 
@@ -18,12 +18,12 @@ export const DynamicCalendarEntryForm: React.FC = () => {
   // This is the function that will send the data to your API
   const handleSubmit = async (formValues: Record<string, any>) => {
     try {
-      await createCalendarEntry(formValues); // Call your API function
+      await createActivity(formValues); // Call your API function
       // Optionally show a success message or redirect
-      alert('Calendar entry saved!');
+      alert('Activity saved!');
     } catch (err) {
       // Optionally show an error message
-      alert('Failed to save entry.');
+      alert('Failed to save activity.');
       console.error(err);
     }
   };
@@ -32,7 +32,7 @@ export const DynamicCalendarEntryForm: React.FC = () => {
     <FluentProvider theme={webLightTheme}>
       <div style={styles.container}>
         <Wizard
-          title="New Calendar Entry"
+          title="New Activity"
           entryId="HLTH-000001"
           schema={calendarWizardSchema}
           initialValues={{

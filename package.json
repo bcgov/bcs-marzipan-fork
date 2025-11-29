@@ -2,7 +2,9 @@
   "name": "corporate-calendar",
   "workspaces": [
     "calendar-ui",
-    "calendar-service"
+    "calendar-service",
+    "packages/database",
+    "packages/shared"
   ],
   "engines": {
     "node": ">=24.0.0",
@@ -13,6 +15,9 @@
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
     "install-all": "npm install --workspaces",
     "build": "npm run build --workspaces",
+    "build:packages": "npm run build --workspace=packages/database && npm run build --workspace=packages/shared",
+    "typecheck": "npm run typecheck --workspaces",
+    "typecheck:packages": "npm run typecheck --workspace=packages/database && npm run typecheck --workspace=packages/shared",
     "prepare": "husky",
     "format": "prettier --write \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
     "format:check": "prettier --check \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
@@ -37,6 +42,7 @@
     "typescript-eslint": "^8.20.0"
   },
   "dependencies": {
+    "zod": "^4.1.12"
     "react-cookie": "^8.0.1"
   }
 }

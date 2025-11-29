@@ -1,9 +1,6 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "moduleResolution": "nodenext",
-    "esModuleInterop": true,
-    "isolatedModules": true,
+    "module": "commonjs",
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
@@ -15,12 +12,18 @@
     "baseUrl": "./",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "forceConsistentCasingInFileNames": true,
+    "strictNullChecks": false,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
+    "forceConsistentCasingInFileNames": false,
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@corpcal/shared": ["../packages/shared/dist/cjs"],
+      "@corpcal/shared/*": ["../packages/shared/dist/cjs/*"],
+      "@corpcal/database": ["../packages/database/dist/cjs"],
+      "@corpcal/database/*": ["../packages/database/dist/cjs/*"]
+    }
   },
   "include": ["src"],
-  "exclude": ["node_modules", "dist"]
+  "exclude": ["node_modules", "dist", "test", "scripts"]
 }
