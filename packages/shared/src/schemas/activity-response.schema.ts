@@ -15,8 +15,8 @@ export const activityResponseSchema = z.object({
   id: z.number().int().positive(),
   displayId: z.string().nullable(), // MIN-###### format
 
-  // Entry status and category
-  entryStatus: z.string(), // EntryStatus enum value
+  // Activity status and category
+  activityStatusId: z.string(), // ActivityStatus enum value
   category: z.array(z.string()), // Array of category names/IDs
 
   // Basic info

@@ -18,9 +18,6 @@ import { relations } from 'drizzle-orm';
 import {
   activityStatuses,
   cities,
-  governmentRepresentatives,
-  communicationContacts,
-  eventPlanners,
   videographers,
   pitchStatuses,
   schedulingStatuses,
@@ -218,7 +215,7 @@ export const activities = pgTable('activities', {
 
 // Relations - using actual table objects for type safety
 export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  entryStatus: one(activityStatuses, {
+  activityStatus: one(activityStatuses, {
     fields: [activities.activityStatusId],
     references: [activityStatuses.id],
   }),

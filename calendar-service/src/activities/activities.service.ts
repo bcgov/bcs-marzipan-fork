@@ -1,6 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, and, SQL, gte, lte } from 'drizzle-orm';
-import { activities } from '@corpcal/database/schema';
+import { eq, and, SQL, gte, lte, inArray } from 'drizzle-orm';
+import {
+  activities,
+  pitchStatuses,
+  schedulingStatuses,
+  activityCategories,
+  activityTags,
+  categories,
+  tags,
+} from '@corpcal/database/schema';
 import type { Activity, NewActivity } from '@corpcal/database/types';
 import type {
   CreateActivityRequest,
@@ -27,13 +35,19 @@ export class ActivitiesService {
       .insert(activities)
       .values(newActivity)
       .returning();
-    return this.mapToResponseDto(created);
+    // For create, we don't have related data yet, so pass empty defaults
+    return this.mapToResponseDto(created, {
+      categories: [],
+      tags: [],
+    });
   }
 
   /**
    * Find all activities with optional filtering
    */
   async findAll(filters?: FilterActivities): Promise<ActivityResponse[]> {
+    let activityResults: Activity[];
+
     if (filters) {
       const conditions: SQL[] = [];
       if (filters.title) {
@@ -74,16 +88,37 @@ export class ActivitiesService {
         conditions.push(lte(activities.endDate, filters.endDateTo));
       }
       if (conditions.length > 0) {
-        const results = await this.databaseService.db
+        activityResults = await this.databaseService.db
           .select()
           .from(activities)
           .where(and(...conditions));
-        return results.map((activity) => this.mapToResponseDto(activity));
+      } else {
+        activityResults = await this.databaseService.db
+          .select()
+          .from(activities);
       }
+    } else {
+      activityResults = await this.databaseService.db.select().from(activities);
     }
 
-    const results = await this.databaseService.db.select().from(activities);
-    return results.map((activity) => this.mapToResponseDto(activity));
+    // Fetch related data for all activities
+    const activityIds = activityResults.map((a) => a.id);
+    const [categoriesMap, tagsMap, pitchStatusesMap, schedulingStatusesMap] =
+      await Promise.all([
+        this.fetchCategoriesForActivities(activityIds),
+        this.fetchTagsForActivities(activityIds),
+        this.fetchPitchStatusesForActivities(activityIds),
+        this.fetchSchedulingStatusesForActivities(activityIds),
+      ]);
+
+    return activityResults.map((activity) =>
+      this.mapToResponseDto(activity, {
+        categories: categoriesMap.get(activity.id) ?? [],
+        tags: tagsMap.get(activity.id) ?? [],
+        pitchStatus: pitchStatusesMap.get(activity.id),
+        schedulingStatus: schedulingStatusesMap.get(activity.id),
+      })
+    );
   }
 
   /**
@@ -100,7 +135,21 @@ export class ActivitiesService {
       throw new NotFoundException(`Activity #${id} not found`);
     }
 
-    return this.mapToResponseDto(activity);
+    // Fetch related data
+    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
+      await Promise.all([
+        this.fetchCategoriesForActivities([id]),
+        this.fetchTagsForActivities([id]),
+        this.fetchPitchStatusesForActivities([id]),
+        this.fetchSchedulingStatusesForActivities([id]),
+      ]);
+
+    return this.mapToResponseDto(activity, {
+      categories: categoriesList.get(id) ?? [],
+      tags: tagsList.get(id) ?? [],
+      pitchStatus: pitchStatus.get(id),
+      schedulingStatus: schedulingStatus.get(id),
+    });
   }
 
   /**
@@ -124,7 +173,21 @@ export class ActivitiesService {
       .where(eq(activities.id, id))
       .returning();
 
-    return this.mapToResponseDto(updated);
+    // Fetch related data for the updated activity
+    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
+      await Promise.all([
+        this.fetchCategoriesForActivities([id]),
+        this.fetchTagsForActivities([id]),
+        this.fetchPitchStatusesForActivities([id]),
+        this.fetchSchedulingStatusesForActivities([id]),
+      ]);
+
+    return this.mapToResponseDto(updated, {
+      categories: categoriesList.get(id) ?? [],
+      tags: tagsList.get(id) ?? [],
+      pitchStatus: pitchStatus.get(id),
+      schedulingStatus: schedulingStatus.get(id),
+    });
   }
 
   /**
@@ -150,7 +213,202 @@ export class ActivitiesService {
       .where(eq(activities.id, id))
       .returning();
 
-    return this.mapToResponseDto(updated);
+    // Fetch related data for the soft-deleted activity
+    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
+      await Promise.all([
+        this.fetchCategoriesForActivities([id]),
+        this.fetchTagsForActivities([id]),
+        this.fetchPitchStatusesForActivities([id]),
+        this.fetchSchedulingStatusesForActivities([id]),
+      ]);
+
+    return this.mapToResponseDto(updated, {
+      categories: categoriesList.get(id) ?? [],
+      tags: tagsList.get(id) ?? [],
+      pitchStatus: pitchStatus.get(id),
+      schedulingStatus: schedulingStatus.get(id),
+    });
+  }
+
+  /**
+   * Fetch categories for multiple activities
+   */
+  private async fetchCategoriesForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityCategories.activityId,
+        categoryName: categories.name,
+      })
+      .from(activityCategories)
+      .innerJoin(categories, eq(activityCategories.categoryId, categories.id))
+      .where(
+        and(
+          inArray(activityCategories.activityId, activityIds),
+          eq(activityCategories.isActive, true),
+          eq(categories.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.categoryName);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch tags for multiple activities
+   */
+  private async fetchTagsForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, Array<{ id: string; text: string }>>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityTags.activityId,
+        tagId: tags.id,
+        tagDisplayName: tags.displayName,
+        tagKey: tags.key,
+      })
+      .from(activityTags)
+      .innerJoin(tags, eq(activityTags.tagId, tags.id))
+      .where(
+        and(
+          inArray(activityTags.activityId, activityIds),
+          eq(activityTags.isActive, true),
+          eq(tags.isActive, true)
+        )
+      );
+
+    const map = new Map<number, Array<{ id: string; text: string }>>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push({
+        id: row.tagId,
+        text: row.tagDisplayName ?? row.tagKey ?? '',
+      });
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch pitch statuses for multiple activities
+   */
+  private async fetchPitchStatusesForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const activityResults = await this.databaseService.db
+      .select({
+        id: activities.id,
+        pitchStatusId: activities.pitchStatusId,
+      })
+      .from(activities)
+      .where(inArray(activities.id, activityIds));
+
+    const pitchStatusIds = activityResults
+      .map((a) => a.pitchStatusId)
+      .filter((id): id is number => id !== null && id !== undefined);
+
+    if (pitchStatusIds.length === 0) {
+      return new Map();
+    }
+
+    const pitchStatusResults = await this.databaseService.db
+      .select({
+        id: pitchStatuses.id,
+        name: pitchStatuses.name,
+      })
+      .from(pitchStatuses)
+      .where(
+        and(
+          inArray(pitchStatuses.id, pitchStatusIds),
+          eq(pitchStatuses.isActive, true)
+        )
+      );
+
+    const statusMap = new Map(pitchStatusResults.map((s) => [s.id, s.name]));
+
+    const resultMap = new Map<number, string>();
+    for (const activity of activityResults) {
+      if (activity.pitchStatusId) {
+        const statusName = statusMap.get(activity.pitchStatusId);
+        if (statusName) {
+          resultMap.set(activity.id, statusName);
+        }
+      }
+    }
+    return resultMap;
+  }
+
+  /**
+   * Fetch scheduling statuses for multiple activities
+   */
+  private async fetchSchedulingStatusesForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const activityResults = await this.databaseService.db
+      .select({
+        id: activities.id,
+        schedulingStatusId: activities.schedulingStatusId,
+      })
+      .from(activities)
+      .where(inArray(activities.id, activityIds));
+
+    const schedulingStatusIds = activityResults
+      .map((a) => a.schedulingStatusId)
+      .filter((id): id is number => id !== null && id !== undefined);
+
+    if (schedulingStatusIds.length === 0) {
+      return new Map();
+    }
+
+    const schedulingStatusResults = await this.databaseService.db
+      .select({
+        id: schedulingStatuses.id,
+        name: schedulingStatuses.name,
+      })
+      .from(schedulingStatuses)
+      .where(
+        and(
+          inArray(schedulingStatuses.id, schedulingStatusIds),
+          eq(schedulingStatuses.isActive, true)
+        )
+      );
+
+    const statusMap = new Map(
+      schedulingStatusResults.map((s) => [s.id, s.name])
+    );
+
+    const resultMap = new Map<number, string>();
+    for (const activity of activityResults) {
+      if (activity.schedulingStatusId) {
+        const statusName = statusMap.get(activity.schedulingStatusId);
+        if (statusName) {
+          resultMap.set(activity.id, statusName);
+        }
+      }
+    }
+    return resultMap;
   }
 
   /**
@@ -158,13 +416,18 @@ export class ActivitiesService {
    * Validates against Zod schema to ensure DTO matches schema contract
    *
    * TODO: This mapping needs to be completed with proper joins for:
-   * - entryStatus (from activityStatusId)
-   * - category (from junction table)
-   * - pitchStatus (from pitchStatusId)
-   * - schedulingStatus (from schedulingStatusId)
+
    * - And other relation fields
    */
-  private mapToResponseDto(activity: Activity): ActivityResponse {
+  private mapToResponseDto(
+    activity: Activity,
+    relatedData?: {
+      categories?: string[];
+      tags?: Array<{ id: string; text: string }>;
+      pitchStatus?: string;
+      schedulingStatus?: string;
+    }
+  ): ActivityResponse {
     // Format date to YYYY-MM-DD
     const formatDate = (date: Date | string | null): string | null => {
       if (!date) return null;
@@ -185,9 +448,9 @@ export class ActivitiesService {
       id: activity.id,
       displayId: activity.displayId ?? null,
 
-      // Entry status and category - TODO: join with lookup tables
-      entryStatus: activity.activityStatusId?.toString() ?? 'unknown',
-      category: [], // TODO: join with activity_categories junction table
+      // Activity status and category
+      activityStatusId: activity.activityStatusId?.toString() ?? 'unknown',
+      category: relatedData?.categories ?? [],
 
       // Basic info
       title: activity.title ?? '',
@@ -200,18 +463,18 @@ export class ActivitiesService {
       leadOrg: activity.leadOrgId ?? null,
       jointOrg: [], // TODO: join with activity_joint_orgs junction table
 
-      // Related entries and tags - TODO: join with junction tables
+      // Related entries and tags
       relatedEntries: [],
-      tags: [],
+      tags: relatedData?.tags ?? [],
 
       // Approvals
       significance: activity.significance ?? null,
-      pitchStatus: activity.pitchStatusId?.toString() ?? 'unknown', // TODO: join with pitchStatuses
+      pitchStatus: relatedData?.pitchStatus ?? 'unknown',
       pitchComments: activity.pitchComments ?? null,
       confidential: activity.isConfidential ?? false,
 
       // Scheduling
-      schedulingStatus: activity.schedulingStatusId?.toString() ?? 'unknown', // TODO: join with schedulingStatuses
+      schedulingStatus: relatedData?.schedulingStatus ?? 'unknown',
       isAllDay: activity.isAllDay ?? false,
       startDate: formatDate(activity.startDate),
       startTime: formatTime(activity.startTime),

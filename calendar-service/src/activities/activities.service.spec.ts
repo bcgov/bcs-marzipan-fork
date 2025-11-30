@@ -281,7 +281,7 @@ describe('ActivitiesService', () => {
 
       // Verify all required fields from schema are present
       expect(result).toHaveProperty('id');
-      expect(result).toHaveProperty('entryStatus');
+      expect(result).toHaveProperty('activityStatusId');
       expect(result).toHaveProperty('category');
       expect(result).toHaveProperty('title');
       expect(result).toHaveProperty('isIssue');
