@@ -203,6 +203,7 @@ export class ActivitiesService {
       tags: [],
 
       // Approvals
+      significance: activity.significance ?? null,
       pitchStatus: activity.pitchStatusId?.toString() ?? 'unknown', // TODO: join with pitchStatuses
       pitchComments: activity.pitchComments ?? null,
       confidential: activity.isConfidential ?? false,

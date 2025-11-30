@@ -229,7 +229,7 @@ export const translatedLanguages = pgTable('translated_languages', {
 
 /**
  * ReviewStatus lookup table - Review statuses for activity fields
- * Values: 'none', 'changed', 'review_requested', 'reviewed', 'approved', 'rejected'
+ * Values: 'new', 'queued', 'reviewed', 'changed', 'paused', 'deleted'
  * Replaces the boolean "needs review" flags with a more flexible status system
  */
 export const reviewStatuses = pgTable('review_statuses', {
