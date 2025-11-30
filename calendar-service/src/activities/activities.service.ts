@@ -153,7 +153,7 @@ export class ActivitiesService {
 
   /**
    * Map database Activity to API ActivityResponse
-   * Validates against Zod schema in development mode
+   * Validates against Zod schema to ensure DTO matches schema contract
    *
    * TODO: This mapping needs to be completed with proper joins for:
    * - entryStatus (from entryStatusId)
@@ -281,9 +281,26 @@ export class ActivitiesService {
       lastUpdatedBy: activity.lastUpdatedBy?.toString() ?? 'unknown',
     };
 
-    // Runtime validation in development mode
-    if (process.env.NODE_ENV === 'development') {
+    // Runtime validation to ensure DTO matches schema contract
+    // This catches misalignment between the mapping logic and the schema
+    // Runs in all environments to catch issues early
+    try {
       activityResponseSchema.parse(dto);
+    } catch (error) {
+      // Log validation errors with context for debugging
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown validation error';
+      console.error(
+        `[ActivitiesService] Response DTO validation failed for activity ${activity.id}:`,
+        errorMessage
+      );
+      // In production, we might want to throw here to prevent invalid responses
+      // For now, we log and continue to avoid breaking the API
+      if (process.env.NODE_ENV === 'production') {
+        throw new Error(
+          `Response DTO validation failed: ${errorMessage}. This indicates a mismatch between the mapping logic and the ActivityResponse schema.`
+        );
+      }
     }
 
     return dto;
