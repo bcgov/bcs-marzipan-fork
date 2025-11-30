@@ -29,7 +29,7 @@ describe('ActivitiesService', () => {
     return {
       id: 1,
       displayId: 'MIN-000001',
-      entryStatusId: 1,
+      activityStatusId: 1,
       title: 'Test Activity',
       summary: 'Test summary',
       isIssue: false,

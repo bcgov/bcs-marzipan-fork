@@ -39,8 +39,10 @@ export class ActivitiesService {
       if (filters.title) {
         conditions.push(eq(activities.title, filters.title));
       }
-      if (filters.entryStatusId !== undefined) {
-        conditions.push(eq(activities.entryStatusId, filters.entryStatusId));
+      if (filters.activityStatusId !== undefined) {
+        conditions.push(
+          eq(activities.activityStatusId, filters.activityStatusId)
+        );
       }
       if (filters.isActive !== undefined) {
         conditions.push(eq(activities.isActive, filters.isActive));
@@ -156,7 +158,7 @@ export class ActivitiesService {
    * Validates against Zod schema to ensure DTO matches schema contract
    *
    * TODO: This mapping needs to be completed with proper joins for:
-   * - entryStatus (from entryStatusId)
+   * - entryStatus (from activityStatusId)
    * - category (from junction table)
    * - pitchStatus (from pitchStatusId)
    * - schedulingStatus (from schedulingStatusId)
@@ -184,7 +186,7 @@ export class ActivitiesService {
       displayId: activity.displayId ?? null,
 
       // Entry status and category - TODO: join with lookup tables
-      entryStatus: activity.entryStatusId?.toString() ?? 'unknown',
+      entryStatus: activity.activityStatusId?.toString() ?? 'unknown',
       category: [], // TODO: join with activity_categories junction table
 
       // Basic info

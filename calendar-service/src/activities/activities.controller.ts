@@ -64,7 +64,7 @@ export class ActivitiesController {
       query.startDateTo !== undefined ||
       query.endDateFrom !== undefined ||
       query.endDateTo !== undefined ||
-      query.entryStatusId !== undefined ||
+      query.activityStatusId !== undefined ||
       query.contactMinistryId !== undefined ||
       query.cityId !== undefined ||
       query.isActive !== undefined ||

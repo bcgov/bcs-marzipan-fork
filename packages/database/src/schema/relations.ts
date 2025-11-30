@@ -18,7 +18,7 @@ import {
   commsMaterials,
   translatedLanguages,
   governmentRepresentatives,
-  reviewStatuses,
+  activityStatuses,
 } from './lookups';
 import { organizations } from './organizations';
 import { systemUsers } from './user';
@@ -706,7 +706,7 @@ export const activityFieldReviewStatuses = pgTable(
     fieldName: varchar('field_name', { length: 100 }).notNull(), // e.g., 'title', 'details', etc.
     reviewStatusId: integer('review_status_id')
       .notNull()
-      .references(() => reviewStatuses.id),
+      .references(() => activityStatuses.id),
     requestedBy: integer('requested_by').references(() => systemUsers.id),
     requestedAt: timestamp('requested_at', { withTimezone: true }),
     reviewedBy: integer('reviewed_by').references(() => systemUsers.id),
@@ -733,9 +733,9 @@ export const activityFieldReviewStatusesRelations = relations(
       fields: [activityFieldReviewStatuses.activityId],
       references: [activities.id],
     }),
-    reviewStatus: one(reviewStatuses, {
+    reviewStatus: one(activityStatuses, {
       fields: [activityFieldReviewStatuses.reviewStatusId],
-      references: [reviewStatuses.id],
+      references: [activityStatuses.id],
     }),
     requestedByUser: one(systemUsers, {
       fields: [activityFieldReviewStatuses.requestedBy],
