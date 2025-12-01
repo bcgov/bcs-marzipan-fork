@@ -23,7 +23,7 @@ import { relations } from 'drizzle-orm';
 
 // Import table objects for relations
 import {
-  statuses,
+  activityStatuses,
   cities,
   governmentRepresentatives,
   communicationContacts,
@@ -168,13 +168,13 @@ export const legacyActivities = pgTable('activities_legacy_reference', {
 export const legacyActivitiesRelations = relations(
   legacyActivities,
   ({ one, many }) => ({
-    status: one(statuses, {
+    status: one(activityStatuses, {
       fields: [legacyActivities.statusId],
-      references: [statuses.id],
+      references: [activityStatuses.id],
     }),
-    hqStatus: one(statuses, {
+    hqStatus: one(activityStatuses, {
       fields: [legacyActivities.hqStatusId],
-      references: [statuses.id],
+      references: [activityStatuses.id],
       relationName: 'hqStatus',
     }),
     contactMinistry: one(ministries, {

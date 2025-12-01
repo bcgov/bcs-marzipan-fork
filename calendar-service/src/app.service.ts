@@ -22,7 +22,7 @@ export class AppService {
         ready: true,
         database: 'connected',
       };
-    } catch (error) {
+    } catch {
       return {
         ready: false,
         database: 'disconnected',

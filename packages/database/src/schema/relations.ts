@@ -17,8 +17,7 @@ import {
   categories,
   commsMaterials,
   translatedLanguages,
-  governmentRepresentatives,
-  reviewStatuses,
+  activityStatuses,
 } from './lookups';
 import { organizations } from './organizations';
 import { systemUsers } from './user';
@@ -321,18 +320,16 @@ export const activityJointEventOrganizations = pgTable(
 );
 
 /**
- * ActivityRepresentatives junction table - Many-to-many relationship between Activities and GovernmentRepresentatives with attending status
- * Supports both system representatives (via representativeId) and free-text representatives (via representativeName)
+ * ActivityRepresentatives junction table - Many-to-many relationship between Activities and Representatives with attending status
+ * Uses free-text representativeName (governmentRepresentatives lookup table has been removed)
  */
 export const activityRepresentatives = pgTable('activity_representatives', {
   id: serial('id').primaryKey(),
   activityId: integer('activity_id')
     .notNull()
     .references(() => activities.id),
-  representativeId: integer('representative_id').references(
-    () => governmentRepresentatives.id
-  ), // Nullable - mutually exclusive with representativeName
-  representativeName: varchar('representative_name', { length: 255 }), // Free text for non-system representatives (mutually exclusive with representativeId)
+  representativeId: integer('representative_id'), // Legacy field - no longer references governmentRepresentatives
+  representativeName: varchar('representative_name', { length: 255 }), // Free text for representatives
   attendingStatus: varchar('attending_status', { length: 50 }).notNull(), // 'requested', 'declined', 'confirmed'
   isActive: boolean('is_active').notNull().default(true),
   createdDateTime: timestamp('created_date_time', { withTimezone: true })
@@ -352,7 +349,7 @@ export const activityRepresentatives = pgTable('activity_representatives', {
 });
 
 /**
- * ActivitySharedWithOrganizations junction table - Many-to-many relationship between Activities and Organizations (shared with)
+ * ActivitySharedWithOrganizations junction table - Many-to-many relationship between Activities and Organizations shared with
  */
 export const activitySharedWithOrganizations = pgTable(
   'activity_shared_with_organizations',
@@ -598,11 +595,6 @@ export const activityRepresentativesRelations = relations(
       fields: [activityRepresentatives.activityId],
       references: [activities.id],
     }),
-    representative: one(governmentRepresentatives, {
-      fields: [activityRepresentatives.representativeId],
-      references: [governmentRepresentatives.id],
-      relationName: 'representative',
-    }),
     createdByUser: one(systemUsers, {
       fields: [activityRepresentatives.createdBy],
       references: [systemUsers.id],
@@ -706,7 +698,7 @@ export const activityFieldReviewStatuses = pgTable(
     fieldName: varchar('field_name', { length: 100 }).notNull(), // e.g., 'title', 'details', etc.
     reviewStatusId: integer('review_status_id')
       .notNull()
-      .references(() => reviewStatuses.id),
+      .references(() => activityStatuses.id),
     requestedBy: integer('requested_by').references(() => systemUsers.id),
     requestedAt: timestamp('requested_at', { withTimezone: true }),
     reviewedBy: integer('reviewed_by').references(() => systemUsers.id),
@@ -733,9 +725,9 @@ export const activityFieldReviewStatusesRelations = relations(
       fields: [activityFieldReviewStatuses.activityId],
       references: [activities.id],
     }),
-    reviewStatus: one(reviewStatuses, {
+    reviewStatus: one(activityStatuses, {
       fields: [activityFieldReviewStatuses.reviewStatusId],
-      references: [reviewStatuses.id],
+      references: [activityStatuses.id],
     }),
     requestedByUser: one(systemUsers, {
       fields: [activityFieldReviewStatuses.requestedBy],
