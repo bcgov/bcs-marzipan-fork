@@ -3,7 +3,7 @@ import { activities } from './schema/activity';
 import { systemUsers } from './schema/user';
 import { ministries } from './schema/ministry';
 import {
-  statuses,
+  activityStatuses,
   cities,
   governmentRepresentatives,
   communicationContacts,
@@ -39,8 +39,8 @@ export type Ministry = InferSelectModel<typeof ministries>;
 export type NewMinistry = InferInsertModel<typeof ministries>;
 
 // Lookup types
-export type Status = InferSelectModel<typeof statuses>;
-export type NewStatus = InferInsertModel<typeof statuses>;
+export type ActivityStatus = InferSelectModel<typeof activityStatuses>;
+export type NewActivityStatus = InferInsertModel<typeof activityStatuses>;
 
 export type City = InferSelectModel<typeof cities>;
 export type NewCity = InferInsertModel<typeof cities>;

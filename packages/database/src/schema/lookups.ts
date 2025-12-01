@@ -10,11 +10,12 @@ import {
 } from 'drizzle-orm/pg-core';
 
 /**
- * Status lookup table - Activity statuses
+ * ActivityStatus lookup table - Activity statuses
+ * Used for both activity entry status and field review statuses
  * Inferred from Hub.Legacy/Gcpe.Calendar.Data/Entity/Status.cs
  * Values: 'new', 'queued', 'reviewed', 'changed', 'paused', 'deleted'
  */
-export const statuses = pgTable('statuses', {
+export const activityStatuses = pgTable('activity_statuses', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   displayName: varchar('display_name', { length: 255 }),
@@ -216,23 +217,6 @@ export const commsMaterials = pgTable('comms_materials', {
  * Values: 'Arabic','Chinese Simplified','Chinese Traditional','Dutch','Farsi','Finnish','French','Gujarati','Hebrew','Hindi','Indonesian','Japanese','Korean','Portuguese','Punjabi','Russian','Somali','Spanish','Swahili','Tagalog','Ukrainian','Urdu','Vietnamese' (user editable)
  */
 export const translatedLanguages = pgTable('translated_languages', {
-  id: serial('id').primaryKey(),
-  name: varchar('name', { length: 255 }).notNull(),
-  displayName: varchar('display_name', { length: 255 }),
-  sortOrder: integer('sort_order').notNull().default(0),
-  isActive: boolean('is_active').notNull().default(true),
-  description: text('description'),
-  timestamp: timestamp('timestamp', { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
-
-/**
- * ReviewStatus lookup table - Review statuses for activity fields
- * Values: 'none', 'changed', 'review_requested', 'reviewed', 'approved', 'rejected'
- * Replaces the boolean "needs review" flags with a more flexible status system
- */
-export const reviewStatuses = pgTable('review_statuses', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   displayName: varchar('display_name', { length: 255 }),

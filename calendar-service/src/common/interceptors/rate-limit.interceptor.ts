@@ -41,7 +41,9 @@ export class RateLimitInterceptor implements NestInterceptor {
       return next.handle();
     }
 
-    const ip = this.getClientIp(request);
+    const ip = this.getClientIp(
+      request as Parameters<typeof this.getClientIp>[0]
+    );
     const now = Date.now();
 
     // Clean up expired entries

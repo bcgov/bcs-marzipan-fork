@@ -272,7 +272,7 @@ ALTER TABLE activities ADD COLUMN IF NOT EXISTS owner_id INTEGER REFERENCES syst
 -- - schedule (use schedulingConsiderations)
 -- - isIssue (use issue)
 -- - isConfidential (use confidential)
--- - statusId (use entryStatusId)
+-- - statusId (use activityStatusId)
 -- - videographerId (use videographerUserId)
 -- - governmentRepresentativeId (use activityRepresentatives junction table)
 -- - communicationContactId (use commsLeadId)

@@ -15,8 +15,8 @@ export const activityResponseSchema = z.object({
   id: z.number().int().positive(),
   displayId: z.string().nullable(), // MIN-###### format
 
-  // Entry status and category
-  entryStatus: z.string(), // EntryStatus enum value
+  // Activity status and category
+  activityStatusId: z.string(), // ActivityStatus enum value
   category: z.array(z.string()), // Array of category names/IDs
 
   // Basic info
@@ -30,8 +30,8 @@ export const activityResponseSchema = z.object({
   leadOrg: z.uuid().nullable(), // organizationId
   jointOrg: z.array(z.uuid()).optional(), // Array of organizationIds
 
-  // Related entries and tags
-  relatedEntries: z.array(z.string()).optional(), // Array of activity IDs
+  // Related activities and tags
+  relatedActivities: z.array(z.string()).optional(), // Array of activity IDs
   tags: z.array(z.object({ id: z.uuid(), text: z.string() })).optional(),
 
   // Approvals

@@ -62,7 +62,7 @@ export const filterActivitiesSchema = z.object({
   startDateTo: z.iso.date().optional(),
   endDateFrom: z.iso.date().optional(),
   endDateTo: z.iso.date().optional(),
-  entryStatusId: z.coerce.number().int().optional(),
+  activityStatusId: z.coerce.number().int().optional(),
   contactMinistryId: z.uuid().optional(),
   cityId: z.coerce.number().int().optional(),
   isActive: z.coerce.boolean().optional(),

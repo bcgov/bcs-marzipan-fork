@@ -16,11 +16,8 @@ import { relations } from 'drizzle-orm';
 
 // Import table objects for relations
 import {
-  statuses,
+  activityStatuses,
   cities,
-  governmentRepresentatives,
-  communicationContacts,
-  eventPlanners,
   videographers,
   pitchStatuses,
   schedulingStatuses,
@@ -87,8 +84,8 @@ export const activities = pgTable('activities', {
   newsReleaseId: uuid('news_release_id'), // New
 
   // Foreign keys (new)
-  entryStatusId: integer('entry_status_id'), // FK to EntryStatus (replaces statusId)
-  // statusId: integer('status_id'), // FK to Status (deprecated - use entryStatusId)
+  activityStatusId: integer('entry_status_id'), // FK to ActivityStatus
+  // statusId: integer('status_id'), // FK to Status (deprecated - use activityStatusId)
   pitchStatusId: integer('pitch_status_id'), // FK to PitchStatus
   leadOrgId: uuid('lead_org_id'), // FK to Organizations
   eventLeadOrgId: uuid('event_lead_org_id'), // FK to Organizations
@@ -100,7 +97,7 @@ export const activities = pgTable('activities', {
   ownerId: integer('owner_id'), // FK to SystemUser
 
   // Foreign keys
-  // hqStatusId: integer('hq_status_id'), // FK to Status (deprecated - use entryStatusId)
+  // hqStatusId: integer('hq_status_id'), // FK to Status (deprecated - use activityStatusId)
   nrDistributionId: integer('nr_distribution_id'), // FK to NRDistribution
   premierRequestedId: integer('premier_requested_id'), // FK to PremierRequested
   contactMinistryId: uuid('contact_ministry_id'), // FK to Ministry
@@ -121,7 +118,7 @@ export const activities = pgTable('activities', {
     .default(false), // New (fixed typo from "thrity")
 
   // Boolean flags
-  isActive: boolean('is_active').notNull().default(true), // Relates to entryStatusId
+  isActive: boolean('is_active').notNull().default(true), // Relates to activityStatusId
 
   // isAtLegislature: boolean('is_at_legislature').notNull().default(false), // Deprecated
   isConfidential: boolean('is_confidential').notNull().default(false), // Deprecated - use confidential
@@ -218,10 +215,14 @@ export const activities = pgTable('activities', {
 
 // Relations - using actual table objects for type safety
 export const activitiesRelations = relations(activities, ({ one, many }) => ({
-  // Deprecated relation - statusId field no longer exists (replaced by entryStatusId)
-  // status: one(statuses, {
+  activityStatus: one(activityStatuses, {
+    fields: [activities.activityStatusId],
+    references: [activityStatuses.id],
+  }),
+  // Deprecated relation - statusId field no longer exists (replaced by activityStatusId)
+  // status: one(activityStatuses, {
   //   fields: [activities.statusId],
-  //   references: [statuses.id],
+  //   references: [activityStatuses.id],
   // }),
   pitchStatus: one(pitchStatuses, {
     fields: [activities.pitchStatusId],
@@ -267,9 +268,9 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   }),
 
   // Deprecated relations (kept for backward compatibility)
-  // hqStatus: one(statuses, {
+  // hqStatus: one(activityStatuses, {
   //   fields: [activities.hqStatusId],
-  //   references: [statuses.id],
+  //   references: [activityStatuses.id],
   //   relationName: 'hqStatus',
   // }),
   contactMinistry: one(ministries, {
