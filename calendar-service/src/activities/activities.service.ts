@@ -8,6 +8,14 @@ import {
   activityTags,
   categories,
   tags,
+  activityJointOrganizations,
+  activityRelatedEntries,
+  activityCommsMaterials,
+  activityTranslationLanguages,
+  activityJointEventOrganizations,
+  organizations,
+  commsMaterials,
+  translatedLanguages,
 } from '@corpcal/database/schema';
 import type { Activity, NewActivity } from '@corpcal/database/types';
 import type {
@@ -39,6 +47,11 @@ export class ActivitiesService {
     return this.mapToResponseDto(created, {
       categories: [],
       tags: [],
+      jointOrg: [],
+      relatedActivities: [],
+      commsMaterials: [],
+      translationsRequired: [],
+      jointEventOrg: [],
     });
   }
 
@@ -103,13 +116,27 @@ export class ActivitiesService {
 
     // Fetch related data for all activities
     const activityIds = activityResults.map((a) => a.id);
-    const [categoriesMap, tagsMap, pitchStatusesMap, schedulingStatusesMap] =
-      await Promise.all([
-        this.fetchCategoriesForActivities(activityIds),
-        this.fetchTagsForActivities(activityIds),
-        this.fetchPitchStatusesForActivities(activityIds),
-        this.fetchSchedulingStatusesForActivities(activityIds),
-      ]);
+    const [
+      categoriesMap,
+      tagsMap,
+      pitchStatusesMap,
+      schedulingStatusesMap,
+      jointOrgMap,
+      relatedActivitiesMap,
+      commsMaterialsMap,
+      translationsRequiredMap,
+      jointEventOrgMap,
+    ] = await Promise.all([
+      this.fetchCategoriesForActivities(activityIds),
+      this.fetchTagsForActivities(activityIds),
+      this.fetchPitchStatusesForActivities(activityIds),
+      this.fetchSchedulingStatusesForActivities(activityIds),
+      this.fetchJointOrganizationsForActivities(activityIds),
+      this.fetchRelatedActivitiesForActivities(activityIds),
+      this.fetchCommsMaterialsForActivities(activityIds),
+      this.fetchTranslationsRequiredForActivities(activityIds),
+      this.fetchJointEventOrganizationsForActivities(activityIds),
+    ]);
 
     return activityResults.map((activity) =>
       this.mapToResponseDto(activity, {
@@ -117,6 +144,11 @@ export class ActivitiesService {
         tags: tagsMap.get(activity.id) ?? [],
         pitchStatus: pitchStatusesMap.get(activity.id),
         schedulingStatus: schedulingStatusesMap.get(activity.id),
+        jointOrg: jointOrgMap.get(activity.id) ?? [],
+        relatedActivities: relatedActivitiesMap.get(activity.id) ?? [],
+        commsMaterials: commsMaterialsMap.get(activity.id) ?? [],
+        translationsRequired: translationsRequiredMap.get(activity.id) ?? [],
+        jointEventOrg: jointEventOrgMap.get(activity.id) ?? [],
       })
     );
   }
@@ -136,19 +168,38 @@ export class ActivitiesService {
     }
 
     // Fetch related data
-    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
-      await Promise.all([
-        this.fetchCategoriesForActivities([id]),
-        this.fetchTagsForActivities([id]),
-        this.fetchPitchStatusesForActivities([id]),
-        this.fetchSchedulingStatusesForActivities([id]),
-      ]);
+    const [
+      categoriesList,
+      tagsList,
+      pitchStatus,
+      schedulingStatus,
+      jointOrg,
+      relatedActivities,
+      commsMaterials,
+      translationsRequired,
+      jointEventOrg,
+    ] = await Promise.all([
+      this.fetchCategoriesForActivities([id]),
+      this.fetchTagsForActivities([id]),
+      this.fetchPitchStatusesForActivities([id]),
+      this.fetchSchedulingStatusesForActivities([id]),
+      this.fetchJointOrganizationsForActivities([id]),
+      this.fetchRelatedActivitiesForActivities([id]),
+      this.fetchCommsMaterialsForActivities([id]),
+      this.fetchTranslationsRequiredForActivities([id]),
+      this.fetchJointEventOrganizationsForActivities([id]),
+    ]);
 
     return this.mapToResponseDto(activity, {
       categories: categoriesList.get(id) ?? [],
       tags: tagsList.get(id) ?? [],
       pitchStatus: pitchStatus.get(id),
       schedulingStatus: schedulingStatus.get(id),
+      jointOrg: jointOrg.get(id) ?? [],
+      relatedActivities: relatedActivities.get(id) ?? [],
+      commsMaterials: commsMaterials.get(id) ?? [],
+      translationsRequired: translationsRequired.get(id) ?? [],
+      jointEventOrg: jointEventOrg.get(id) ?? [],
     });
   }
 
@@ -174,19 +225,38 @@ export class ActivitiesService {
       .returning();
 
     // Fetch related data for the updated activity
-    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
-      await Promise.all([
-        this.fetchCategoriesForActivities([id]),
-        this.fetchTagsForActivities([id]),
-        this.fetchPitchStatusesForActivities([id]),
-        this.fetchSchedulingStatusesForActivities([id]),
-      ]);
+    const [
+      categoriesList,
+      tagsList,
+      pitchStatus,
+      schedulingStatus,
+      jointOrg,
+      relatedActivities,
+      commsMaterials,
+      translationsRequired,
+      jointEventOrg,
+    ] = await Promise.all([
+      this.fetchCategoriesForActivities([id]),
+      this.fetchTagsForActivities([id]),
+      this.fetchPitchStatusesForActivities([id]),
+      this.fetchSchedulingStatusesForActivities([id]),
+      this.fetchJointOrganizationsForActivities([id]),
+      this.fetchRelatedActivitiesForActivities([id]),
+      this.fetchCommsMaterialsForActivities([id]),
+      this.fetchTranslationsRequiredForActivities([id]),
+      this.fetchJointEventOrganizationsForActivities([id]),
+    ]);
 
     return this.mapToResponseDto(updated, {
       categories: categoriesList.get(id) ?? [],
       tags: tagsList.get(id) ?? [],
       pitchStatus: pitchStatus.get(id),
       schedulingStatus: schedulingStatus.get(id),
+      jointOrg: jointOrg.get(id) ?? [],
+      relatedActivities: relatedActivities.get(id) ?? [],
+      commsMaterials: commsMaterials.get(id) ?? [],
+      translationsRequired: translationsRequired.get(id) ?? [],
+      jointEventOrg: jointEventOrg.get(id) ?? [],
     });
   }
 
@@ -214,19 +284,38 @@ export class ActivitiesService {
       .returning();
 
     // Fetch related data for the soft-deleted activity
-    const [categoriesList, tagsList, pitchStatus, schedulingStatus] =
-      await Promise.all([
-        this.fetchCategoriesForActivities([id]),
-        this.fetchTagsForActivities([id]),
-        this.fetchPitchStatusesForActivities([id]),
-        this.fetchSchedulingStatusesForActivities([id]),
-      ]);
+    const [
+      categoriesList,
+      tagsList,
+      pitchStatus,
+      schedulingStatus,
+      jointOrg,
+      relatedActivities,
+      commsMaterials,
+      translationsRequired,
+      jointEventOrg,
+    ] = await Promise.all([
+      this.fetchCategoriesForActivities([id]),
+      this.fetchTagsForActivities([id]),
+      this.fetchPitchStatusesForActivities([id]),
+      this.fetchSchedulingStatusesForActivities([id]),
+      this.fetchJointOrganizationsForActivities([id]),
+      this.fetchRelatedActivitiesForActivities([id]),
+      this.fetchCommsMaterialsForActivities([id]),
+      this.fetchTranslationsRequiredForActivities([id]),
+      this.fetchJointEventOrganizationsForActivities([id]),
+    ]);
 
     return this.mapToResponseDto(updated, {
       categories: categoriesList.get(id) ?? [],
       tags: tagsList.get(id) ?? [],
       pitchStatus: pitchStatus.get(id),
       schedulingStatus: schedulingStatus.get(id),
+      jointOrg: jointOrg.get(id) ?? [],
+      relatedActivities: relatedActivities.get(id) ?? [],
+      commsMaterials: commsMaterials.get(id) ?? [],
+      translationsRequired: translationsRequired.get(id) ?? [],
+      jointEventOrg: jointEventOrg.get(id) ?? [],
     });
   }
 
@@ -412,12 +501,186 @@ export class ActivitiesService {
   }
 
   /**
+   * Fetch joint organizations for multiple activities
+   */
+  private async fetchJointOrganizationsForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityJointOrganizations.activityId,
+        organizationId: organizations.id,
+      })
+      .from(activityJointOrganizations)
+      .innerJoin(
+        organizations,
+        eq(activityJointOrganizations.organizationId, organizations.id)
+      )
+      .where(
+        and(
+          inArray(activityJointOrganizations.activityId, activityIds),
+          eq(activityJointOrganizations.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.organizationId);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch related activities for multiple activities
+   */
+  private async fetchRelatedActivitiesForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityRelatedEntries.activityId,
+        relatedActivityId: activityRelatedEntries.relatedActivityId,
+      })
+      .from(activityRelatedEntries)
+      .where(
+        and(
+          inArray(activityRelatedEntries.activityId, activityIds),
+          eq(activityRelatedEntries.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.relatedActivityId.toString());
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch comms materials for multiple activities
+   */
+  private async fetchCommsMaterialsForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityCommsMaterials.activityId,
+        commsMaterialName: commsMaterials.name,
+      })
+      .from(activityCommsMaterials)
+      .innerJoin(
+        commsMaterials,
+        eq(activityCommsMaterials.commsMaterialId, commsMaterials.id)
+      )
+      .where(
+        and(
+          inArray(activityCommsMaterials.activityId, activityIds),
+          eq(activityCommsMaterials.isActive, true),
+          eq(commsMaterials.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.commsMaterialName);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch translation languages for multiple activities
+   */
+  private async fetchTranslationsRequiredForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityTranslationLanguages.activityId,
+        languageName: translatedLanguages.name,
+      })
+      .from(activityTranslationLanguages)
+      .innerJoin(
+        translatedLanguages,
+        eq(activityTranslationLanguages.languageId, translatedLanguages.id)
+      )
+      .where(
+        and(
+          inArray(activityTranslationLanguages.activityId, activityIds),
+          eq(activityTranslationLanguages.isActive, true),
+          eq(translatedLanguages.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.languageName);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch joint event organizations for multiple activities
+   */
+  private async fetchJointEventOrganizationsForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityJointEventOrganizations.activityId,
+        organizationId: organizations.id,
+      })
+      .from(activityJointEventOrganizations)
+      .innerJoin(
+        organizations,
+        eq(activityJointEventOrganizations.organizationId, organizations.id)
+      )
+      .where(
+        and(
+          inArray(activityJointEventOrganizations.activityId, activityIds),
+          eq(activityJointEventOrganizations.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.organizationId);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
    * Map database Activity to API ActivityResponse
    * Validates against Zod schema to ensure DTO matches schema contract
-   *
-   * TODO: This mapping needs to be completed with proper joins for:
-
-   * - And other relation fields
    */
   private mapToResponseDto(
     activity: Activity,
@@ -426,6 +689,11 @@ export class ActivitiesService {
       tags?: Array<{ id: string; text: string }>;
       pitchStatus?: string;
       schedulingStatus?: string;
+      jointOrg?: string[];
+      relatedActivities?: string[];
+      commsMaterials?: string[];
+      translationsRequired?: string[];
+      jointEventOrg?: string[];
     }
   ): ActivityResponse {
     // Format date to YYYY-MM-DD
@@ -461,10 +729,10 @@ export class ActivitiesService {
 
       // Organizations
       leadOrg: activity.leadOrgId ?? null,
-      jointOrg: [], // TODO: join with activity_joint_orgs junction table
+      jointOrg: relatedData?.jointOrg ?? [],
 
-      // Related entries and tags
-      relatedEntries: [],
+      // Related activities and tags
+      relatedActivities: relatedData?.relatedActivities ?? [],
       tags: relatedData?.tags ?? [],
 
       // Approvals
@@ -484,13 +752,13 @@ export class ActivitiesService {
 
       // Comms
       commsLead: activity.commsLeadId?.toString() ?? null,
-      commsMaterials: [], // TODO: join with activity_comms_materials junction table
+      commsMaterials: relatedData?.commsMaterials ?? [],
       newsReleaseId: activity.newsReleaseId ?? null,
-      translationsRequired: [], // TODO: join with activity_translations junction table
+      translationsRequired: relatedData?.translationsRequired ?? [],
 
       // Event
       eventLeadOrg: activity.eventLeadOrgId ?? null,
-      jointEventOrg: [], // TODO: join with activity_joint_event_orgs junction table
+      jointEventOrg: relatedData?.jointEventOrg ?? [],
       representativesAttending: [], // TODO: join with activity_representatives junction table
       venueAddress:
         (activity.venueAddress as {
