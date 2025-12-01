@@ -489,7 +489,9 @@ export class ActivitiesService {
         )
       );
 
-    const statusMap = new Map(pitchStatusResults.map((s) => [s.id, s.name]));
+    const statusMap = new Map<number, string>(
+      pitchStatusResults.map((s) => [s.id, s.name])
+    );
 
     const resultMap = new Map<number, string>();
     for (const activity of activityResults) {
@@ -542,7 +544,7 @@ export class ActivitiesService {
         )
       );
 
-    const statusMap = new Map(
+    const statusMap = new Map<number, string>(
       schedulingStatusResults.map((s) => [s.id, s.name])
     );
 
