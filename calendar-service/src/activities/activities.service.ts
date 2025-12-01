@@ -13,9 +13,14 @@ import {
   activityCommsMaterials,
   activityTranslationLanguages,
   activityJointEventOrganizations,
+  activityRepresentatives,
+  activitySharedWithOrganizations,
+  activityCanEditUsers,
+  activityCanViewUsers,
   organizations,
   commsMaterials,
   translatedLanguages,
+  systemUsers,
 } from '@corpcal/database/schema';
 import type { Activity, NewActivity } from '@corpcal/database/types';
 import type {
@@ -52,6 +57,10 @@ export class ActivitiesService {
       commsMaterials: [],
       translationsRequired: [],
       jointEventOrg: [],
+      representativesAttending: [],
+      sharedWith: [],
+      canEdit: [],
+      canView: [],
     });
   }
 
@@ -126,6 +135,10 @@ export class ActivitiesService {
       commsMaterialsMap,
       translationsRequiredMap,
       jointEventOrgMap,
+      representativesAttendingMap,
+      sharedWithMap,
+      canEditMap,
+      canViewMap,
     ] = await Promise.all([
       this.fetchCategoriesForActivities(activityIds),
       this.fetchTagsForActivities(activityIds),
@@ -136,6 +149,10 @@ export class ActivitiesService {
       this.fetchCommsMaterialsForActivities(activityIds),
       this.fetchTranslationsRequiredForActivities(activityIds),
       this.fetchJointEventOrganizationsForActivities(activityIds),
+      this.fetchRepresentativesAttendingForActivities(activityIds),
+      this.fetchSharedWithOrganizationsForActivities(activityIds),
+      this.fetchCanEditUsersForActivities(activityIds),
+      this.fetchCanViewUsersForActivities(activityIds),
     ]);
 
     return activityResults.map((activity) =>
@@ -149,6 +166,11 @@ export class ActivitiesService {
         commsMaterials: commsMaterialsMap.get(activity.id) ?? [],
         translationsRequired: translationsRequiredMap.get(activity.id) ?? [],
         jointEventOrg: jointEventOrgMap.get(activity.id) ?? [],
+        representativesAttending:
+          representativesAttendingMap.get(activity.id) ?? [],
+        sharedWith: sharedWithMap.get(activity.id) ?? [],
+        canEdit: canEditMap.get(activity.id) ?? [],
+        canView: canViewMap.get(activity.id) ?? [],
       })
     );
   }
@@ -178,6 +200,10 @@ export class ActivitiesService {
       commsMaterials,
       translationsRequired,
       jointEventOrg,
+      representativesAttending,
+      sharedWith,
+      canEdit,
+      canView,
     ] = await Promise.all([
       this.fetchCategoriesForActivities([id]),
       this.fetchTagsForActivities([id]),
@@ -188,6 +214,10 @@ export class ActivitiesService {
       this.fetchCommsMaterialsForActivities([id]),
       this.fetchTranslationsRequiredForActivities([id]),
       this.fetchJointEventOrganizationsForActivities([id]),
+      this.fetchRepresentativesAttendingForActivities([id]),
+      this.fetchSharedWithOrganizationsForActivities([id]),
+      this.fetchCanEditUsersForActivities([id]),
+      this.fetchCanViewUsersForActivities([id]),
     ]);
 
     return this.mapToResponseDto(activity, {
@@ -200,6 +230,10 @@ export class ActivitiesService {
       commsMaterials: commsMaterials.get(id) ?? [],
       translationsRequired: translationsRequired.get(id) ?? [],
       jointEventOrg: jointEventOrg.get(id) ?? [],
+      representativesAttending: representativesAttending.get(id) ?? [],
+      sharedWith: sharedWith.get(id) ?? [],
+      canEdit: canEdit.get(id) ?? [],
+      canView: canView.get(id) ?? [],
     });
   }
 
@@ -235,6 +269,10 @@ export class ActivitiesService {
       commsMaterials,
       translationsRequired,
       jointEventOrg,
+      representativesAttending,
+      sharedWith,
+      canEdit,
+      canView,
     ] = await Promise.all([
       this.fetchCategoriesForActivities([id]),
       this.fetchTagsForActivities([id]),
@@ -245,6 +283,10 @@ export class ActivitiesService {
       this.fetchCommsMaterialsForActivities([id]),
       this.fetchTranslationsRequiredForActivities([id]),
       this.fetchJointEventOrganizationsForActivities([id]),
+      this.fetchRepresentativesAttendingForActivities([id]),
+      this.fetchSharedWithOrganizationsForActivities([id]),
+      this.fetchCanEditUsersForActivities([id]),
+      this.fetchCanViewUsersForActivities([id]),
     ]);
 
     return this.mapToResponseDto(updated, {
@@ -257,6 +299,10 @@ export class ActivitiesService {
       commsMaterials: commsMaterials.get(id) ?? [],
       translationsRequired: translationsRequired.get(id) ?? [],
       jointEventOrg: jointEventOrg.get(id) ?? [],
+      representativesAttending: representativesAttending.get(id) ?? [],
+      sharedWith: sharedWith.get(id) ?? [],
+      canEdit: canEdit.get(id) ?? [],
+      canView: canView.get(id) ?? [],
     });
   }
 
@@ -294,6 +340,10 @@ export class ActivitiesService {
       commsMaterials,
       translationsRequired,
       jointEventOrg,
+      representativesAttending,
+      sharedWith,
+      canEdit,
+      canView,
     ] = await Promise.all([
       this.fetchCategoriesForActivities([id]),
       this.fetchTagsForActivities([id]),
@@ -304,6 +354,10 @@ export class ActivitiesService {
       this.fetchCommsMaterialsForActivities([id]),
       this.fetchTranslationsRequiredForActivities([id]),
       this.fetchJointEventOrganizationsForActivities([id]),
+      this.fetchRepresentativesAttendingForActivities([id]),
+      this.fetchSharedWithOrganizationsForActivities([id]),
+      this.fetchCanEditUsersForActivities([id]),
+      this.fetchCanViewUsersForActivities([id]),
     ]);
 
     return this.mapToResponseDto(updated, {
@@ -316,6 +370,10 @@ export class ActivitiesService {
       commsMaterials: commsMaterials.get(id) ?? [],
       translationsRequired: translationsRequired.get(id) ?? [],
       jointEventOrg: jointEventOrg.get(id) ?? [],
+      representativesAttending: representativesAttending.get(id) ?? [],
+      sharedWith: sharedWith.get(id) ?? [],
+      canEdit: canEdit.get(id) ?? [],
+      canView: canView.get(id) ?? [],
     });
   }
 
@@ -679,6 +737,165 @@ export class ActivitiesService {
   }
 
   /**
+   * Fetch representatives attending for multiple activities
+   */
+  private async fetchRepresentativesAttendingForActivities(
+    activityIds: number[]
+  ): Promise<
+    Map<
+      number,
+      Array<{
+        representative: string;
+        attendingStatus: 'requested' | 'declined' | 'confirmed';
+      }>
+    >
+  > {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityRepresentatives.activityId,
+        representativeName: activityRepresentatives.representativeName,
+        attendingStatus: activityRepresentatives.attendingStatus,
+      })
+      .from(activityRepresentatives)
+      .where(
+        and(
+          inArray(activityRepresentatives.activityId, activityIds),
+          eq(activityRepresentatives.isActive, true)
+        )
+      );
+
+    const map = new Map<
+      number,
+      Array<{
+        representative: string;
+        attendingStatus: 'requested' | 'declined' | 'confirmed';
+      }>
+    >();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      // Use representativeName (governmentRepresentatives lookup table has been removed)
+      if (row.representativeName) {
+        const attendingStatus = row.attendingStatus as
+          | 'requested'
+          | 'declined'
+          | 'confirmed';
+        existing.push({
+          representative: row.representativeName,
+          attendingStatus,
+        });
+        map.set(row.activityId, existing);
+      }
+    }
+    return map;
+  }
+
+  /**
+   * Fetch shared with organizations for multiple activities
+   */
+  private async fetchSharedWithOrganizationsForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activitySharedWithOrganizations.activityId,
+        organizationId: organizations.id,
+      })
+      .from(activitySharedWithOrganizations)
+      .innerJoin(
+        organizations,
+        eq(activitySharedWithOrganizations.organizationId, organizations.id)
+      )
+      .where(
+        and(
+          inArray(activitySharedWithOrganizations.activityId, activityIds),
+          eq(activitySharedWithOrganizations.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.organizationId);
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch can edit users for multiple activities
+   */
+  private async fetchCanEditUsersForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityCanEditUsers.activityId,
+        userId: systemUsers.id,
+      })
+      .from(activityCanEditUsers)
+      .innerJoin(systemUsers, eq(activityCanEditUsers.userId, systemUsers.id))
+      .where(
+        and(
+          inArray(activityCanEditUsers.activityId, activityIds),
+          eq(activityCanEditUsers.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.userId.toString());
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
+   * Fetch can view users for multiple activities
+   */
+  private async fetchCanViewUsersForActivities(
+    activityIds: number[]
+  ): Promise<Map<number, string[]>> {
+    if (activityIds.length === 0) {
+      return new Map();
+    }
+
+    const results = await this.databaseService.db
+      .select({
+        activityId: activityCanViewUsers.activityId,
+        userId: systemUsers.id,
+      })
+      .from(activityCanViewUsers)
+      .innerJoin(systemUsers, eq(activityCanViewUsers.userId, systemUsers.id))
+      .where(
+        and(
+          inArray(activityCanViewUsers.activityId, activityIds),
+          eq(activityCanViewUsers.isActive, true)
+        )
+      );
+
+    const map = new Map<number, string[]>();
+    for (const row of results) {
+      const existing = map.get(row.activityId) ?? [];
+      existing.push(row.userId.toString());
+      map.set(row.activityId, existing);
+    }
+    return map;
+  }
+
+  /**
    * Map database Activity to API ActivityResponse
    * Validates against Zod schema to ensure DTO matches schema contract
    */
@@ -694,6 +911,13 @@ export class ActivitiesService {
       commsMaterials?: string[];
       translationsRequired?: string[];
       jointEventOrg?: string[];
+      representativesAttending?: Array<{
+        representative: string;
+        attendingStatus: 'requested' | 'declined' | 'confirmed';
+      }>;
+      sharedWith?: string[];
+      canEdit?: string[];
+      canView?: string[];
     }
   ): ActivityResponse {
     // Format date to YYYY-MM-DD
@@ -759,7 +983,7 @@ export class ActivitiesService {
       // Event
       eventLeadOrg: activity.eventLeadOrgId ?? null,
       jointEventOrg: relatedData?.jointEventOrg ?? [],
-      representativesAttending: [], // TODO: join with activity_representatives junction table
+      representativesAttending: relatedData?.representativesAttending ?? [],
       venueAddress:
         (activity.venueAddress as {
           street: string;
@@ -796,9 +1020,9 @@ export class ActivitiesService {
 
       // Sharing
       owner: activity.ownerId?.toString() ?? null,
-      sharedWith: [], // TODO: join with activity_shared_with junction table
-      canEdit: [], // TODO: join with activity_can_edit_users junction table
-      canView: [], // TODO: join with activity_can_view_users junction table
+      sharedWith: relatedData?.sharedWith ?? [],
+      canEdit: relatedData?.canEdit ?? [],
+      canView: relatedData?.canView ?? [],
       calendarVisibility:
         (activity.calendarVisibility as 'visible' | 'partial' | 'hidden') ??
         'visible',
