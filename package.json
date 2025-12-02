@@ -14,7 +14,7 @@
     "start": "concurrently \"npm --prefix calendar-ui run dev\" \"npm --prefix calendar-service run start:dev\"",
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
     "install-all": "npm install --workspaces",
-    "build": "npm run build --workspaces",
+    "build": "npm run build:packages && npm run build --workspace=calendar-service && npm run build --workspace=calendar-ui",
     "build:packages": "npm run build --workspace=packages/database && npm run build --workspace=packages/shared",
     "typecheck": "npm run typecheck --workspaces",
     "typecheck:packages": "npm run typecheck --workspace=packages/database && npm run typecheck --workspace=packages/shared",
