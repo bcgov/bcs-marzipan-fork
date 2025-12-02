@@ -37,7 +37,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "calendar-ui": "^1.0.0",
     "drizzle-orm": "^0.36.0",
     "postgres": "^3.4.3"
   },
