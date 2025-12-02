@@ -1,4 +1,4 @@
-FROM node:22-alpine3.21 AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # Copy root package files for workspace configuration
@@ -24,7 +24,7 @@ RUN npm run build --workspace=packages/database && \
     npm run build --workspace=packages/shared && \
     npm run build --workspace=calendar-service
 
-FROM node:22-alpine3.21
+FROM node:24-alpine
 WORKDIR /app
 #ENV NODE_ENV=production
 

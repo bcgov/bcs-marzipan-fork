@@ -1,4 +1,4 @@
-FROM node:22-alpine3.21 AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 
 # Copy root package files for workspace configuration
