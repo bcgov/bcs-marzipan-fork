@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { eq, and, SQL, gte, lte, inArray } from 'drizzle-orm';
 import {
   activities,
@@ -39,29 +43,212 @@ export class ActivitiesService {
    * Create a new activity
    */
   async create(dto: CreateActivityRequest): Promise<ActivityResponse> {
-    const newActivity: NewActivity = {
-      ...(dto as Partial<NewActivity>),
-      createdDateTime: new Date(),
+    // Extract junction table data from DTO
+    // Type assertion needed because CreateActivityRequest extends the base schema
+    const dtoWithJunctions = dto as CreateActivityRequest & {
+      categoryIds?: number[];
+      tagIds?: string[];
+      jointOrganizationIds?: string[];
+      relatedActivityIds?: number[];
+      commsMaterialIds?: number[];
+      translationLanguageIds?: number[];
+      jointEventOrganizationIds?: string[];
+      representativeIds?: number[];
+      sharedWithOrganizationIds?: string[];
+      canEditUserIds?: number[];
+      canViewUserIds?: number[];
     };
 
-    const [created] = await this.databaseService.db
-      .insert(activities)
-      .values(newActivity)
-      .returning();
-    // For create, we don't have related data yet, so pass empty defaults
-    return this.mapToResponseDto(created, {
-      categories: [],
-      tags: [],
-      jointOrg: [],
-      relatedActivities: [],
-      commsMaterials: [],
-      translationsRequired: [],
-      jointEventOrg: [],
-      representativesAttending: [],
-      sharedWith: [],
-      canEdit: [],
-      canView: [],
+    const {
+      categoryIds,
+      tagIds,
+      jointOrganizationIds,
+      relatedActivityIds,
+      commsMaterialIds,
+      translationLanguageIds,
+      jointEventOrganizationIds,
+      representativeIds,
+      sharedWithOrganizationIds,
+      canEditUserIds,
+      canViewUserIds,
+      ...activityData
+    } = dtoWithJunctions;
+
+    // TODO: Replace with actual authenticated user ID
+    const currentUserId = 1;
+
+    // Validate foreign key references before starting transaction
+    if (categoryIds && categoryIds.length > 0) {
+      await this.validateCategoryIds(categoryIds);
+    }
+
+    // Use transaction to ensure all inserts succeed or fail together
+    const result = await this.databaseService.db.transaction(async (tx) => {
+      const newActivity: NewActivity = {
+        ...(activityData as Partial<NewActivity>),
+        createdDateTime: new Date(),
+      };
+
+      const [created] = await tx
+        .insert(activities)
+        .values(newActivity)
+        .returning();
+
+      const activityId = created.id;
+      const now = new Date();
+
+      // Insert junction table relationships
+      if (categoryIds && categoryIds.length > 0) {
+        await tx.insert(activityCategories).values(
+          categoryIds.map((categoryId) => ({
+            activityId,
+            categoryId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (tagIds && tagIds.length > 0) {
+        await tx.insert(activityTags).values(
+          tagIds.map((tagId) => ({
+            activityId,
+            tagId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (jointOrganizationIds && jointOrganizationIds.length > 0) {
+        await tx.insert(activityJointOrganizations).values(
+          jointOrganizationIds.map((orgId) => ({
+            activityId,
+            organizationId: orgId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (relatedActivityIds && relatedActivityIds.length > 0) {
+        await tx.insert(activityRelatedEntries).values(
+          relatedActivityIds.map((relatedId) => ({
+            activityId,
+            relatedActivityId: relatedId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (commsMaterialIds && commsMaterialIds.length > 0) {
+        await tx.insert(activityCommsMaterials).values(
+          commsMaterialIds.map((materialId) => ({
+            activityId,
+            commsMaterialId: materialId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (translationLanguageIds && translationLanguageIds.length > 0) {
+        await tx.insert(activityTranslationLanguages).values(
+          translationLanguageIds.map((languageId) => ({
+            activityId,
+            languageId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (jointEventOrganizationIds && jointEventOrganizationIds.length > 0) {
+        await tx.insert(activityJointEventOrganizations).values(
+          jointEventOrganizationIds.map((orgId) => ({
+            activityId,
+            organizationId: orgId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (representativeIds && representativeIds.length > 0) {
+        // Note: activityRepresentatives uses representativeId (integer) and representativeName (varchar)
+        // For now, we'll use representativeId. If we need to support names, we'll need to adjust this.
+        await tx.insert(activityRepresentatives).values(
+          representativeIds.map((repId) => ({
+            activityId,
+            representativeId: repId,
+            attendingStatus: 'requested', // Default status
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (sharedWithOrganizationIds && sharedWithOrganizationIds.length > 0) {
+        await tx.insert(activitySharedWithOrganizations).values(
+          sharedWithOrganizationIds.map((orgId) => ({
+            activityId,
+            organizationId: orgId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (canEditUserIds && canEditUserIds.length > 0) {
+        await tx.insert(activityCanEditUsers).values(
+          canEditUserIds.map((userId) => ({
+            activityId,
+            userId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      if (canViewUserIds && canViewUserIds.length > 0) {
+        await tx.insert(activityCanViewUsers).values(
+          canViewUserIds.map((userId) => ({
+            activityId,
+            userId,
+            createdBy: currentUserId,
+            lastUpdatedBy: currentUserId,
+            createdDateTime: now,
+            lastUpdatedDateTime: now,
+          }))
+        );
+      }
+
+      return created;
     });
+
+    // Fetch the created activity with all related data
+    return this.findOne(result.id);
   }
 
   /**
@@ -1063,5 +1250,30 @@ export class ActivitiesService {
     }
 
     return dto;
+  }
+
+  /**
+   * Validate that all category IDs exist in the database
+   */
+  private async validateCategoryIds(categoryIds: number[]): Promise<void> {
+    if (categoryIds.length === 0) {
+      return;
+    }
+
+    const existingCategories = await this.databaseService.db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(
+        and(inArray(categories.id, categoryIds), eq(categories.isActive, true))
+      );
+
+    const existingIds = new Set(existingCategories.map((c) => c.id));
+    const missingIds = categoryIds.filter((id) => !existingIds.has(id));
+
+    if (missingIds.length > 0) {
+      throw new BadRequestException(
+        `Invalid category IDs: ${missingIds.join(', ')}. These categories do not exist or are not active.`
+      );
+    }
   }
 }
