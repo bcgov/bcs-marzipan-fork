@@ -1,21 +1,6 @@
-/**
- * CreateActivityFormv2
- *
- * Simplified version of the create activity form with only 3 sections:
- * - Overview: Category, Title, Lead organization, Summary, Issue, Order in Council related, Related Activities, Tags
- * - Approvals: Significance, Pitch status, Pitch and approval notes
- * - Schedule: Scheduling status, All day, Start, End, Scheduling considerations
- *
- * Features:
- * - Uses React-Hook-Form with Zod validation
- * - Uses Shadcn UI components
- * - Single column layout
- * - Accessible spacing between inputs
- */
-
-import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from 'react';
 import {
   createActivityRequestSchema,
   type CreateActivityRequest,
@@ -59,13 +44,12 @@ type FormData = CreateActivityRequest & {
 };
 
 export const CreateActivityFormv2: React.FC = () => {
-  const [selectedCategories, setSelectedCategories] = React.useState<string[]>(
-    []
-  );
-  const [selectedRelatedActivities, setSelectedRelatedActivities] =
-    React.useState<string[]>([]);
-  const [selectedTags, setSelectedTags] = React.useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedRelatedActivities, setSelectedRelatedActivities] = useState<
+    string[]
+  >([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(createActivityRequestSchema),

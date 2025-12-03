@@ -1,4 +1,3 @@
-import React from 'react';
 import { FluentProvider, webLightTheme } from '@fluentui/react-components';
 import { Routes, Route } from 'react-router-dom';
 import { Layout } from './components/Layout';
@@ -10,6 +9,7 @@ import './styles/App.css';
 import PitchSubmissionsPage from './pages/PitchSubmissions';
 import { CalendarEntryForm } from './pages/CalendarEntryForm';
 import DraftsPage from './pages/Drafts';
+import { CreateActivityFormv2 } from './pages/CreateActivityFormv2';
 
 function App() {
   return (
@@ -22,6 +22,7 @@ function App() {
           {/* <Route path="/calendar" element={<CalendarCardView />} /> Card view, need to be removed. Maybe kept for mobile view */}
           <Route path="/pitch" element={<PitchSubmissionsPage />} />
           <Route path="/entry-form" element={<CalendarEntryForm />} />
+          <Route path="/entry-form-temp" element={<CreateActivityFormv2 />} />
           {/* merge with Wizard */}
 
           <Route path="/details" element={<EntryDetails />} />
