@@ -1,5 +1,7 @@
 import { DrawerProps } from '@fluentui/react-components';
 import * as React from 'react';
+
+import { Link, useLocation } from 'react-router-dom';
 import {
   AppItem,
   Hamburger,
@@ -12,9 +14,6 @@ import {
   NavSectionHeader,
   NavSubItem,
   NavSubItemGroup,
-} from '@fluentui/react-nav-preview';
-import { Link, useLocation } from 'react-router-dom';
-import {
   Tooltip,
   makeStyles,
   tokens,

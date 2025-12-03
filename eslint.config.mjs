@@ -8,6 +8,39 @@ import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
+/**
+ * Helper function to create type-checked ESLint configs for a specific project
+ */
+function createTypeCheckedConfigs(options) {
+  const {
+    files,
+    tsconfigPath,
+    globals: configGlobals,
+    sourceType = 'module',
+    ecmaFeatures,
+  } = options;
+
+  return tseslint.configs.recommendedTypeChecked.map((config) => {
+    const baseConfig = config;
+    // @ts-expect-error - languageOptions may exist on config but TypeScript doesn't know
+    const existingLanguageOptions = baseConfig.languageOptions || {};
+    return {
+      ...baseConfig,
+      files,
+      languageOptions: {
+        ...existingLanguageOptions,
+        globals: configGlobals,
+        sourceType,
+        parserOptions: {
+          project: [tsconfigPath],
+          tsconfigRootDir: import.meta.dirname,
+          ...(ecmaFeatures && { ecmaFeatures }),
+        },
+      },
+    };
+  });
+}
+
 export default [
   // Global ignores
   {
@@ -19,57 +52,39 @@ export default [
       '**/coverage/**',
       '**/*.config.js',
       '**/*.config.ts',
+      '**/tsconfig*.json',
       '.local/**',
       '**/*.md',
+      'scripts/**',
     ],
   },
 
   // Base recommended configs
-  eslint.configs.recommended,
-  // TypeScript recommended configs (non-type-checked for base)
-  // Type-checked configs are applied in specific file configs below that have parserOptions
-  ...tseslint.configs.recommended,
+  {
+    ...eslint.configs.recommended,
+    files: ['**/*.js', '**/*.mjs', '**/*.cjs', '**/*.ts', '**/*.tsx'],
+  },
+  // Restrict to TypeScript files only
+  ...tseslint.configs.recommended.map((config) => ({
+    ...config,
+    files: ['**/*.ts', '**/*.tsx'],
+  })),
 
   // Calendar Service (NestJS) specific config - adopting Nest.js defaults
-  // Excludes scripts directory which has its own config below
   // Apply type-checked configs for calendar-service
-  ...tseslint.configs.recommendedTypeChecked.map((config) => {
-    const baseConfig = config;
-    // @ts-expect-error - languageOptions may exist on config but TypeScript doesn't know
-    const existingLanguageOptions = baseConfig.languageOptions || {};
-    return {
-      ...baseConfig,
-      // Explicitly override files to ensure we only match calendar-service files
-      files: ['calendar-service/**/*.ts', '!calendar-service/scripts/**/*.ts'],
-      languageOptions: {
-        ...existingLanguageOptions,
-        globals: {
-          ...globals.node,
-          ...globals.jest,
-        },
-        sourceType: 'commonjs',
-        parserOptions: {
-          project: ['./calendar-service/tsconfig.json'],
-          tsconfigRootDir: import.meta.dirname,
-        },
-      },
-    };
+  ...createTypeCheckedConfigs({
+    files: ['calendar-service/**/*.ts'],
+    tsconfigPath: './calendar-service/tsconfig.json',
+    globals: {
+      ...globals.node,
+      ...globals.jest,
+    },
+    sourceType: 'commonjs',
   }),
   {
-    files: ['calendar-service/**/*.ts', '!calendar-service/scripts/**/*.ts'],
+    files: ['calendar-service/**/*.ts'],
     plugins: {
       '@typescript-eslint': tseslint.plugin,
-    },
-    languageOptions: {
-      globals: {
-        ...globals.node,
-        ...globals.jest,
-      },
-      sourceType: 'commonjs',
-      parserOptions: {
-        project: ['./calendar-service/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
     },
     rules: {
       // Nest.js default rules
@@ -91,72 +106,22 @@ export default [
       '@typescript-eslint/no-misused-promises': 'off',
     },
   },
-  // Calendar Service scripts - basic linting without type checking
-  {
-    files: ['calendar-service/scripts/**/*.ts'],
-    plugins: {
-      '@typescript-eslint': tseslint.plugin,
-    },
-    languageOptions: {
-      globals: {
-        ...globals.node,
-      },
-      sourceType: 'module',
-    },
-    rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unused-vars': [
-        'warn',
-        { argsIgnorePattern: '^_' },
-      ],
-      'prettier/prettier': ['error', { endOfLine: 'auto' }],
-    },
-  },
 
   // Calendar UI (React) specific config
   // Apply type-checked configs for calendar-ui
-  ...tseslint.configs.recommendedTypeChecked.map((config) => {
-    const baseConfig = config;
-    // @ts-expect-error - languageOptions may exist on config but TypeScript doesn't know
-    const existingLanguageOptions = baseConfig.languageOptions || {};
-    return {
-      ...baseConfig,
-      // Explicitly override files to ensure we only match calendar-ui files
-      files: ['calendar-ui/**/*.ts', 'calendar-ui/**/*.tsx'],
-      languageOptions: {
-        ...existingLanguageOptions,
-        globals: {
-          ...globals.browser,
-          ...globals.es2021,
-        },
-        sourceType: 'module',
-        parserOptions: {
-          project: ['./calendar-ui/tsconfig.json'],
-          tsconfigRootDir: import.meta.dirname,
-          ecmaFeatures: {
-            jsx: true,
-          },
-        },
-      },
-    };
+  ...createTypeCheckedConfigs({
+    files: ['calendar-ui/**/*.ts', 'calendar-ui/**/*.tsx'],
+    tsconfigPath: './calendar-ui/tsconfig.json',
+    globals: {
+      ...globals.browser,
+      ...globals.es2021,
+    },
+    ecmaFeatures: {
+      jsx: true,
+    },
   }),
   {
     files: ['calendar-ui/**/*.ts', 'calendar-ui/**/*.tsx'],
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.es2021,
-      },
-      sourceType: 'module',
-      parserOptions: {
-        project: ['./calendar-ui/tsconfig.json'],
-        tsconfigRootDir: import.meta.dirname,
-        ecmaFeatures: {
-          jsx: true,
-        },
-      },
-    },
     plugins: {
       '@typescript-eslint': tseslint.plugin,
       react,
@@ -172,7 +137,6 @@ export default [
       // React-specific rules
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
-      'react/react-in-jsx-scope': 'off', // Not needed in React 17+
       'react/prop-types': 'off', // Using TypeScript for prop validation
       'react-refresh/only-export-components': [
         'warn',
@@ -198,51 +162,30 @@ export default [
 
   // Packages (database, shared) - type-checked configs
   // Apply type-checked configs for packages/database
-  ...tseslint.configs.recommendedTypeChecked.map((config) => {
-    const baseConfig = config;
-    // @ts-expect-error - languageOptions may exist on config but TypeScript doesn't know
-    const existingLanguageOptions = baseConfig.languageOptions || {};
-    return {
-      ...baseConfig,
-      // Explicitly override files to ensure we only match packages/database files
-      files: ['packages/database/**/*.ts'],
-      languageOptions: {
-        ...existingLanguageOptions,
-        globals: {
-          ...globals.node,
-        },
-        sourceType: 'module',
-        parserOptions: {
-          project: ['./packages/database/tsconfig.json'],
-          tsconfigRootDir: import.meta.dirname,
-        },
-      },
-    };
+  ...createTypeCheckedConfigs({
+    files: ['packages/database/**/*.ts'],
+    tsconfigPath: './packages/database/tsconfig.json',
+    globals: globals.node,
   }),
   // Apply type-checked configs for packages/shared
-  ...tseslint.configs.recommendedTypeChecked.map((config) => {
-    const baseConfig = config;
-    // @ts-expect-error - languageOptions may exist on config but TypeScript doesn't know
-    const existingLanguageOptions = baseConfig.languageOptions || {};
-    return {
-      ...baseConfig,
-      // Explicitly override files to ensure we only match packages/shared files
-      files: ['packages/shared/**/*.ts'],
-      languageOptions: {
-        ...existingLanguageOptions,
-        globals: {
-          ...globals.node,
-        },
-        sourceType: 'module',
-        parserOptions: {
-          project: ['./packages/shared/tsconfig.json'],
-          tsconfigRootDir: import.meta.dirname,
-        },
-      },
-    };
+  ...createTypeCheckedConfigs({
+    files: ['packages/shared/**/*.ts'],
+    tsconfigPath: './packages/shared/tsconfig.json',
+    globals: globals.node,
   }),
 
   // Prettier integration (must be last to override formatting rules)
   // eslint-plugin-prettier/recommended includes both prettier plugin and disables conflicting rules
-  eslintPluginPrettierRecommended,
+  // Restrict to code files and JSON
+  {
+    ...eslintPluginPrettierRecommended,
+    files: [
+      '**/*.js',
+      '**/*.mjs',
+      '**/*.cjs',
+      '**/*.ts',
+      '**/*.tsx',
+      '**/*.json',
+    ],
+  },
 ];
