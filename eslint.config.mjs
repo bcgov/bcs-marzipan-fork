@@ -138,6 +138,7 @@ export default [
       ...react.configs.recommended.rules,
       ...reactHooks.configs.recommended.rules,
       'react/prop-types': 'off', // Using TypeScript for prop validation
+      'react/react-in-jsx-scope': 'off', // Using TypeScript for JSX
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
