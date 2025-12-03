@@ -18,7 +18,6 @@ import { relations } from 'drizzle-orm';
 import {
   activityStatuses,
   cities,
-  videographers,
   pitchStatuses,
   schedulingStatuses,
 } from './lookups';
@@ -93,7 +92,7 @@ export const activities = pgTable('activities', {
   eventLeadId: integer('event_lead_id'), // FK to SystemUser (mutually exclusive with eventLeadName)
   eventLeadName: varchar('event_lead_name', { length: 255 }), // Free text for non-system user event leads (mutually exclusive with eventLeadId)
   videographerUserId: integer('videographer_user_id'), // FK to SystemUser (replaces videographerId lookup)
-  graphicsUserId: integer('graphics_id'), // FK to SystemUser (replaces graphicsId lookup)
+  graphicsUserId: integer('graphics_user_id'), // FK to SystemUser (replaces graphicsId lookup)
   ownerId: integer('owner_id'), // FK to SystemUser
 
   // Foreign keys
@@ -104,8 +103,8 @@ export const activities = pgTable('activities', {
   // governmentRepresentativeId: integer('government_representative_id'), // FK to GovernmentRepresentative (deprecated - use junction table)
   // communicationContactId: integer('communication_contact_id'), // FK to CommunicationContact (deprecated - use commsLeadId)
   // eventPlannerId: integer('event_planner_id'), // FK to EventPlanner (deprecated - use eventLeadId)
-  videographerId: integer('videographer_id'), // FK to Videographer  (TODO: may be deprecated)
-  graphicsId: integer('graphics_id'), // FK to Graphics (TODO: may be deprecated)
+  // videographerId: integer('videographer_id'), // FK to Videographer  (TODO: may be deprecated)
+  // graphicsId: integer('graphics_id'), // FK to Graphics (TODO: may be deprecated)
   cityId: integer('city_id'), // FK to City
 
   // Boolean flags (new)
@@ -257,7 +256,7 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
     relationName: 'videographerUser',
   }),
   graphics: one(systemUsers, {
-    fields: [activities.graphicsId],
+    fields: [activities.graphicsUserId],
     references: [systemUsers.id],
     relationName: 'graphics',
   }),
@@ -293,10 +292,10 @@ export const activitiesRelations = relations(activities, ({ one, many }) => ({
   //   fields: [activities.eventPlannerId],
   //   references: [eventPlanners.id],
   // }),
-  videographer: one(videographers, {
-    fields: [activities.videographerId],
-    references: [videographers.id],
-  }),
+  // videographer: one(videographers, {
+  //   fields: [activities.videographerId],
+  //   references: [videographers.id],
+  // }),
   createdByUser: one(systemUsers, {
     fields: [activities.createdBy],
     references: [systemUsers.id],

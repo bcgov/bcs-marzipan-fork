@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "test:db": "cd .. && npm run build:packages && cd calendar-service && ts-node -r tsconfig-paths/register scripts/test-db-connection.ts"
+    "test:db": "npm run build:packages && ts-node -r tsconfig-paths/register ../scripts/test-db-connection.ts"
   },
   "dependencies": {
     "@corpcal/database": "*",
@@ -30,7 +30,7 @@
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.2.0",
     "axios": "^1.13.1",
-    "drizzle-orm": "^0.36.0",
+    "drizzle-orm": "^0.44.7",
     "postgres": "^3.4.3",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",

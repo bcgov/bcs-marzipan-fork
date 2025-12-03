@@ -10,6 +10,23 @@
     "node": ">=24.0.0",
     "npm": ">=11.0.0"
   },
+  "overrides": {
+    "react": "$react",
+    "react-dom": "$react-dom",
+    "@fluentui/react": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@fluentui/react-components": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "@fluentui/foundation-legacy": {
+      "react": "$react",
+      "react-dom": "$react-dom"
+    },
+    "drizzle-orm": "^0.44.7"
+  },
   "scripts": {
     "start": "concurrently \"npm --prefix calendar-ui run dev\" \"npm --prefix calendar-service run start:dev\"",
     "start:prod": "concurrently \"npm --prefix calendar-ui run preview\" \"npm --prefix calendar-service run start:prod\"",
@@ -18,6 +35,8 @@
     "build:packages": "npm run build --workspace=packages/database && npm run build --workspace=packages/shared",
     "typecheck": "npm run typecheck --workspaces",
     "typecheck:packages": "npm run typecheck --workspace=packages/database && npm run typecheck --workspace=packages/shared",
+    "test:env": "ts-node -r tsconfig-paths/register scripts/test-env-vars.ts",
+    "test:config": "ts-node -r tsconfig-paths/register scripts/test-nestjs-config.ts",
     "prepare": "husky",
     "format": "prettier --write \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
     "format:check": "prettier --check \"calendar-service/**/*.{ts,json}\" \"calendar-ui/**/*.{ts,tsx,json}\" \"*.{json,md}\"",
@@ -41,9 +60,5 @@
     "prettier": "^3.3.3",
     "typescript-eslint": "^8.20.0"
   },
-  "dependencies": {
-    "@fluentui/react-nav": "^9.3.14",
-    "react-cookie": "^8.0.1",
-    "zod": "^4.1.12"
-  }
+  "dependencies": {}
 }
