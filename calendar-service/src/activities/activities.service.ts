@@ -1005,7 +1005,7 @@ export class ActivitiesService {
           ? activity.eventLeadName
           : null,
       videographer: activity.videographerUserId?.toString() ?? null,
-      graphics: activity.graphicsId?.toString() ?? null,
+      graphics: activity.graphicsUserId?.toString() ?? null,
 
       // Reports
       notForLookAhead: activity.notForLookAhead ?? false,
