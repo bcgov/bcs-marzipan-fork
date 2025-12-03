@@ -39,6 +39,12 @@ export class ActivitiesController {
   async create(
     @Body() body: CreateActivityRequest
   ): Promise<{ success: boolean; data: ActivityResponse }> {
+    // TEMPORARY: Log incoming request
+    console.log('=== ACTIVITIES CREATE REQUEST RECEIVED ===');
+    console.log('Request body:', JSON.stringify(body, null, 2));
+    console.log('Request timestamp:', new Date().toISOString());
+    console.log('==========================================');
+
     // body is now validated and typed by ZodValidationPipe
     const result = await this.activitiesService.create(body);
     return {

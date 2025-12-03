@@ -41,9 +41,20 @@ export class ActivitiesService {
    * Create a new activity
    */
   async create(dto: CreateActivityRequest): Promise<ActivityResponse> {
-    const newActivity: NewActivity = {
-      ...(dto as Partial<NewActivity>),
-      createdDateTime: new Date(),
+    // Extract junction table data from DTO
+    // Type assertion needed because CreateActivityRequest extends the base schema
+    const dtoWithJunctions = dto as CreateActivityRequest & {
+      categoryIds?: number[];
+      tagIds?: string[];
+      jointOrganizationIds?: string[];
+      relatedActivityIds?: number[];
+      commsMaterialIds?: number[];
+      translationLanguageIds?: number[];
+      jointEventOrganizationIds?: string[];
+      representativeIds?: number[];
+      sharedWithOrganizationIds?: string[];
+      canEditUserIds?: number[];
+      canViewUserIds?: number[];
     };
 
     const [created] = await this.databaseService.db
@@ -64,6 +75,9 @@ export class ActivitiesService {
       canEdit: [],
       canView: [],
     });
+
+    // Fetch the created activity with all related data
+    return this.findOne(result.id);
   }
 
   /**
@@ -1065,5 +1079,30 @@ export class ActivitiesService {
     }
 
     return dto;
+  }
+
+  /**
+   * Validate that all category IDs exist in the database
+   */
+  private async validateCategoryIds(categoryIds: number[]): Promise<void> {
+    if (categoryIds.length === 0) {
+      return;
+    }
+
+    const existingCategories = await this.databaseService.db
+      .select({ id: categories.id })
+      .from(categories)
+      .where(
+        and(inArray(categories.id, categoryIds), eq(categories.isActive, true))
+      );
+
+    const existingIds = new Set(existingCategories.map((c) => c.id));
+    const missingIds = categoryIds.filter((id) => !existingIds.has(id));
+
+    if (missingIds.length > 0) {
+      throw new BadRequestException(
+        `Invalid category IDs: ${missingIds.join(', ')}. These categories do not exist or are not active.`
+      );
+    }
   }
 }
