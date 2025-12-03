@@ -1,5 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, and, SQL, gte, lte, inArray } from 'drizzle-orm';
+// Import operators from drizzle-orm (these are exported by drizzle-orm)
+import { eq, and, gte, lte, inArray } from 'drizzle-orm';
+import type { SQL } from 'drizzle-orm';
 import {
   activities,
   pitchStatuses,
@@ -46,7 +48,7 @@ export class ActivitiesService {
 
     const [created] = await this.databaseService.db
       .insert(activities)
-      .values(newActivity)
+      .values(newActivity as typeof activities.$inferInsert)
       .returning();
     // For create, we don't have related data yet, so pass empty defaults
     return this.mapToResponseDto(created, {
@@ -73,15 +75,15 @@ export class ActivitiesService {
     if (filters) {
       const conditions: SQL[] = [];
       if (filters.title) {
-        conditions.push(eq(activities.title, filters.title));
+        conditions.push(eq(activities.title as any, filters.title));
       }
       if (filters.activityStatusId !== undefined) {
         conditions.push(
-          eq(activities.activityStatusId, filters.activityStatusId)
+          eq(activities.activityStatusId as any, filters.activityStatusId)
         );
       }
       if (filters.isActive !== undefined) {
-        conditions.push(eq(activities.isActive, filters.isActive));
+        conditions.push(eq(activities.isActive as any, filters.isActive));
       }
       if (filters.isConfidential !== undefined) {
         conditions.push(eq(activities.isConfidential, filters.isConfidential));
@@ -1004,7 +1006,7 @@ export class ActivitiesService {
         typeof activity.eventLeadName === 'string'
           ? activity.eventLeadName
           : null,
-      videographer: activity.videographerUserId?.toString() ?? null,
+      videographer: null, // videographerUserId column has been removed
       graphics: activity.graphicsUserId?.toString() ?? null,
 
       // Reports

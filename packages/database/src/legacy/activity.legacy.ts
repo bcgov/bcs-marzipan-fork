@@ -28,7 +28,6 @@ import {
   governmentRepresentatives,
   communicationContacts,
   eventPlanners,
-  videographers,
 } from '../schema/lookups';
 import { ministries } from '../schema/ministry';
 import { systemUsers } from '../schema/user';
@@ -69,7 +68,7 @@ export const legacyActivities = pgTable('activities_legacy_reference', {
   governmentRepresentativeId: integer('government_representative_id'), // FK to GovernmentRepresentative
   communicationContactId: integer('communication_contact_id'), // FK to CommunicationContact
   eventPlannerId: integer('event_planner_id'), // FK to EventPlanner
-  videographerId: integer('videographer_id'), // FK to Videographer
+  // videographerId: integer('videographer_id'), // FK to Videographer
   cityId: integer('city_id'), // FK to City
 
   // Boolean flags
@@ -197,10 +196,10 @@ export const legacyActivitiesRelations = relations(
       fields: [legacyActivities.eventPlannerId],
       references: [eventPlanners.id],
     }),
-    videographer: one(videographers, {
-      fields: [legacyActivities.videographerId],
-      references: [videographers.id],
-    }),
+    // videographer: one(videographers, {
+    //   fields: [legacyActivities.videographerId],
+    //   references: [videographers.id],
+    // }),
     createdByUser: one(systemUsers, {
       fields: [legacyActivities.createdBy],
       references: [systemUsers.id],
