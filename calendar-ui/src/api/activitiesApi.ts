@@ -28,11 +28,22 @@ export async function fetchActivity(id: number): Promise<ActivityResponse> {
 export async function createActivity(
   activity: CreateActivityRequest
 ): Promise<ActivityResponse> {
-  const res = await api.post<{ success: boolean; data: ActivityResponse }>(
-    '/activities',
-    activity
+  console.log(
+    'createActivity API call - URL:',
+    api.defaults.baseURL + '/activities'
   );
-  return res.data.data;
+  console.log('createActivity API call - Payload:', activity);
+  try {
+    const res = await api.post<{ success: boolean; data: ActivityResponse }>(
+      '/activities',
+      activity
+    );
+    console.log('createActivity API call - Success:', res.data);
+    return res.data.data;
+  } catch (error) {
+    console.error('createActivity API call - Error:', error);
+    throw error;
+  }
 }
 
 export async function updateActivity(
