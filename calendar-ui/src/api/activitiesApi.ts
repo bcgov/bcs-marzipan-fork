@@ -5,6 +5,9 @@ import type {
   UpdateActivityRequest,
   FilterActivities,
 } from '@corpcal/shared/schemas';
+import { createLogger } from '../lib/logger';
+
+const logger = createLogger('ActivitiesAPI');
 
 export async function fetchActivities(
   filters?: FilterActivities
@@ -28,20 +31,18 @@ export async function fetchActivity(id: number): Promise<ActivityResponse> {
 export async function createActivity(
   activity: CreateActivityRequest
 ): Promise<ActivityResponse> {
-  console.log(
-    'createActivity API call - URL:',
-    api.defaults.baseURL + '/activities'
-  );
-  console.log('createActivity API call - Payload:', activity);
+  const url = api.defaults.baseURL + '/activities';
+  logger.debug('Creating activity', { url, payload: activity });
+
   try {
     const res = await api.post<{ success: boolean; data: ActivityResponse }>(
       '/activities',
       activity
     );
-    console.log('createActivity API call - Success:', res.data);
+    logger.debug('Activity created successfully', { data: res.data });
     return res.data.data;
   } catch (error) {
-    console.error('createActivity API call - Error:', error);
+    logger.error('Failed to create activity', error);
     throw error;
   }
 }

@@ -5,8 +5,8 @@ import { Alert24Regular } from '@fluentui/react-icons';
 
 const Header = () => {
   return (
-    <header className="w-full py-2 px-20 h-14 border-b-2 border-[#f4f4f4] flex items-center box-border">
-      <img src={logo} alt="Logo" className="h-10 mr-4" />
+    <header className="box-border flex h-14 w-full items-center border-b-2 border-[#f4f4f4] px-20 py-2">
+      <img src={logo} alt="Logo" className="mr-4 h-10" />
 
       <div className="ml-auto flex items-center gap-4">
         <Tooltip content="Notifications" relationship="label">
