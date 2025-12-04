@@ -97,101 +97,79 @@ export class ActivitiesService {
       const activityId = created.id;
       const now = new Date();
 
-      // Insert junction table relationships
-      if (categoryIds && categoryIds.length > 0) {
-        await tx.insert(activityCategories).values(
-          categoryIds.map((categoryId) => ({
-            activityId,
-            categoryId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      // Insert junction table relationships using helper function
+      await this.insertJunctionRecords(
+        tx,
+        activityCategories,
+        activityId,
+        categoryIds,
+        (categoryId) => ({ categoryId }),
+        currentUserId,
+        now
+      );
 
-      if (tagIds && tagIds.length > 0) {
-        await tx.insert(activityTags).values(
-          tagIds.map((tagId) => ({
-            activityId,
-            tagId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityTags,
+        activityId,
+        tagIds,
+        (tagId) => ({ tagId }),
+        currentUserId,
+        now
+      );
 
-      if (jointOrganizationIds && jointOrganizationIds.length > 0) {
-        await tx.insert(activityJointOrganizations).values(
-          jointOrganizationIds.map((orgId) => ({
-            activityId,
-            organizationId: orgId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityJointOrganizations,
+        activityId,
+        jointOrganizationIds,
+        (orgId) => ({ organizationId: orgId }),
+        currentUserId,
+        now
+      );
 
-      if (relatedActivityIds && relatedActivityIds.length > 0) {
-        await tx.insert(activityRelatedEntries).values(
-          relatedActivityIds.map((relatedId) => ({
-            activityId,
-            relatedActivityId: relatedId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityRelatedEntries,
+        activityId,
+        relatedActivityIds,
+        (relatedId) => ({ relatedActivityId: relatedId }),
+        currentUserId,
+        now
+      );
 
-      if (commsMaterialIds && commsMaterialIds.length > 0) {
-        await tx.insert(activityCommsMaterials).values(
-          commsMaterialIds.map((materialId) => ({
-            activityId,
-            commsMaterialId: materialId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityCommsMaterials,
+        activityId,
+        commsMaterialIds,
+        (materialId) => ({ commsMaterialId: materialId }),
+        currentUserId,
+        now
+      );
 
-      if (translationLanguageIds && translationLanguageIds.length > 0) {
-        await tx.insert(activityTranslationLanguages).values(
-          translationLanguageIds.map((languageId) => ({
-            activityId,
-            languageId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityTranslationLanguages,
+        activityId,
+        translationLanguageIds,
+        (languageId) => ({ languageId }),
+        currentUserId,
+        now
+      );
 
-      if (jointEventOrganizationIds && jointEventOrganizationIds.length > 0) {
-        await tx.insert(activityJointEventOrganizations).values(
-          jointEventOrganizationIds.map((orgId) => ({
-            activityId,
-            organizationId: orgId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityJointEventOrganizations,
+        activityId,
+        jointEventOrganizationIds,
+        (orgId) => ({ organizationId: orgId }),
+        currentUserId,
+        now
+      );
 
+      // Special case: activityRepresentatives has additional attendingStatus field
       if (representativeIds && representativeIds.length > 0) {
-        // Note: activityRepresentatives uses representativeId (integer) and representativeName (varchar)
-        // For now, we'll use representativeId. If we need to support names, we'll need to adjust this.
         await tx.insert(activityRepresentatives).values(
           representativeIds.map((repId) => ({
             activityId,
@@ -205,50 +183,80 @@ export class ActivitiesService {
         );
       }
 
-      if (sharedWithOrganizationIds && sharedWithOrganizationIds.length > 0) {
-        await tx.insert(activitySharedWithOrganizations).values(
-          sharedWithOrganizationIds.map((orgId) => ({
-            activityId,
-            organizationId: orgId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activitySharedWithOrganizations,
+        activityId,
+        sharedWithOrganizationIds,
+        (orgId) => ({ organizationId: orgId }),
+        currentUserId,
+        now
+      );
 
-      if (canEditUserIds && canEditUserIds.length > 0) {
-        await tx.insert(activityCanEditUsers).values(
-          canEditUserIds.map((userId) => ({
-            activityId,
-            userId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityCanEditUsers,
+        activityId,
+        canEditUserIds,
+        (userId) => ({ userId }),
+        currentUserId,
+        now
+      );
 
-      if (canViewUserIds && canViewUserIds.length > 0) {
-        await tx.insert(activityCanViewUsers).values(
-          canViewUserIds.map((userId) => ({
-            activityId,
-            userId,
-            createdBy: currentUserId,
-            lastUpdatedBy: currentUserId,
-            createdDateTime: now,
-            lastUpdatedDateTime: now,
-          }))
-        );
-      }
+      await this.insertJunctionRecords(
+        tx,
+        activityCanViewUsers,
+        activityId,
+        canViewUserIds,
+        (userId) => ({ userId }),
+        currentUserId,
+        now
+      );
 
       return created;
     });
 
     // Fetch the created activity with all related data
     return this.findOne(result.id);
+  }
+
+  /**
+   * Helper function to insert junction table records
+   * Reduces code duplication for common junction table insert patterns
+   *
+   * @param tx - Database transaction
+   * @param table - Junction table to insert into
+   * @param activityId - ID of the activity
+   * @param ids - Array of IDs to create relationships for (can be number[] or string[])
+   * @param idMapper - Function to map an ID to the junction table record fields
+   * @param currentUserId - ID of the user creating the records
+   * @param now - Current timestamp
+   */
+  private async insertJunctionRecords<TId extends number | string>(
+    tx: Parameters<
+      Parameters<typeof this.databaseService.db.transaction>[0]
+    >[0],
+    table: any,
+    activityId: number,
+    ids: TId[] | undefined,
+    idMapper: (id: TId) => Record<string, any>,
+    currentUserId: number,
+    now: Date
+  ): Promise<void> {
+    if (!ids || ids.length === 0) {
+      return;
+    }
+
+    await tx.insert(table).values(
+      ids.map((id) => ({
+        activityId,
+        ...idMapper(id),
+        createdBy: currentUserId,
+        lastUpdatedBy: currentUserId,
+        createdDateTime: now,
+        lastUpdatedDateTime: now,
+      }))
+    );
   }
 
   /**
