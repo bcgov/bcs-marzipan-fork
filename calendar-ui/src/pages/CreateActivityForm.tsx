@@ -32,6 +32,11 @@ import {
 } from '../components/ui/form';
 import { Combobox } from '../components/ui/combobox';
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '../components/ui/popover';
+import {
   mockCategories,
   mockSchedulingStatuses,
   mockPitchStatuses,
@@ -66,9 +71,12 @@ export const CreateActivityForm: React.FC = () => {
   const [showJointOrganizations, setShowJointOrganizations] = useState(false);
   const [showJointEventOrganizations, setShowJointEventOrganizations] =
     useState(false);
+  const [showMissingFieldsPopover, setShowMissingFieldsPopover] =
+    useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(createActivityRequestSchema) as any,
+    mode: 'onChange', // Validate on change to enable real-time validation
     defaultValues: {
       isAllDay: false,
       oicRelated: false,
@@ -76,6 +84,9 @@ export const CreateActivityForm: React.FC = () => {
       notForLookAhead: false,
       planningReport: false,
       thirtySixtyNinetyReport: false,
+      // TODO: Remove hardcoded user id 8 - this is temporary for development
+      ownerId: 8,
+      commsLeadId: 8,
       categoryIds: [],
       relatedActivityIds: [],
       tagIds: [],
@@ -129,11 +140,6 @@ export const CreateActivityForm: React.FC = () => {
     'representativeIds',
     number
   >(form, 'representativeIds');
-  const [selectedSharedWith, toggleSharedWith] = useMultiSelect<
-    FormData,
-    'sharedWithOrganizationIds',
-    string
-  >(form, 'sharedWithOrganizationIds');
   const [selectedCanEdit, toggleCanEdit] = useMultiSelect<
     FormData,
     'canEditUserIds',
@@ -254,6 +260,73 @@ export const CreateActivityForm: React.FC = () => {
     console.error('Form values:', form.getValues());
   };
 
+  // Map field names to user-friendly labels
+  const getFieldLabel = (fieldName: string): string => {
+    const fieldLabelMap: Record<string, string> = {
+      title: 'Title',
+      categoryIds: 'Category',
+      startDate: 'Start Date',
+      endDate: 'End Date',
+      startTime: 'Start Time',
+      endTime: 'End Time',
+      leadOrgId: 'Lead Organization',
+      eventLeadOrgId: 'Event Lead Organization',
+      ownerId: 'Owner',
+      commsLeadId: 'Comms Lead',
+      eventLeadId: 'Event Planner',
+      schedulingStatusId: 'Scheduling Status',
+      pitchStatusId: 'Pitch Status',
+      activityStatusId: 'Activity Status',
+      contactMinistryId: 'Contact Ministry',
+      cityId: 'City',
+      venueAddress: 'Venue Address',
+      street: 'Street Address',
+      city: 'City',
+      provinceOrState: 'Province/State',
+      country: 'Country',
+    };
+    return fieldLabelMap[fieldName] || fieldName;
+  };
+
+  // Get missing required fields from form errors
+  const getMissingRequiredFields = (): string[] => {
+    const errors = form.formState.errors;
+    const missingFields: string[] = [];
+    const seenFields = new Set<string>();
+
+    const extractErrors = (errorObj: any, fieldPath = '') => {
+      if (!errorObj || typeof errorObj !== 'object') return;
+
+      Object.keys(errorObj).forEach((key) => {
+        const currentPath = fieldPath ? `${fieldPath}.${key}` : key;
+        const error = errorObj[key];
+
+        if (error?.message) {
+          // This is a field error - use the top-level field name for display
+          const topLevelField = currentPath.split('.')[0];
+          if (!seenFields.has(topLevelField)) {
+            seenFields.add(topLevelField);
+            missingFields.push(getFieldLabel(topLevelField));
+          }
+        } else if (
+          typeof error === 'object' &&
+          error !== null &&
+          !Array.isArray(error)
+        ) {
+          // This is a nested object, recurse
+          extractErrors(error, currentPath);
+        }
+      });
+    };
+
+    extractErrors(errors);
+    return missingFields;
+  };
+
+  // Check if form is valid - trigger validation if needed
+  const isFormValid = form.formState.isValid;
+  const missingFields = getMissingRequiredFields();
+
   // Mock related activities for selection (TODO: Replace with API call)
   const mockRelatedActivities = [
     { id: 1, title: 'Related Activity 1' },
@@ -265,6 +338,24 @@ export const CreateActivityForm: React.FC = () => {
   const jointOrganizationOptions = mockOrganizations.map((org) => ({
     value: org.id,
     label: org.name,
+  }));
+
+  // Transform system users for combobox
+  const canEditUserOptions = mockSystemUsers.map((user) => ({
+    value: user.id.toString(),
+    label: user.name,
+  }));
+
+  // Transform system users for owner combobox
+  const ownerOptions = mockSystemUsers.map((user) => ({
+    value: user.id.toString(),
+    label: user.name,
+  }));
+
+  // Transform related activities for combobox
+  const relatedActivityOptions = mockRelatedActivities.map((activity) => ({
+    value: activity.id.toString(),
+    label: activity.title,
   }));
 
   const ErrorFallback = ({
@@ -320,11 +411,14 @@ export const CreateActivityForm: React.FC = () => {
           >
             {/* Overview Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Overview</h2>
+              <h2 className="pb-2 text-xl font-semibold">Overview</h2>
 
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
-                  <Label className="mb-3 block">Category *</Label>
+                  <Label className="block">Category *</Label>
+                  <p className="text-muted-foreground mb-3 text-sm">
+                    Select all that apply
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {mockCategories.map((category) => (
                       <Badge
@@ -344,11 +438,6 @@ export const CreateActivityForm: React.FC = () => {
                       </Badge>
                     ))}
                   </div>
-                  {selectedCategories.length === 0 && (
-                    <p className="text-muted-foreground mt-2 text-sm">
-                      Please select at least one category
-                    </p>
-                  )}
                 </div>
 
                 <FormField
@@ -481,31 +570,34 @@ export const CreateActivityForm: React.FC = () => {
                   />
                 </div>
 
-                <div>
-                  <Label className="mb-3 block">Related Activities</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {mockRelatedActivities.map((activity) => (
-                      <Badge
-                        key={activity.id}
-                        variant={
-                          selectedRelatedActivities.includes(activity.id)
-                            ? 'default'
-                            : 'outline'
-                        }
-                        className="cursor-pointer px-4 py-2 text-sm"
-                        onClick={() => toggleRelatedActivity(activity.id)}
-                      >
-                        {activity.title}
-                        {selectedRelatedActivities.includes(activity.id) && (
-                          <X className="ml-2 h-3 w-3" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormDescription className="mt-2">
-                    Select related activities if applicable
-                  </FormDescription>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="relatedActivityIds"
+                  render={({ field: _field }) => (
+                    <FormItem>
+                      <FormLabel>Related Activities</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          options={relatedActivityOptions}
+                          selectedValues={selectedRelatedActivities.map((id) =>
+                            id.toString()
+                          )}
+                          onSelect={(value) => {
+                            const activityId = parseInt(value);
+                            toggleRelatedActivity(activityId);
+                          }}
+                          placeholder="Select related activities"
+                          searchPlaceholder="Search activities..."
+                          emptyMessage="No activities found."
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Select related activities if applicable
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <div>
                   <Label className="mb-3 block">Tags</Label>
@@ -535,7 +627,7 @@ export const CreateActivityForm: React.FC = () => {
 
             {/* Approvals Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Approvals</h2>
+              <h2 className="pb-2 text-xl font-semibold">Approvals</h2>
 
               <div className="space-y-4">
                 <FormField
@@ -613,7 +705,7 @@ export const CreateActivityForm: React.FC = () => {
 
             {/* Schedule Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Schedule</h2>
+              <h2 className="pb-2 text-xl font-semibold">Schedule</h2>
 
               <div className="space-y-4">
                 <FormField
@@ -884,7 +976,7 @@ export const CreateActivityForm: React.FC = () => {
 
             {/* Event Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Event</h2>
+              <h2 className="pb-2 text-xl font-semibold">Event</h2>
 
               <div className="space-y-4">
                 <FormField
@@ -1037,7 +1129,7 @@ export const CreateActivityForm: React.FC = () => {
 
             {/* Venue Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Venue</h2>
+              <h2 className="pb-2 text-xl font-semibold">Venue</h2>
 
               <div className="space-y-4">
                 <FormField
@@ -1154,7 +1246,7 @@ export const CreateActivityForm: React.FC = () => {
 
             {/* Reports Section */}
             <div className="space-y-6">
-              <h2 className="text-xl font-semibold">Reports</h2>
+              <h2 className="pb-2 text-xl font-semibold">Reports</h2>
 
               <div className="space-y-4">
                 <div className="grid grid-cols-3 gap-4">
@@ -1279,84 +1371,97 @@ export const CreateActivityForm: React.FC = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Owner</FormLabel>
-                      <Select
-                        onValueChange={(value) =>
-                          field.onChange(parseInt(value))
-                        }
-                        value={field.value?.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select owner" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {mockSystemUsers.map((user) => (
-                            <SelectItem
-                              key={user.id}
-                              value={user.id.toString()}
-                            >
-                              {user.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <Combobox
+                          options={ownerOptions}
+                          selectedValues={
+                            field.value ? [field.value.toString()] : []
+                          }
+                          onSelect={(value) => {
+                            const userId = parseInt(value);
+                            // Toggle behavior: if clicking the same value, clear it; otherwise set it
+                            if (field.value === userId) {
+                              field.onChange(undefined);
+                            } else {
+                              field.onChange(userId);
+                            }
+                          }}
+                          placeholder="Select owner"
+                          searchPlaceholder="Search users..."
+                          emptyMessage="No users found."
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                <div>
-                  <Label className="mb-3 block">Can Edit</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {mockSystemUsers.map((user) => (
-                      <Badge
-                        key={user.id}
-                        variant={
-                          selectedCanEdit.includes(user.id)
-                            ? 'default'
-                            : 'outline'
-                        }
-                        className="cursor-pointer px-4 py-2 text-sm"
-                        onClick={() => toggleCanEdit(user.id)}
-                      >
-                        {user.name}
-                        {selectedCanEdit.includes(user.id) && (
-                          <X className="ml-2 h-3 w-3" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormDescription className="mt-2">
-                    Select users who can edit this activity
-                  </FormDescription>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="canEditUserIds"
+                  render={({ field: _field }) => (
+                    <FormItem>
+                      <FormLabel>Can Edit</FormLabel>
+                      <FormControl>
+                        <Combobox
+                          options={canEditUserOptions}
+                          selectedValues={selectedCanEdit.map((id) =>
+                            id.toString()
+                          )}
+                          onSelect={(value) => {
+                            const userId = parseInt(value);
+                            toggleCanEdit(userId);
+                          }}
+                          placeholder="Select users who can edit"
+                          searchPlaceholder="Search users..."
+                          emptyMessage="No users found."
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Select users who can edit this activity
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-                <div>
-                  <Label className="mb-3 block">Shared With</Label>
-                  <div className="flex flex-wrap gap-2">
-                    {mockOrganizations.map((org) => (
-                      <Badge
-                        key={org.id}
-                        variant={
-                          selectedSharedWith.includes(org.id)
-                            ? 'default'
-                            : 'outline'
-                        }
-                        className="cursor-pointer px-4 py-2 text-sm"
-                        onClick={() => toggleSharedWith(org.id)}
-                      >
-                        {org.name}
-                        {selectedSharedWith.includes(org.id) && (
-                          <X className="ml-2 h-3 w-3" />
-                        )}
-                      </Badge>
-                    ))}
-                  </div>
-                  <FormDescription className="mt-2">
-                    These groups can view but not edit the entry
-                  </FormDescription>
-                </div>
+                <FormField
+                  control={form.control}
+                  name="sharedWithOrganizationIds"
+                  render={({ field }) => {
+                    const currentValue = Array.isArray(field.value)
+                      ? field.value[0] || ''
+                      : field.value || '';
+                    return (
+                      <FormItem>
+                        <FormLabel>Shared With</FormLabel>
+                        <Select
+                          onValueChange={(value) => {
+                            field.onChange(value ? [value] : []);
+                          }}
+                          value={currentValue}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select organization" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {mockOrganizations.map((org) => (
+                              <SelectItem key={org.id} value={org.id}>
+                                {org.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          These groups can view but not edit the entry
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
+                />
 
                 <FormField
                   control={form.control}
@@ -1398,9 +1503,44 @@ export const CreateActivityForm: React.FC = () => {
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit'}
-              </Button>
+              {!isFormValid && missingFields.length > 0 ? (
+                <Popover open={showMissingFieldsPopover}>
+                  <PopoverTrigger asChild>
+                    <div
+                      onMouseEnter={() => setShowMissingFieldsPopover(true)}
+                      onMouseLeave={() => setShowMissingFieldsPopover(false)}
+                    >
+                      <Button
+                        type="submit"
+                        disabled={true}
+                        className="cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Submitting...' : 'Submit'}
+                      </Button>
+                    </div>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-80"
+                    onMouseEnter={() => setShowMissingFieldsPopover(true)}
+                    onMouseLeave={() => setShowMissingFieldsPopover(false)}
+                  >
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">
+                        Required fields missing:
+                      </h4>
+                      <ul className="text-muted-foreground list-inside list-disc space-y-1 text-sm">
+                        {missingFields.map((field) => (
+                          <li key={field}>{field}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              ) : (
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? 'Submitting...' : 'Submit'}
+                </Button>
+              )}
             </div>
           </form>
         </Form>
