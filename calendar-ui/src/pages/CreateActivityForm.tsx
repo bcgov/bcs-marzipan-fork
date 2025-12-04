@@ -6,6 +6,7 @@ import {
   type CreateActivityRequest,
 } from '@corpcal/shared/schemas';
 import { createActivity } from '../api/activitiesApi';
+import { useMultiSelect } from '../hooks/useMultiSelect';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
@@ -28,6 +29,7 @@ import {
   FormLabel,
   FormMessage,
 } from '../components/ui/form';
+import { Combobox } from '../components/ui/combobox';
 import {
   mockCategories,
   mockSchedulingStatuses,
@@ -42,7 +44,7 @@ import {
   lookAheadSectionOptions,
   calendarVisibilityOptions,
 } from '../data/mockLookups';
-import { X } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 
 type FormData = CreateActivityRequest & {
   categoryIds?: number[];
@@ -58,28 +60,11 @@ type FormData = CreateActivityRequest & {
   canViewUserIds?: number[];
 };
 
-export const CreateActivityFormv2: React.FC = () => {
-  const [selectedCategories, setSelectedCategories] = useState<number[]>([]);
-  const [selectedRelatedActivities, setSelectedRelatedActivities] = useState<
-    number[]
-  >([]);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [selectedJointOrganizations, setSelectedJointOrganizations] = useState<
-    string[]
-  >([]);
-  const [selectedCommsMaterials, setSelectedCommsMaterials] = useState<
-    number[]
-  >([]);
-  const [selectedTranslationLanguages, setSelectedTranslationLanguages] =
-    useState<number[]>([]);
-  const [selectedJointEventOrganizations, setSelectedJointEventOrganizations] =
-    useState<string[]>([]);
-  const [selectedRepresentatives, setSelectedRepresentatives] = useState<
-    number[]
-  >([]);
-  const [selectedSharedWith, setSelectedSharedWith] = useState<string[]>([]);
-  const [selectedCanEdit, setSelectedCanEdit] = useState<number[]>([]);
+export const CreateActivityForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showJointOrganizations, setShowJointOrganizations] = useState(false);
+  const [showJointEventOrganizations, setShowJointEventOrganizations] =
+    useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(createActivityRequestSchema) as any,
@@ -90,101 +75,72 @@ export const CreateActivityFormv2: React.FC = () => {
       notForLookAhead: false,
       planningReport: false,
       thirtySixtyNinetyReport: false,
+      categoryIds: [],
+      relatedActivityIds: [],
+      tagIds: [],
+      jointOrganizationIds: [],
+      commsMaterialIds: [],
+      translationLanguageIds: [],
+      jointEventOrganizationIds: [],
+      representativeIds: [],
+      sharedWithOrganizationIds: [],
+      canEditUserIds: [],
+      canViewUserIds: [],
     } as FormData,
   });
 
-  const handleCategoryToggle = (categoryId: number) => {
-    const newSelection = selectedCategories.includes(categoryId)
-      ? selectedCategories.filter((id) => id !== categoryId)
-      : [...selectedCategories, categoryId];
-    setSelectedCategories(newSelection);
-    form.setValue('categoryIds', newSelection);
-  };
-
-  const handleRelatedActivityToggle = (activityId: number) => {
-    const newSelection = selectedRelatedActivities.includes(activityId)
-      ? selectedRelatedActivities.filter((id) => id !== activityId)
-      : [...selectedRelatedActivities, activityId];
-    setSelectedRelatedActivities(newSelection);
-    form.setValue('relatedActivityIds', newSelection);
-  };
-
-  const handleTagToggle = (tagId: string) => {
-    const newSelection = selectedTags.includes(tagId)
-      ? selectedTags.filter((id) => id !== tagId)
-      : [...selectedTags, tagId];
-    setSelectedTags(newSelection);
-    form.setValue('tagIds', newSelection);
-  };
-
-  const handleJointOrganizationToggle = (orgId: string) => {
-    const newSelection = selectedJointOrganizations.includes(orgId)
-      ? selectedJointOrganizations.filter((id) => id !== orgId)
-      : [...selectedJointOrganizations, orgId];
-    setSelectedJointOrganizations(newSelection);
-    form.setValue('jointOrganizationIds', newSelection);
-  };
-
-  const handleCommsMaterialToggle = (materialId: number) => {
-    const newSelection = selectedCommsMaterials.includes(materialId)
-      ? selectedCommsMaterials.filter((id) => id !== materialId)
-      : [...selectedCommsMaterials, materialId];
-    setSelectedCommsMaterials(newSelection);
-    form.setValue('commsMaterialIds', newSelection);
-  };
-
-  const handleTranslationLanguageToggle = (languageId: number) => {
-    const newSelection = selectedTranslationLanguages.includes(languageId)
-      ? selectedTranslationLanguages.filter((id) => id !== languageId)
-      : [...selectedTranslationLanguages, languageId];
-    setSelectedTranslationLanguages(newSelection);
-    form.setValue('translationLanguageIds', newSelection);
-  };
-
-  const handleJointEventOrganizationToggle = (orgId: string) => {
-    const newSelection = selectedJointEventOrganizations.includes(orgId)
-      ? selectedJointEventOrganizations.filter((id) => id !== orgId)
-      : [...selectedJointEventOrganizations, orgId];
-    setSelectedJointEventOrganizations(newSelection);
-    form.setValue('jointEventOrganizationIds', newSelection);
-  };
-
-  const handleRepresentativeToggle = (repId: number) => {
-    const newSelection = selectedRepresentatives.includes(repId)
-      ? selectedRepresentatives.filter((id) => id !== repId)
-      : [...selectedRepresentatives, repId];
-    setSelectedRepresentatives(newSelection);
-    form.setValue('representativeIds', newSelection);
-  };
-
-  const handleSharedWithToggle = (orgId: string) => {
-    const newSelection = selectedSharedWith.includes(orgId)
-      ? selectedSharedWith.filter((id) => id !== orgId)
-      : [...selectedSharedWith, orgId];
-    setSelectedSharedWith(newSelection);
-    form.setValue('sharedWithOrganizationIds', newSelection);
-  };
-
-  const handleCanEditToggle = (userId: number) => {
-    const newSelection = selectedCanEdit.includes(userId)
-      ? selectedCanEdit.filter((id) => id !== userId)
-      : [...selectedCanEdit, userId];
-    setSelectedCanEdit(newSelection);
-    form.setValue('canEditUserIds', newSelection);
-  };
+  const [selectedCategories, toggleCategory] = useMultiSelect<
+    FormData,
+    'categoryIds',
+    number
+  >(form, 'categoryIds');
+  const [selectedRelatedActivities, toggleRelatedActivity] = useMultiSelect<
+    FormData,
+    'relatedActivityIds',
+    number
+  >(form, 'relatedActivityIds');
+  const [selectedTags, toggleTag] = useMultiSelect<FormData, 'tagIds', string>(
+    form,
+    'tagIds'
+  );
+  const [selectedJointOrganizations, toggleJointOrganization] = useMultiSelect<
+    FormData,
+    'jointOrganizationIds',
+    string
+  >(form, 'jointOrganizationIds');
+  const [selectedCommsMaterials, toggleCommsMaterial] = useMultiSelect<
+    FormData,
+    'commsMaterialIds',
+    number
+  >(form, 'commsMaterialIds');
+  const [selectedTranslationLanguages, toggleTranslationLanguage] =
+    useMultiSelect<FormData, 'translationLanguageIds', number>(
+      form,
+      'translationLanguageIds'
+    );
+  const [selectedJointEventOrganizations, toggleJointEventOrganization] =
+    useMultiSelect<FormData, 'jointEventOrganizationIds', string>(
+      form,
+      'jointEventOrganizationIds'
+    );
+  const [selectedRepresentatives, toggleRepresentative] = useMultiSelect<
+    FormData,
+    'representativeIds',
+    number
+  >(form, 'representativeIds');
+  const [selectedSharedWith, toggleSharedWith] = useMultiSelect<
+    FormData,
+    'sharedWithOrganizationIds',
+    string
+  >(form, 'sharedWithOrganizationIds');
+  const [selectedCanEdit, toggleCanEdit] = useMultiSelect<
+    FormData,
+    'canEditUserIds',
+    number
+  >(form, 'canEditUserIds');
 
   const handleCancel = () => {
     form.reset();
-    setSelectedCategories([]);
-    setSelectedRelatedActivities([]);
-    setSelectedTags([]);
-    setSelectedJointOrganizations([]);
-    setSelectedCommsMaterials([]);
-    setSelectedTranslationLanguages([]);
-    setSelectedJointEventOrganizations([]);
-    setSelectedRepresentatives([]);
-    setSelectedSharedWith([]);
-    setSelectedCanEdit([]);
   };
 
   const onSubmit = async (data: FormData) => {
@@ -223,6 +179,7 @@ export const CreateActivityFormv2: React.FC = () => {
       }
 
       // Prepare submit data with junction table arrays
+      const formValues = form.getValues();
       const submitData = {
         ...data,
         startDate: data.startDate || null,
@@ -231,36 +188,51 @@ export const CreateActivityFormv2: React.FC = () => {
         endTime: data.endTime || null,
         venueAddress: venueAddress,
         categoryIds:
-          selectedCategories.length > 0 ? selectedCategories : undefined,
-        tagIds: selectedTags.length > 0 ? selectedTags : undefined,
+          formValues.categoryIds && formValues.categoryIds.length > 0
+            ? formValues.categoryIds
+            : undefined,
+        tagIds:
+          formValues.tagIds && formValues.tagIds.length > 0
+            ? formValues.tagIds
+            : undefined,
         relatedActivityIds:
-          selectedRelatedActivities.length > 0
-            ? selectedRelatedActivities
+          formValues.relatedActivityIds &&
+          formValues.relatedActivityIds.length > 0
+            ? formValues.relatedActivityIds
             : undefined,
         jointOrganizationIds:
-          selectedJointOrganizations.length > 0
-            ? selectedJointOrganizations
+          formValues.jointOrganizationIds &&
+          formValues.jointOrganizationIds.length > 0
+            ? formValues.jointOrganizationIds
             : undefined,
         commsMaterialIds:
-          selectedCommsMaterials.length > 0
-            ? selectedCommsMaterials
+          formValues.commsMaterialIds && formValues.commsMaterialIds.length > 0
+            ? formValues.commsMaterialIds
             : undefined,
         translationLanguageIds:
-          selectedTranslationLanguages.length > 0
-            ? selectedTranslationLanguages
+          formValues.translationLanguageIds &&
+          formValues.translationLanguageIds.length > 0
+            ? formValues.translationLanguageIds
             : undefined,
         jointEventOrganizationIds:
-          selectedJointEventOrganizations.length > 0
-            ? selectedJointEventOrganizations
+          formValues.jointEventOrganizationIds &&
+          formValues.jointEventOrganizationIds.length > 0
+            ? formValues.jointEventOrganizationIds
             : undefined,
         representativeIds:
-          selectedRepresentatives.length > 0
-            ? selectedRepresentatives
+          formValues.representativeIds &&
+          formValues.representativeIds.length > 0
+            ? formValues.representativeIds
             : undefined,
         sharedWithOrganizationIds:
-          selectedSharedWith.length > 0 ? selectedSharedWith : undefined,
+          formValues.sharedWithOrganizationIds &&
+          formValues.sharedWithOrganizationIds.length > 0
+            ? formValues.sharedWithOrganizationIds
+            : undefined,
         canEditUserIds:
-          selectedCanEdit.length > 0 ? selectedCanEdit : undefined,
+          formValues.canEditUserIds && formValues.canEditUserIds.length > 0
+            ? formValues.canEditUserIds
+            : undefined,
       };
 
       console.log('Submitting data to API:', submitData);
@@ -268,16 +240,6 @@ export const CreateActivityFormv2: React.FC = () => {
       alert('Activity created successfully!');
       // TODO: Navigate to activity detail page or list
       form.reset();
-      setSelectedCategories([]);
-      setSelectedRelatedActivities([]);
-      setSelectedTags([]);
-      setSelectedJointOrganizations([]);
-      setSelectedCommsMaterials([]);
-      setSelectedTranslationLanguages([]);
-      setSelectedJointEventOrganizations([]);
-      setSelectedRepresentatives([]);
-      setSelectedSharedWith([]);
-      setSelectedCanEdit([]);
     } catch (error) {
       console.error('Failed to create activity:', error);
       alert('Failed to create activity. Please try again.');
@@ -298,8 +260,14 @@ export const CreateActivityFormv2: React.FC = () => {
     { id: 3, title: 'Related Activity 3' },
   ];
 
+  // Transform organizations for combobox
+  const jointOrganizationOptions = mockOrganizations.map((org) => ({
+    value: org.id,
+    label: org.name,
+  }));
+
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-200 px-4 py-8">
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">Create New Activity</h1>
         <p className="text-muted-foreground">
@@ -329,16 +297,16 @@ export const CreateActivityFormv2: React.FC = () => {
                       key={category.id}
                       variant={
                         selectedCategories.includes(category.id)
-                          ? 'default'
+                          ? 'selected'
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleCategoryToggle(category.id)}
+                      onClick={() => toggleCategory(category.id)}
                     >
                       {category.displayName || category.name}
-                      {selectedCategories.includes(category.id) && (
+                      {/* {selectedCategories.includes(category.id) && (
                         <X className="ml-2 h-3 w-3" />
-                      )}
+                      )} */}
                     </Badge>
                   ))}
                 </div>
@@ -347,32 +315,6 @@ export const CreateActivityFormv2: React.FC = () => {
                     Please select at least one category
                   </p>
                 )}
-              </div>
-
-              <div>
-                <Label className="mb-3 block">Joint Organizations</Label>
-                <div className="flex flex-wrap gap-2">
-                  {mockOrganizations.map((org) => (
-                    <Badge
-                      key={org.id}
-                      variant={
-                        selectedJointOrganizations.includes(org.id)
-                          ? 'default'
-                          : 'outline'
-                      }
-                      className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleJointOrganizationToggle(org.id)}
-                    >
-                      {org.name}
-                      {selectedJointOrganizations.includes(org.id) && (
-                        <X className="ml-2 h-3 w-3" />
-                      )}
-                    </Badge>
-                  ))}
-                </div>
-                <FormDescription className="mt-2">
-                  Select joint organizations if applicable
-                </FormDescription>
               </div>
 
               <FormField
@@ -420,7 +362,34 @@ export const CreateActivityFormv2: React.FC = () => {
                   </FormItem>
                 )}
               />
-
+              {!showJointOrganizations && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() =>
+                      setShowJointOrganizations(!showJointOrganizations)
+                    }
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add joint organization
+                  </Button>
+                </div>
+              )}
+              {showJointOrganizations && (
+                <div>
+                  <Label className="mb-3 block">Joint Organization</Label>
+                  <Combobox
+                    options={jointOrganizationOptions}
+                    selectedValues={selectedJointOrganizations}
+                    onSelect={toggleJointOrganization}
+                    placeholder="Search organizations..."
+                    searchPlaceholder="Search organizations..."
+                    emptyMessage="No organizations found."
+                  />
+                </div>
+              )}
               <FormField
                 control={form.control}
                 name="summary"
@@ -490,7 +459,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleRelatedActivityToggle(activity.id)}
+                      onClick={() => toggleRelatedActivity(activity.id)}
                     >
                       {activity.title}
                       {selectedRelatedActivities.includes(activity.id) && (
@@ -514,7 +483,7 @@ export const CreateActivityFormv2: React.FC = () => {
                         selectedTags.includes(tag.id) ? 'default' : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleTagToggle(tag.id)}
+                      onClick={() => toggleTag(tag.id)}
                     >
                       {tag.text}
                       {selectedTags.includes(tag.id) && (
@@ -806,7 +775,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleCommsMaterialToggle(material.id)}
+                      onClick={() => toggleCommsMaterial(material.id)}
                     >
                       {material.displayName || material.name}
                       {selectedCommsMaterials.includes(material.id) && (
@@ -854,9 +823,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() =>
-                        handleTranslationLanguageToggle(language.id)
-                      }
+                      onClick={() => toggleTranslationLanguage(language.id)}
                     >
                       {language.displayName || language.name}
                       {selectedTranslationLanguages.includes(language.id) && (
@@ -904,8 +871,37 @@ export const CreateActivityFormv2: React.FC = () => {
                   </FormItem>
                 )}
               />
-
-              <div>
+              {!showJointEventOrganizations && (
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() =>
+                      setShowJointEventOrganizations(
+                        !showJointEventOrganizations
+                      )
+                    }
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add joint organization
+                  </Button>
+                </div>
+              )}
+              {showJointEventOrganizations && (
+                <div>
+                  <Label className="mb-3 block">Joint event organization</Label>
+                  <Combobox
+                    options={jointOrganizationOptions}
+                    selectedValues={selectedJointEventOrganizations}
+                    onSelect={toggleJointEventOrganization}
+                    placeholder="Select"
+                    searchPlaceholder="Search organizations"
+                    emptyMessage="No organizations found."
+                  />
+                </div>
+              )}
+              {/* <div>
                 <Label className="mb-3 block">Joint Event Organizations</Label>
                 <div className="flex flex-wrap gap-2">
                   {mockOrganizations.map((org) => (
@@ -917,7 +913,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleJointEventOrganizationToggle(org.id)}
+                      onClick={() => toggleJointEventOrganization(org.id)}
                     >
                       {org.name}
                       {selectedJointEventOrganizations.includes(org.id) && (
@@ -929,7 +925,7 @@ export const CreateActivityFormv2: React.FC = () => {
                 <FormDescription className="mt-2">
                   Select joint event organizations if applicable
                 </FormDescription>
-              </div>
+              </div> */}
 
               <FormField
                 control={form.control}
@@ -971,7 +967,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleRepresentativeToggle(rep.id)}
+                      onClick={() => toggleRepresentative(rep.id)}
                     >
                       {rep.displayName || rep.name}
                       {selectedRepresentatives.includes(rep.id) && (
@@ -1265,7 +1261,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleCanEditToggle(user.id)}
+                      onClick={() => toggleCanEdit(user.id)}
                     >
                       {user.name}
                       {selectedCanEdit.includes(user.id) && (
@@ -1291,7 +1287,7 @@ export const CreateActivityFormv2: React.FC = () => {
                           : 'outline'
                       }
                       className="cursor-pointer px-4 py-2 text-sm"
-                      onClick={() => handleSharedWithToggle(org.id)}
+                      onClick={() => toggleSharedWith(org.id)}
                     >
                       {org.name}
                       {selectedSharedWith.includes(org.id) && (
