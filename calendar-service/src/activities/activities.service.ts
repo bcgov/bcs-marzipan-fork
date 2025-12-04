@@ -81,6 +81,45 @@ export class ActivitiesService {
   }
 
   /**
+   * Helper function to insert junction table records
+   * Reduces code duplication for common junction table insert patterns
+   *
+   * @param tx - Database transaction
+   * @param table - Junction table to insert into
+   * @param activityId - ID of the activity
+   * @param ids - Array of IDs to create relationships for (can be number[] or string[])
+   * @param idMapper - Function to map an ID to the junction table record fields
+   * @param currentUserId - ID of the user creating the records
+   * @param now - Current timestamp
+   */
+  private async insertJunctionRecords<TId extends number | string>(
+    tx: Parameters<
+      Parameters<typeof this.databaseService.db.transaction>[0]
+    >[0],
+    table: any,
+    activityId: number,
+    ids: TId[] | undefined,
+    idMapper: (id: TId) => Record<string, any>,
+    currentUserId: number,
+    now: Date
+  ): Promise<void> {
+    if (!ids || ids.length === 0) {
+      return;
+    }
+
+    await tx.insert(table).values(
+      ids.map((id) => ({
+        activityId,
+        ...idMapper(id),
+        createdBy: currentUserId,
+        lastUpdatedBy: currentUserId,
+        createdDateTime: now,
+        lastUpdatedDateTime: now,
+      }))
+    );
+  }
+
+  /**
    * Find all activities with optional filtering
    */
   async findAll(filters?: FilterActivities): Promise<ActivityResponse[]> {
