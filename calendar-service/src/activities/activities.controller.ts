@@ -24,10 +24,13 @@ import type {
   FilterActivities,
 } from '@corpcal/shared/schemas';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { AppLogger } from '../common/logger/logger.service';
 
 @ApiTags('activities')
 @Controller('activities')
 export class ActivitiesController {
+  private readonly logger = new AppLogger(ActivitiesController.name);
+
   constructor(private readonly activitiesService: ActivitiesService) {}
 
   @ApiOperation({ summary: 'Create activity' })
@@ -39,11 +42,9 @@ export class ActivitiesController {
   async create(
     @Body() body: CreateActivityRequest
   ): Promise<{ success: boolean; data: ActivityResponse }> {
-    // TEMPORARY: Log incoming request
-    console.log('=== ACTIVITIES CREATE REQUEST RECEIVED ===');
-    console.log('Request body:', JSON.stringify(body, null, 2));
-    console.log('Request timestamp:', new Date().toISOString());
-    console.log('==========================================');
+    this.logger.debug(
+      `Create activity request received: ${JSON.stringify(body)}`
+    );
 
     // body is now validated and typed by ZodValidationPipe
     const result = await this.activitiesService.create(body);
