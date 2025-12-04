@@ -13,6 +13,9 @@ declare module '*.svg' {
 
 interface ImportMetaEnv {
   readonly VITE_API_BASE_URL: string;
+  readonly VITE_LOG_LEVEL?: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR' | 'NONE';
+  readonly VITE_LOG_TIMESTAMP?: string;
+  readonly VITE_LOG_CONTEXT?: string;
 }
 
 interface ImportMeta {
