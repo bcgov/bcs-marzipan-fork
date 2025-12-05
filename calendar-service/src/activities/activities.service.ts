@@ -264,15 +264,15 @@ export class ActivitiesService {
     if (filters) {
       const conditions: SQL[] = [];
       if (filters.title) {
-        conditions.push(eq(activities.title as any, filters.title));
+        conditions.push(eq(activities.title, filters.title));
       }
       if (filters.activityStatusId !== undefined) {
         conditions.push(
-          eq(activities.activityStatusId as any, filters.activityStatusId)
+          eq(activities.activityStatusId, filters.activityStatusId)
         );
       }
       if (filters.isActive !== undefined) {
-        conditions.push(eq(activities.isActive as any, filters.isActive));
+        conditions.push(eq(activities.isActive, filters.isActive));
       }
       if (filters.isConfidential !== undefined) {
         conditions.push(eq(activities.isConfidential, filters.isConfidential));
