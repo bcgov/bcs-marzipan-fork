@@ -4,7 +4,11 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
-  const allowedOrigins = ['http://localhost:3000', 'http://localhost:4173'];
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:4173',
+    'http://localhost:8080',
+  ];
 
   // Enable CORS for development
   app.enableCors({
