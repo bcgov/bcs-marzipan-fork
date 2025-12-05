@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 // Import operators from drizzle-orm (these are exported by drizzle-orm)
 import { eq, and, gte, lte, inArray } from 'drizzle-orm';
 import type { SQL } from 'drizzle-orm';
@@ -24,7 +28,7 @@ import {
   translatedLanguages,
   systemUsers,
 } from '@corpcal/database/schema';
-import type { Activity, NewActivity } from '@corpcal/database/types';
+import type { Activity } from '@corpcal/database/types';
 import type {
   CreateActivityRequest,
   UpdateActivityRequest,
@@ -40,13 +44,25 @@ import { DatabaseService } from '../database/database.service';
 export class ActivitiesService {
   constructor(private readonly databaseService: DatabaseService) {}
   /**
-   * Create a new activity
+   * Create a new activity with related junction table records
    */
   async create(dto: CreateActivityRequest): Promise<ActivityResponseDto> {
-    // Extract junction table data from DTO
-    // TODO: Review type assertion
-    // Type assertion needed because CreateActivityRequest extends the base schema
-    const dtoWithJunctions = dto as CreateActivityRequest & {
+    // Extract junction table IDs from the DTO
+    // These fields are defined in createActivityRequestSchema but not in the base activity schema
+    const {
+      categoryIds,
+      tagIds,
+      jointOrganizationIds,
+      relatedActivityIds,
+      commsMaterialIds,
+      translationLanguageIds,
+      jointEventOrganizationIds,
+      sharedWithOrganizationIds,
+      canEditUserIds,
+      canViewUserIds,
+      // Note: representativeIds is excluded - activityRepresentatives uses free-text representativeName
+      ...activityData
+    } = dto as CreateActivityRequest & {
       categoryIds?: number[];
       tagIds?: string[];
       jointOrganizationIds?: string[];
@@ -54,29 +70,146 @@ export class ActivitiesService {
       commsMaterialIds?: number[];
       translationLanguageIds?: number[];
       jointEventOrganizationIds?: string[];
-      representativeIds?: number[];
+      // FIXME:
+      // representativeIds?: number[];
       sharedWithOrganizationIds?: string[];
       canEditUserIds?: number[];
       canViewUserIds?: number[];
     };
 
-    const [created] = await this.databaseService.db
-      .insert(activities)
-      .values(newActivity as typeof activities.$inferInsert)
-      .returning();
-    // For create, we don't have related data yet, so pass empty defaults
-    return this.mapToResponseDto(created, {
-      categories: [],
-      tags: [],
-      jointOrg: [],
-      relatedActivities: [],
-      commsMaterials: [],
-      translationsRequired: [],
-      jointEventOrg: [],
-      representativesAttending: [],
-      sharedWith: [],
-      canEdit: [],
-      canView: [],
+    // Validate category IDs if provided
+    if (categoryIds && categoryIds.length > 0) {
+      await this.validateCategoryIds(categoryIds);
+    }
+
+    // TODO: Get current user ID from auth context
+    const currentUserId = activityData.createdBy ?? 1;
+    const now = new Date();
+
+    // Use transaction to ensure atomicity of activity and junction table inserts
+    const result = await this.databaseService.db.transaction(async (tx) => {
+      // Prepare activity data with audit fields
+      const newActivity = {
+        ...activityData,
+        createdBy: currentUserId,
+        lastUpdatedBy: currentUserId,
+        createdDateTime: now,
+        lastUpdatedDateTime: now,
+      };
+
+      // Insert the activity
+      const [created] = await tx
+        .insert(activities)
+        .values(newActivity as typeof activities.$inferInsert)
+        .returning();
+
+      const activityId = created.id;
+
+      // Insert junction table records in parallel
+      await Promise.all([
+        // Categories
+        this.insertJunctionRecords(
+          tx,
+          activityCategories,
+          activityId,
+          categoryIds,
+          (id: number) => ({ categoryId: id }),
+          currentUserId,
+          now
+        ),
+        // Tags
+        this.insertJunctionRecords(
+          tx,
+          activityTags,
+          activityId,
+          tagIds,
+          (id: string) => ({ tagId: id }),
+          currentUserId,
+          now
+        ),
+        // Joint Organizations
+        this.insertJunctionRecords(
+          tx,
+          activityJointOrganizations,
+          activityId,
+          jointOrganizationIds,
+          (id: string) => ({ organizationId: id }),
+          currentUserId,
+          now
+        ),
+        // Related Activities
+        this.insertJunctionRecords(
+          tx,
+          activityRelatedEntries,
+          activityId,
+          relatedActivityIds,
+          (id: number) => ({ relatedActivityId: id }),
+          currentUserId,
+          now
+        ),
+        // Comms Materials
+        this.insertJunctionRecords(
+          tx,
+          activityCommsMaterials,
+          activityId,
+          commsMaterialIds,
+          (id: number) => ({ commsMaterialId: id }),
+          currentUserId,
+          now
+        ),
+        // Translation Languages
+        this.insertJunctionRecords(
+          tx,
+          activityTranslationLanguages,
+          activityId,
+          translationLanguageIds,
+          (id: number) => ({ languageId: id }),
+          currentUserId,
+          now
+        ),
+        // Joint Event Organizations
+        this.insertJunctionRecords(
+          tx,
+          activityJointEventOrganizations,
+          activityId,
+          jointEventOrganizationIds,
+          (id: string) => ({ organizationId: id }),
+          currentUserId,
+          now
+        ),
+        // Shared With Organizations
+        this.insertJunctionRecords(
+          tx,
+          activitySharedWithOrganizations,
+          activityId,
+          sharedWithOrganizationIds,
+          (id: string) => ({ organizationId: id }),
+          currentUserId,
+          now
+        ),
+        // Can Edit Users
+        this.insertJunctionRecords(
+          tx,
+          activityCanEditUsers,
+          activityId,
+          canEditUserIds,
+          (id: number) => ({ userId: id }),
+          currentUserId,
+          now
+        ),
+        // Can View Users
+        this.insertJunctionRecords(
+          tx,
+          activityCanViewUsers,
+          activityId,
+          canViewUserIds,
+          (id: number) => ({ userId: id }),
+          currentUserId,
+          now
+        ),
+      ]);
+
+      return created;
     });
 
     // Fetch the created activity with all related data

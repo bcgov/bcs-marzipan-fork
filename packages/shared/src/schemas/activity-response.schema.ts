@@ -61,9 +61,28 @@ export const activityResponseSchema = baseActivitySchema
     lookAheadStatus: true,
     lookAheadSection: true,
     calendarVisibility: true,
-    isConfidential: true,
+    // Note: isConfidential is not picked - we add confidential in extend() instead
+    // TODO: Review naming and duplication of fields
   })
   .extend({
+    // Fields from picked schema that need explicit type definitions
+    // due to drizzle-zod type inference limitations
+    id: z.number().int(),
+    displayId: z.string().nullable(),
+    title: z.string(),
+    summary: z.string().nullable(),
+    isIssue: z.boolean(),
+    oicRelated: z.boolean(),
+    isActive: z.boolean(),
+    significance: z.string().nullable(),
+    pitchComments: z.string().nullable(),
+    isAllDay: z.boolean(),
+    schedulingConsiderations: z.string().nullable(),
+    newsReleaseId: z.string().uuid().nullable(),
+    eventLeadName: z.string().nullable(),
+    notForLookAhead: z.boolean(),
+    planningReport: z.boolean(),
+    thirtySixtyNinetyReport: z.boolean(),
     // Transform activityStatusId from number to string
     activityStatusId: z.string(),
     // Transform date fields to ISO date strings (YYYY-MM-DD)
@@ -131,8 +150,7 @@ export const activityResponseSchema = baseActivitySchema
     // Add computed status fields (from lookups)
     pitchStatus: z.string(),
     schedulingStatus: z.string(),
-  })
-  .omit({ isConfidential: true });
+  });
 
 /**
  * Paginated Response Schema
