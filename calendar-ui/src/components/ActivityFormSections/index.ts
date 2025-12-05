@@ -7,4 +7,3 @@ export { ActivityVenueSection } from './ActivityVenueSection';
 export { ActivityReportsSection } from './ActivityReportsSection';
 export { ActivitySharingSection } from './ActivitySharingSection';
 export { ActivityFormSection } from './ActivityFormSection';
-
