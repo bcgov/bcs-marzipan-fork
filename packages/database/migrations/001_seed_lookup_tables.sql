@@ -117,9 +117,9 @@ ON CONFLICT (id) DO NOTHING;
 -- Representatives for activities
 -- ============================================================================
 
-INSERT INTO government_representatives (id, name, display_name, sort_order, is_active, title) VALUES
-  (1, 'Premier', 'Premier Eby', 1, true, 'Premier of British Columbia'),
-  (2, 'Minister', 'Minister Osborne', 2, true, 'Minister of')
+INSERT INTO government_representatives (id, name, display_name, sort_order, is_active, title, ministry_id, representative_type) VALUES
+  (1, 'Premier', 'Premier Eby', 1, true, 'Premier of British Columbia', NULL, 'premier'),
+  (2, 'Minister', 'Minister Osborne', 2, true, 'Minister of', NULL, 'minister')
 ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================================

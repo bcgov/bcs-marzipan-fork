@@ -73,6 +73,8 @@ export interface MockGovernmentRepresentative {
   name: string;
   displayName?: string;
   title?: string;
+  ministryId?: string;
+  representativeType?: 'premier' | 'minister' | 'cabinet_member' | 'mla' | 'other';
 }
 
 export interface MockLookAheadOption {
@@ -411,12 +413,16 @@ export const mockGovernmentRepresentatives: MockGovernmentRepresentative[] = [
     name: 'Premier',
     displayName: 'Premier Eby',
     title: 'Premier of British Columbia',
+    ministryId: undefined,
+    representativeType: 'premier',
   },
   {
     id: 2,
     name: 'Minister',
     displayName: 'Minister Osborne',
     title: 'Minister of',
+    ministryId: undefined,
+    representativeType: 'minister',
   },
 ];
 
