@@ -32,6 +32,8 @@ import type {
 } from '@corpcal/shared/schemas';
 import type { ActivityResponse } from '@corpcal/shared/api';
 import { activityResponseSchema } from '@corpcal/shared/schemas';
+import { ActivityResponseDto } from '@corpcal/shared/dto';
+import { ensureMatchesSchema } from '@corpcal/shared/utils';
 import { DatabaseService } from '../database/database.service';
 
 @Injectable()
@@ -40,8 +42,9 @@ export class ActivitiesService {
   /**
    * Create a new activity
    */
-  async create(dto: CreateActivityRequest): Promise<ActivityResponse> {
+  async create(dto: CreateActivityRequest): Promise<ActivityResponseDto> {
     // Extract junction table data from DTO
+    // TODO: Review type assertion
     // Type assertion needed because CreateActivityRequest extends the base schema
     const dtoWithJunctions = dto as CreateActivityRequest & {
       categoryIds?: number[];
@@ -122,7 +125,7 @@ export class ActivitiesService {
   /**
    * Find all activities with optional filtering
    */
-  async findAll(filters?: FilterActivities): Promise<ActivityResponse[]> {
+  async findAll(filters?: FilterActivities): Promise<ActivityResponseDto[]> {
     let activityResults: Activity[];
 
     if (filters) {
@@ -233,7 +236,7 @@ export class ActivitiesService {
   /**
    * Find one activity by ID
    */
-  async findOne(id: number): Promise<ActivityResponse> {
+  async findOne(id: number): Promise<ActivityResponseDto> {
     const [activity] = await this.databaseService.db
       .select()
       .from(activities)
@@ -298,7 +301,7 @@ export class ActivitiesService {
   async update(
     id: number,
     dto: UpdateActivityRequest
-  ): Promise<ActivityResponse> {
+  ): Promise<ActivityResponseDto> {
     // Verify activity exists (throws NotFoundException if not found)
     await this.findOne(id);
 
@@ -374,7 +377,7 @@ export class ActivitiesService {
   /**
    * Soft delete (set isActive to false)
    */
-  async softDelete(id: number): Promise<ActivityResponse> {
+  async softDelete(id: number): Promise<ActivityResponseDto> {
     const [updated] = await this.databaseService.db
       .update(activities)
       .set({
@@ -976,7 +979,7 @@ export class ActivitiesService {
       canEdit?: string[];
       canView?: string[];
     }
-  ): ActivityResponse {
+  ): ActivityResponseDto {
     // Format date to YYYY-MM-DD
     const formatDate = (date: Date | string | null): string | null => {
       if (!date) return null;
@@ -1095,11 +1098,15 @@ export class ActivitiesService {
       lastUpdatedBy: activity.lastUpdatedBy?.toString() ?? 'unknown',
     };
 
+    // Compile-time validation: ensure the mapping produces a value that matches the schema
+    // This provides compile-time guarantee that the mapping is correct
+    const validatedDto = ensureMatchesSchema(activityResponseSchema, dto);
+
     // Runtime validation to ensure DTO matches schema contract
     // This catches misalignment between the mapping logic and the schema
     // Runs in all environments to catch issues early
     try {
-      activityResponseSchema.parse(dto);
+      activityResponseSchema.parse(validatedDto);
     } catch (error) {
       // Log validation errors with context for debugging
       const errorMessage =
@@ -1108,16 +1115,14 @@ export class ActivitiesService {
         `[ActivitiesService] Response DTO validation failed for activity ${activity.id}:`,
         errorMessage
       );
-      // In production, we might want to throw here to prevent invalid responses
-      // For now, we log and continue to avoid breaking the API
-      if (process.env.NODE_ENV === 'production') {
-        throw new Error(
-          `Response DTO validation failed: ${errorMessage}. This indicates a mismatch between the mapping logic and the ActivityResponse schema.`
-        );
-      }
+      // Fail-fast in all environments to prevent invalid responses
+      throw new Error(
+        `Response DTO validation failed: ${errorMessage}. This indicates a mismatch between the mapping logic and the ActivityResponse schema.`
+      );
     }
 
-    return dto;
+    // Return as DTO class instance for better IDE support and explicit contracts
+    return ActivityResponseDto.from(validatedDto);
   }
 
   /**
