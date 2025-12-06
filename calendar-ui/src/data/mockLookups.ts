@@ -3,6 +3,8 @@
  * These should eventually be replaced with API calls to fetch real data
  */
 
+import type { RepresentativeType } from '@corpcal/shared';
+
 export interface MockCategory {
   id: number;
   name: string;
@@ -74,7 +76,7 @@ export interface MockGovernmentRepresentative {
   displayName?: string;
   title?: string;
   ministryId?: string;
-  representativeType?: 'premier' | 'minister' | 'cabinet_member' | 'mla' | 'other';
+  representativeType?: RepresentativeType;
 }
 
 export interface MockLookAheadOption {

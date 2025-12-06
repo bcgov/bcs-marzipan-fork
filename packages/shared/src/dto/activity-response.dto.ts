@@ -48,6 +48,8 @@ export class ActivityResponseDto implements ActivityResponse {
   startTime!: string | null;
   endDate!: string | null;
   endTime!: string | null;
+  isTimeConfirmed!: boolean;
+  isDateConfirmed!: boolean;
   schedulingConsiderations!: string | null;
   commsLead!: string | null;
   commsMaterials?: string[] | undefined;

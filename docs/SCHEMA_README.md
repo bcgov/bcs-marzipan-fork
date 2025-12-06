@@ -139,13 +139,69 @@ This ensures the API response schema automatically stays in sync with database s
 
 ## Common Patterns
 
-### Adding a New Field
+### How to Update the Schema
 
-1. Add field to Drizzle schema (`packages/database/src/schema/activity.ts`)
-2. Zod schemas automatically update (via `drizzle-zod`)
-3. Update API response schema if needed (transform/omit as required)
-4. Update mapping function (`mapToResponseDto`)
-5. Run validation script to verify types match
+When adding or modifying fields in a database schema, follow these steps to ensure type safety across all layers:
+
+#### Step 1: Generate Database Migration
+
+After modifying the Drizzle schema (e.g., `packages/database/src/schema/activity.ts`), generate a migration:
+
+```bash
+npm run db:generate --workspace=packages/database
+```
+
+This creates a migration file that will update your database schema. Review the generated migration to ensure it matches your intent.
+
+**Note**: Always let Drizzle generate migrations from your schema rather than writing ALTER TABLE statements manually. This ensures consistency and maintains the schema as the single source of truth.
+
+#### Step 2: Update API Response Schema
+
+If the field should be exposed in API responses, update the response schema file (e.g., `packages/shared/src/schemas/activity-response.schema.ts`):
+
+1. **Add to `.pick()` section**: Include the field in the fields to keep from the base schema
+2. **Add to `.extend()` section**: Add explicit type definition for the field (required due to drizzle-zod type inference limitations)
+
+Example:
+
+```typescript
+// In .pick() section
+export const activityResponseSchema = baseActivitySchema
+  .pick({
+    // ... existing fields
+    isTimeConfirmed: true,
+    isDateConfirmed: true,
+  })
+
+  // In .extend() section
+  .extend({
+    // ... existing fields
+    isTimeConfirmed: z.boolean(),
+    isDateConfirmed: z.boolean(),
+  });
+```
+
+#### Step 3: Update Response DTO
+
+Update the DTO class (e.g., `packages/shared/src/dto/activity-response.dto.ts`) to include the new field as a property:
+
+```typescript
+export class ActivityResponseDto implements ActivityResponse {
+  // ... existing properties
+  isTimeConfirmed!: boolean;
+  isDateConfirmed!: boolean;
+}
+```
+
+The DTO class must implement the `ActivityResponse` type, so adding the property ensures compile-time type safety.
+
+#### Additional Steps (as needed)
+
+- **Request/Validation Schemas**: Automatically updated via `drizzle-zod` - no manual changes needed
+- **Mapping Functions**: Update `mapToResponseDto()` if field needs transformation
+- **UI Forms**: Add form fields in the appropriate component sections
+- **Form Defaults**: Add default values in form initialization
+- **Validation**: Run `npm run validate-types --workspace=packages/shared` to verify types match
 
 ### Transforming a Field
 

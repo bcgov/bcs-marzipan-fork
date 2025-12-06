@@ -117,10 +117,53 @@ ON CONFLICT (id) DO NOTHING;
 -- Representatives for activities
 -- ============================================================================
 
+
+-- PREMIER
 INSERT INTO government_representatives (id, name, display_name, sort_order, is_active, title, ministry_id, representative_type) VALUES
-  (1, 'Premier', 'Premier Eby', 1, true, 'Premier of British Columbia', NULL, 'premier'),
-  (2, 'Minister', 'Minister Osborne', 2, true, 'Minister of', NULL, 'minister')
-ON CONFLICT (id) DO NOTHING;
+  (1000, 'David Eby', 'Premier David Eby', 1, true, 'Premier of British Columbia', '00000000-0000-4000-8000-000000000001', 'premier')
+ON CONFLICT (id) DO UPDATE
+  SET name = EXCLUDED.name,
+      display_name = EXCLUDED.display_name,
+      sort_order = EXCLUDED.sort_order,
+      is_active = EXCLUDED.is_active,
+      title = EXCLUDED.title,
+      ministry_id = EXCLUDED.ministry_id,
+      representative_type = EXCLUDED.representative_type;
+
+-- MINISTERS
+INSERT INTO government_representatives (id, name, display_name, sort_order, is_active, title, ministry_id, representative_type) VALUES
+  (2002, 'Lana Popham', 'Minister Lana Popham', 2, true, 'Minister of Agriculture and Food', '00000000-0000-4000-8000-000000000002', 'minister'),
+  (2003, 'Niki Sharma', 'Attorney General Niki Sharma', 3, true, 'Attorney General and Deputy Premier', '00000000-0000-4000-8000-000000000003', 'minister'),
+  (2004, 'Jodie Wickens', 'Minister Jodie Wickens', 4, true, 'Minister of Children and Family Development', '00000000-0000-4000-8000-000000000004', 'minister'),
+  (2005, 'Diana Gibson', 'Minister Diana Gibson', 5, true, 'Minister of Citizens'' Services', '00000000-0000-4000-8000-000000000005', 'minister'),
+  (2006, 'Lisa Beare', 'Minister Lisa Beare', 6, true, 'Minister of Education and Child Care', '00000000-0000-4000-8000-000000000006', 'minister'),
+  (2007, 'Kelly Greene', 'Minister Kelly Greene', 7, true, 'Minister of Emergency Management and Climate Readiness', '00000000-0000-4000-8000-000000000007', 'minister'),
+  (2008, 'Adrian Dix', 'Minister Adrian Dix', 8, true, 'Minister of Energy and Climate Solutions', '00000000-0000-4000-8000-000000000008', 'minister'),
+  (2009, 'Tamara Davidson', 'Minister Tamara Davidson', 9, true, 'Minister of Environment and Parks', '00000000-0000-4000-8000-000000000009', 'minister'),
+  (2010, 'Brenda Bailey', 'Minister Brenda Bailey', 10, true, 'Minister of Finance', '00000000-0000-4000-8000-000000000010', 'minister'),
+  (2011, 'Ravi Parmar', 'Minister Ravi Parmar', 11, true, 'Minister of Forests', '00000000-0000-4000-8000-000000000011', 'minister'),
+  (2012, 'Josie Osborne', 'Minister Josie Osborne', 12, true, 'Minister of Health', '00000000-0000-4000-8000-000000000012', 'minister'),
+  (2013, 'Christine Boyle', 'Minister Christine Boyle', 13, true, 'Minister of Housing and Municipal Affairs', '00000000-0000-4000-8000-000000000013', 'minister'),
+  (2014, 'Spencer Chandra Herbert', 'Minister Spencer Chandra Herbert', 14, true, 'Minister of Indigenous Relations and Reconciliation', '00000000-0000-4000-8000-000000000014', 'minister'),
+  (2015, 'Bowinn Ma', 'Minister Bowinn Ma', 15, true, 'Minister of Infrastructure', '00000000-0000-4000-8000-000000000015', 'minister'),
+  (2017, 'Ravi Kahlon', 'Minister Ravi Kahlon', 17, true, 'Minister of Jobs and Economic Growth', '00000000-0000-4000-8000-000000000017', 'minister'),
+  (2018, 'Jennifer Whiteside', 'Minister Jennifer Whiteside', 18, true, 'Minister of Labour', '00000000-0000-4000-8000-000000000018', 'minister'),
+  (2019, 'Jagrup Brar', 'Minister Jagrup Brar', 19, true, 'Minister of Mining and Critical Minerals', '00000000-0000-4000-8000-000000000019', 'minister'),
+  (2020, 'Jessie Sunner', 'Minister Jessie Sunner', 20, true, 'Minister of Post-Secondary Education and Future Skills', '00000000-0000-4000-8000-000000000020', 'minister'),
+  (2021, 'Nina Krieger', 'Minister Nina Krieger', 21, true, 'Minister of Public Safety and Solicitor General', '00000000-0000-4000-8000-000000000021', 'minister'),
+  (2022, 'Sheila Malcolmson', 'Minister Sheila Malcolmson', 22, true, 'Minister of Social Development and Poverty Reduction', '00000000-0000-4000-8000-000000000022', 'minister'),
+  (2023, 'Anne Kang', 'Minister Anne Kang', 23, true, 'Minister of Tourism, Arts, Culture and Sport', '00000000-0000-4000-8000-000000000023', 'minister'),
+  (2024, 'Mike Farnworth', 'Minister Mike Farnworth', 24, true, 'Minister of Transportation and Transit', '00000000-0000-4000-8000-000000000024', 'minister'),
+  (2025, 'Randene Neill', 'Minister Randene Neill', 25, true, 'Minister of Water, Land and Resource Stewardship', '00000000-0000-4000-8000-000000000025', 'minister')
+ON CONFLICT (id) DO UPDATE
+  SET name = EXCLUDED.name,
+      display_name = EXCLUDED.display_name,
+      sort_order = EXCLUDED.sort_order,
+      is_active = EXCLUDED.is_active,
+      title = EXCLUDED.title,
+      ministry_id = EXCLUDED.ministry_id,
+      representative_type = EXCLUDED.representative_type;
+
 
 -- ============================================================================
 -- TAGS

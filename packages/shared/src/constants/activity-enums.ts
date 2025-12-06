@@ -39,6 +39,19 @@ export const CALENDAR_VISIBILITY = ['visible', 'partial', 'hidden'] as const;
 export type CalendarVisibility = (typeof CALENDAR_VISIBILITY)[number];
 
 /**
+ * Representative Type - Type of government representative
+ * Used in government_representatives table
+ */
+export const REPRESENTATIVE_TYPE = [
+  'premier',
+  'minister',
+  'cabinet_member',
+  'mla',
+  'other',
+] as const;
+export type RepresentativeType = (typeof REPRESENTATIVE_TYPE)[number];
+
+/**
  * Helper type for nullable enum values
  */
 export type NullableEnum<T extends readonly string[]> = T[number] | null;

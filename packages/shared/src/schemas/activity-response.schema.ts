@@ -53,6 +53,8 @@ export const activityResponseSchema = baseActivitySchema
     startTime: true,
     endDate: true,
     endTime: true,
+    isTimeConfirmed: true,
+    isDateConfirmed: true,
     createdDateTime: true,
     lastUpdatedDateTime: true,
     createdBy: true,
@@ -91,6 +93,8 @@ export const activityResponseSchema = baseActivitySchema
     // Transform time fields to HH:mm strings
     startTime: z.string().nullable(),
     endTime: z.string().nullable(),
+    isTimeConfirmed: z.boolean(),
+    isDateConfirmed: z.boolean(),
     // Transform timestamp fields to ISO datetime strings
     createdDateTime: z.string().datetime(),
     lastUpdatedDateTime: z.string().datetime(),
