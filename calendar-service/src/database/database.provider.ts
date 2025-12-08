@@ -2,6 +2,7 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import { ConfigService } from '@nestjs/config';
 import { schema } from '@corpcal/database';
 import * as postgresModule from 'postgres';
+import { AppLogger } from '../common/logger/logger.service';
 
 export const DATABASE_CLIENT = 'DATABASE_CLIENT';
 
@@ -29,7 +30,7 @@ function maskConnectionString(connectionString: string): string {
 
 export const databaseProvider = {
   provide: DATABASE_CLIENT,
-  useFactory: (configService: ConfigService) => {
+  useFactory: (configService: ConfigService, logger: AppLogger) => {
     const connectionString = configService.get<string>('DATABASE_URL');
 
     if (!connectionString) {
@@ -39,9 +40,9 @@ export const databaseProvider = {
     }
 
     // Log connection info (without password) for debugging
-
-    console.log(
-      `Connecting to database: ${maskConnectionString(connectionString)}`
+    logger.log(
+      `Connecting to database: ${maskConnectionString(connectionString)}`,
+      'DatabaseProvider'
     );
 
     // Access the default export - when externalized, require() returns the default directly
@@ -66,7 +67,7 @@ export const databaseProvider = {
 
     return db;
   },
-  inject: [ConfigService],
+  inject: [ConfigService, AppLogger],
 };
 
 export type Database = ReturnType<typeof drizzle<typeof schema>>;
