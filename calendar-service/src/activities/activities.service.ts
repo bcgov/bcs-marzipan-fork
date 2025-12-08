@@ -268,15 +268,15 @@ export class ActivitiesService {
     if (filters) {
       const conditions: SQL[] = [];
       if (filters.title) {
-        conditions.push(eq(activities.title, filters.title));
+        conditions.push(eq(activities.title as any, filters.title));
       }
       if (filters.activityStatusId !== undefined) {
         conditions.push(
-          eq(activities.activityStatusId, filters.activityStatusId)
+          eq(activities.activityStatusId as any, filters.activityStatusId)
         );
       }
       if (filters.isActive !== undefined) {
-        conditions.push(eq(activities.isActive, filters.isActive));
+        conditions.push(eq(activities.isActive as any, filters.isActive));
       }
       if (filters.isConfidential !== undefined) {
         conditions.push(eq(activities.isConfidential, filters.isConfidential));
@@ -1199,7 +1199,7 @@ export class ActivitiesService {
         typeof activity.eventLeadName === 'string'
           ? activity.eventLeadName
           : null,
-      videographer: activity.videographerUserId?.toString() ?? null,
+      videographer: null, // videographerUserId column has been removed
       graphics: activity.graphicsUserId?.toString() ?? null,
 
       // Reports
