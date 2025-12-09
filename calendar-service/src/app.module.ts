@@ -5,7 +5,10 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { ActivitiesModule } from './activities/activities.module';
+<<<<<<< HEAD
 import { LookupsModule } from './lookups/lookups.module';
+=======
+>>>>>>> origin/main
 import { LoggerModule } from './common/logger/logger.module';
 
 /**
