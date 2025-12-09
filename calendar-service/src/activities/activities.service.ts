@@ -1165,6 +1165,8 @@ export class ActivitiesService {
       startTime: formatTime(activity.startTime),
       endDate: formatDate(activity.endDate),
       endTime: formatTime(activity.endTime),
+      isTimeConfirmed: activity.isTimeConfirmed ?? false,
+      isDateConfirmed: activity.isDateConfirmed ?? false,
       schedulingConsiderations: activity.schedulingConsiderations ?? null,
 
       // Comms

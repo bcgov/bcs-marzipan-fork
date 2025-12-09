@@ -1,8 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { RateLimitInterceptor } from './common/interceptors/rate-limit.interceptor';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Apply rate limiting globally
+  const configService = app.get(ConfigService);
+  app.useGlobalInterceptors(new RateLimitInterceptor(configService));
 
   const allowedOrigins = [
     'http://localhost:3000',
